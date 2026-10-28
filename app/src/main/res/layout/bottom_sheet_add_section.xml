@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dropzone_card"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Bottom sheet drag handle indicator -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@color/app_border" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Add Custom Section"
+        android:textColor="@color/app_text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="Select a recommended template or type your own title below."
+        android:textColor="@color/app_text_muted"
+        android:textSize="13sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Recommended Templates"
+        android:textColor="@color/app_text_primary"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <!-- Templates ChipGroup -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupTemplates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:singleLine="false">
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Certifications" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Achievements" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Publications" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Languages" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Volunteer Work" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Suggestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Honors &amp; Awards" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Custom Section Title Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCustomSectionTitle"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:hint="Custom Section Title"
+        app:helperText="(Required)"
+        app:helperTextEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomSectionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:textColor="@color/app_text_primary" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirmAddSection"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Add Section"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/app_primary"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

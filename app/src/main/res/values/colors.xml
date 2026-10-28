@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_background">#F4F5F7</color>
+    <color name="app_surface">#FFFFFF</color>
+    <color name="app_primary">#2563EB</color>
+    <color name="app_text_primary">#111827</color>
+    <color name="app_text_muted">#4B5563</color>
+    <color name="app_border">#1E000000</color>
+    <color name="app_primary_container">#1A2563EB</color>
+    <color name="app_progress_track">#1A2563EB</color>
+    <color name="overlay_scrim">#99000000</color>
+    <color name="app_danger">#EF4444</color>
+    <color name="app_danger_container">#1AEF4444</color>
+</resources>

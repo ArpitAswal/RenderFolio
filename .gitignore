@@ -1,0 +1,42 @@
+# Built artifacts and cache
+*.iml
+.gradle/
+.kotlin/
+/build/
+build/
+**/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration and credentials (CRITICAL: Do not commit sensitive data)
+local.properties
+**/local.properties
+.env
+.env.*
+!.env.example
+secrets.properties
+google-services.json
+GoogleService-Info.plist
+
+# Keystores and signing certificates
+*.jks
+*.keystore
+*.key
+*.pem
+*.p12
+*.pk8
+
+# IDE and Editor configurations
+.idea/
+.vscode/
+
+# OS-generated files
+.DS_Store
+*/.DS_Store
+Thumbs.db
+*.log
+
+# Explicitly ignore test cases as per configuration instructions
+**/src/test/
+**/src/androidTest/

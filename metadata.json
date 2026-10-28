@@ -1,0 +1,6 @@
+{
+  "name": "ResumeShowcase",
+  "description": "Convert static PDF resumes into an interactive mobile showcase with two-tier extraction and Material 3 responsive design.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

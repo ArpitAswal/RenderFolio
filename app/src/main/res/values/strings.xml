@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ResumeShowcase</string>
+    <string name="cold_start_app_title">ResumeShowcase</string>
+    <string name="cold_start_headline">Upload your professional background</string>
+    <string name="cold_start_subtitle">Convert your static PDF resume into an interactive digital showcase.</string>
+    <string name="cold_start_action_button">Upload Resume</string>
+    <string name="cold_start_file_limit">Supported format: PDF • Up to 10MB</string>
+    <string name="cold_start_format_note">Supports native text PDFs &amp; scanned documents</string>
+    <string name="cold_start_privacy_note">🔒 100% Private · On-device processing</string>
+    <string name="cold_start_dropzone_title">Select your PDF file</string>
+    <string name="cold_start_demo_button">Explore Pre-loaded Demo Showcase</string>
+    <string name="processing_resume_title">Processing Resume</string>
+
+    <!-- Permission Dialog Strings -->
+    <string name="permission_title">Storage Permission Required</string>
+    <string name="permission_rationale_message">ResumeShowcase needs storage access to browse and import your PDF resume from your device. Please grant permission to continue.</string>
+    <string name="permission_dialog_message">Storage permission is required to browse and select files from your device. You can grant access in App Settings or explore the demo showcase right now.</string>
+    <string name="permission_grant_button">Grant Permission</string>
+    <string name="permission_settings_button">App Settings</string>
+    <string name="permission_demo_button">Try Demo Instead</string>
+    <string name="permission_granted_toast">Storage access granted for ResumeShowcase</string>
+    <string name="permission_denied_toast">Storage access denied. You can enable it in App Settings or explore the demo showcase.</string>
+
+    <!-- Structure Verification Common Actions & Dialogs -->
+    <string name="action_add">Add</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_add_bullet">+ Add Bullet</string>
+    <string name="dialog_title_add_bullet">Add Bullet</string>
+    <string name="dialog_title_edit_bullet">Edit Bullet</string>
+    <string name="hint_bullet_description">Enter bullet point description...</string>
+    <string name="content_desc_remove_bullet">Remove bullet</string>
+    <string name="action_add_custom_section">Add Custom Section</string>
+
+    <!-- Personal Info & Profile Links -->
+    <string name="personal_info_contact"><![CDATA[Personal Info & Contact]]></string>
+    <string name="header_profile_links"><![CDATA[Profile Links & Social Portfolios (Optional)]]></string>
+    <string name="action_add_profile_link">+ Add Profile Link</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_job_title">Professional Headline / Title</string>
+    <string name="hint_phone">Phone Number</string>
+    <string name="hint_email">Email Address</string>
+    <string name="hint_location">Location / Country</string>
+    <string name="hint_profile_link_url">https://github.com/...</string>
+    <string name="dialog_title_edit_profile_link">Edit Profile Link</string>
+    <string name="dialog_title_add_profile_link">Add Profile Link</string>
+    <string name="msg_profile_link_removed">Profile link removed</string>
+    <string name="error_invalid_url"><![CDATA[Please enter a valid URL (e.g. https://linkedin.com/...)]]></string>
+    <string name="error_url_empty">URL cannot be empty</string>
+
+    <!-- About / Summary Section -->
+    <string name="section_title_about_summary">About / Summary</string>
+    <string name="hint_profile_summary"><![CDATA[Professional Overview & Summary]]></string>
+    <string name="char_counter_format">%1$d / %2$d max chars</string>
+    <string name="error_summary_limit">Summary cannot exceed 600 characters</string>
+
+    <!-- Work Experience Section -->
+    <string name="section_title_work_experience">Work Experience</string>
+    <string name="section_title_work_experience_optional">Work Experience (Optional)</string>
+    <string name="candidate_type_fresher">Fresher</string>
+    <string name="candidate_type_experienced">Experienced</string>
+    <string name="action_add_experience">+ Add New Experience</string>
+    <string name="position_header_format">Position #%1$d</string>
+    <string name="action_remove_position">Remove Position</string>
+    <string name="hint_company_name">Company / Organization Name</string>
+    <string name="hint_duration_example"><![CDATA[Duration (e.g. 2020 – 2024)]]></string>
+    <string name="hint_role_title">Role / Position Title</string>
+    <string name="duration_range_format"><![CDATA[%1$s – %2$s]]></string>
+    <string name="duration_present">Present</string>
+    <string name="header_role_responsibilities"><![CDATA[Role & Responsibilities]]></string>
+
+    <!-- Projects Section -->
+    <string name="section_title_projects">Projects</string>
+    <string name="action_add_project">+ Add New Project</string>
+    <string name="project_item">Project Item</string>
+    <string name="project_header_format">Project #%1$d</string>
+    <string name="remove_project">Remove Project</string>
+    <string name="project_title_name">Project Title / Name</string>
+    <string name="repository_deployed_url">Repository / Deployed URL</string>
+    <string name="key_highlights_features"><![CDATA[Key Highlights & Features]]></string>
+
+    <!-- Technical Skills Section -->
+    <string name="section_title_technical_skills">Technical Skills</string>
+    <string name="action_add_skill_chip">+ Add Skill</string>
+    <string name="dialog_title_add_skill">Add Technical Skill</string>
+    <string name="hint_add_skill">e.g. Flutter, Kotlin, Docker</string>
+
+    <!-- Education Section -->
+    <string name="section_title_education">Educational Background</string>
+    <string name="action_add_education">+ Add Education Entry</string>
+    <string name="education_header_format">Education #%1$d</string>
+    <string name="action_remove_education">Remove Education</string>
+    <string name="hint_institution_name">Institution / University Name</string>
+    <string name="hint_degree">Degree / Course of Study</string>
+
+    <!-- Custom / Dynamic Sections -->
+    <string name="add_new_item_format">+ Add New %1$s</string>
+    <string name="custom_item_header_format">%1$s #%2$d</string>
+    <string name="remove_item_format">Remove %1$s</string>
+    <string name="hint_custom_title">Title / Name</string>
+    <string name="hint_custom_link_optional">Repository / Package Link (Optional)</string>
+    <string name="header_custom_details"><![CDATA[Details & Highlights]]></string>
+    <string name="custom_type_source">Source</string>
+    <string name="custom_type_certificate">Certificate</string>
+    <string name="custom_type_award">Award</string>
+    <string name="custom_type_publication">Publication</string>
+    <string name="custom_type_item">Item</string>
+    <string name="hint_link_certification">Credential / Verification URL (Optional)</string>
+    <string name="hint_link_publication">Publication / Article URL (Optional)</string>
+    <string name="hint_link_open_source">Repository / Package Link (Optional)</string>
+    <string name="hint_link_general">Link / URL (Optional)</string>
+    <string name="dialog_title_rename_section">Rename Section</string>
+    <string name="hint_section_title">Section Title</string>
+    <string name="action_generate">Generate</string>
+</resources>

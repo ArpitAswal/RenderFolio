@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_cold_start"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fillViewport="true"
+    android:overScrollMode="ifContentScrolls">
+
+    <!-- Root vertical container: centered content with responsive padding -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="32dp">
+
+        <!-- App Title Badge: "ResumeShowcase" (18sp Medium to meet WCAG AA contrast threshold) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_badge"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="6dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_description" />
+
+            <TextView
+                android:id="@+id/tv_app_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/cold_start_app_title"
+                android:textColor="@color/app_primary"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- Header Section: Centered Headline and Subtitle -->
+        <LinearLayout
+            android:id="@+id/layout_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <!-- Headline: "Upload your professional background" (22sp Bold) -->
+            <TextView
+                android:id="@+id/tv_headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:text="@string/cold_start_headline"
+                android:textColor="@color/app_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- Subtitle: "Convert your static PDF resume into an interactive digital showcase." (14sp Muted) -->
+            <TextView
+                android:id="@+id/tv_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:lineSpacingExtra="3dp"
+                android:maxWidth="340dp"
+                android:text="@string/cold_start_subtitle"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Primary Dropzone Card -->
+        <!-- Note: clickable="true" and focusable="true" ensure keyboard accessibility and touch compatibility -->
+        <LinearLayout
+            android:id="@+id/card_dropzone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxWidth="400dp"
+            android:background="@drawable/bg_dropzone_card"
+            android:clickable="true"
+            android:elevation="4dp"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:outlineProvider="background"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="28dp">
+
+            <!-- Upload Circle Badge -->
+            <FrameLayout
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_upload_icon">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_cloud_upload" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tv_dropzone_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/cold_start_dropzone_title"
+                android:textColor="@color/app_text_primary"
+                android:textSize="16sp" />
+
+            <!-- Primary Action Button: "Upload Resume" (wrap_content, centered, min 48dp height) -->
+            <Button
+                android:id="@+id/btn_upload_pdf"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:minHeight="48dp"
+                android:minWidth="180dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_button_primary"
+                android:drawableStart="@drawable/ic_description"
+                android:drawablePadding="10dp"
+                android:drawableTint="@android:color/white"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:paddingHorizontal="24dp"
+                android:text="@string/cold_start_action_button"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Helper Subtext: "Supported format: PDF • Up to 10MB" -->
+            <TextView
+                android:id="@+id/tv_file_limit_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif"
+                android:text="@string/cold_start_file_limit"
+                android:textColor="@color/app_text_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Secondary Pathway: Explore Pre-loaded Demo Showcase -->
+        <!-- wrap_content + center_horizontal clusters icon and text cleanly without stretching -->
+        <Button
+            android:id="@+id/btn_load_demo"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:minHeight="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_button_outlined"
+            android:drawableStart="@drawable/ic_play"
+            android:drawablePadding="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:paddingHorizontal="24dp"
+            android:text="@string/cold_start_demo_button"
+            android:textAllCaps="false"
+            android:textColor="@color/app_primary"
+            android:textSize="14sp" />
+
+        <!-- Format Note: "Supports native text PDFs & scanned documents" -->
+        <TextView
+            android:id="@+id/tv_format_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
+            android:text="@string/cold_start_format_note"
+            android:textColor="@color/app_text_muted"
+            android:textSize="12sp" />
+
+        <!-- Privacy Badge: "🔒 100% Private · On-device processing" -->
+        <LinearLayout
+            android:id="@+id/layout_privacy_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_pill_badge"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:id="@+id/tv_privacy_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="@string/cold_start_privacy_note"
+                android:textColor="@color/app_text_muted"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

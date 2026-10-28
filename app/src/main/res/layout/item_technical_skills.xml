@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/app_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/app_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Card Header with Technical Skills label, Add Skill button, and Drag Handle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvSectionTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/section_title_technical_skills"
+                android:textColor="@color/app_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddSkill"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginEnd="6dp"
+                android:text="@string/action_add_skill_chip"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="10dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/app_primary" />
+
+            <ImageView
+                android:id="@+id/ivDragHandle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Drag to reorder section"
+                android:padding="12dp"
+                android:src="@drawable/ic_drag_handle" />
+
+        </LinearLayout>
+
+        <!-- Skill Chips Container (Alphabetical Flow Wrap) -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupSkills"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleLine="false" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

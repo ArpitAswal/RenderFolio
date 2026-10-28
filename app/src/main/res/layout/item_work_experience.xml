@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/app_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/app_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Card Header with Work Experience label, Drag Handle, and Fresher/Experienced toggle -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvSectionTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@string/section_title_work_experience"
+                android:textColor="@color/app_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/ivDragHandle"
+                app:layout_constraintEnd_toStartOf="@+id/ivDragHandle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/ivDragHandle" />
+
+            <ImageView
+                android:id="@+id/ivDragHandle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Drag to reorder section"
+                android:padding="12dp"
+                android:src="@drawable/ic_drag_handle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Fresher | Experienced Toggle Button Group -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleCandidateType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:checkedButton="@+id/btnExperienced"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ivDragHandle"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFresher"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="@string/candidate_type_fresher"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExperienced"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="@string/candidate_type_experienced"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="8dp" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Positions Container (hidden if Fresher is selected) -->
+        <LinearLayout
+            android:id="@+id/containerWorkPositions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Dynamic Company Entries Container -->
+            <LinearLayout
+                android:id="@+id/llWorkExperienceEntries"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Add Work Experience Entry Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddWorkExperience"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/action_add_experience"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/app_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

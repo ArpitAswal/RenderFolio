@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_root_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fitsSystemWindows="true">
+
+    <!-- 1. Native XML Cold-Start Upload Screen -->
+    <include
+        android:id="@+id/view_cold_start"
+        layout="@layout/layout_cold_start"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
+
+    <!-- 2. Complex Layout Container: Jetpack ComposeView for interactive resume showcase & rich editor -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view_complex_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- 3. Ingestion Progress Overlay (Native XML) -->
+    <FrameLayout
+        android:id="@+id/overlay_progress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/overlay_scrim"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_dropzone_card"
+            android:elevation="12dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingStart="28dp"
+            android:paddingTop="32dp"
+            android:paddingEnd="28dp"
+            android:paddingBottom="32dp">
+
+            <ProgressBar
+                android:id="@+id/pb_circular"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/app_primary" />
+
+            <TextView
+                android:id="@+id/tv_progress_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/processing_resume_title"
+                android:textColor="@color/app_text_primary"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tv_progress_step"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:text="Reading PDF document..."
+                android:textColor="@color/app_text_muted"
+                android:textSize="13sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_horizontal"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="16dp"
+                android:max="100"
+                android:progress="10"
+                android:progressTint="@color/app_primary" />
+
+            <TextView
+                android:id="@+id/tv_progress_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
+                android:text="10% completed"
+                android:textColor="@color/app_text_muted"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>

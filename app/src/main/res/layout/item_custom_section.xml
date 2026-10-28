@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/app_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/app_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Card Header with Title, Edit Button, Circular Minus Button, and Drag Handle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvSectionTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:gravity="center_vertical"
+                android:paddingStart="0dp"
+                android:paddingEnd="4dp"
+                android:paddingVertical="4dp"
+                android:text="Custom Section"
+                android:textColor="@color/app_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Edit Button (Rename) -->
+            <ImageView
+                android:id="@+id/btnEditSection"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="@string/dialog_title_rename_section"
+                android:padding="8dp"
+                android:src="@drawable/ic_edit"
+                app:tint="@color/app_text_muted" />
+
+            <!-- Compact Circular Minus Button to Remove Optional Section -->
+            <FrameLayout
+                android:id="@+id/btnRemoveSection"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Remove Section">
+
+                <FrameLayout
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_circle_minus">
+
+                    <ImageView
+                        android:layout_width="11dp"
+                        android:layout_height="11dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_minus"
+                        app:tint="@android:color/white" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <!-- Drag Handle -->
+            <ImageView
+                android:id="@+id/ivDragHandle"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="-11dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Drag to reorder section"
+                android:padding="4dp"
+                android:src="@drawable/ic_drag_handle" />
+
+        </LinearLayout>
+
+        <!-- Custom Items Container -->
+        <LinearLayout
+            android:id="@+id/llCustomItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <!-- Add Custom Item Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddCustomItem"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="16dp"
+            android:text="+ Add Item"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="10dp"
+            app:strokeColor="@color/app_primary" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

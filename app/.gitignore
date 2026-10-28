@@ -1,0 +1,5 @@
+/build
+*.jks
+*.keystore
+/src/test/
+/src/androidTest/
