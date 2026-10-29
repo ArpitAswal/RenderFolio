@@ -114,4 +114,16 @@
     <string name="dialog_title_rename_section">Rename Section</string>
     <string name="hint_section_title">Section Title</string>
     <string name="action_generate">Generate</string>
+    <string name="add_custom_section">Add Custom Section</string>
+    <string name="add_section_subtitle">Select a recommended template or type your own title below.</string>
+    <string name="recommended_templates">Recommended Templates</string>
+    <string name="template_certifications">Certifications</string>
+    <string name="template_achievements">Achievements</string>
+    <string name="template_publications">Publications</string>
+    <string name="template_languages">Languages</string>
+    <string name="template_volunteer_work">Volunteer Work</string>
+    <string name="template_honors_awards">Honors &amp; Awards</string>
+    <string name="hint_custom_section_title">Custom Section Title</string>
+    <string name="helper_required">(Required)</string>
+    <string name="action_add_section">Add Section</string>
 </resources>

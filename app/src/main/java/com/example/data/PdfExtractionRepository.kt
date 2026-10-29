@@ -26,6 +26,8 @@ import java.util.zip.InflaterInputStream
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import androidx.core.graphics.createBitmap
+import kotlin.time.Duration.Companion.milliseconds
 
 data class ExtractionResult(
     val profile: ResumeProfile,
@@ -67,18 +69,32 @@ class PdfExtractionRepository(private val context: Context) {
                 }
             } ?: throw IllegalStateException("Could not open input stream for provided document")
 
-            val nativeResult = extractNativePdfData(tempFile)
-            val tier1Text = nativeResult.text
-            val extractedLinks = nativeResult.links
+            val (tier1Text, extractedLinks) = if (!AppConstants.DISABLE_NATIVE_PDF_EXTRACTION) {
+                try {
+                    val nativeResult = extractNativePdfData(tempFile)
+                    Pair(nativeResult.text, nativeResult.links)
+                } catch (e: Exception) {
+                    Log.w(tag, "Native PDF extraction encountered error: ${e.message}. Falling back to ML Kit OCR.")
+                    val links = extractAnnotationLinks(tempFile)
+                    Pair("", links)
+                }
+            } else {
+                Log.i(tag, "Native PDF extraction is turned OFF. Extracting text 100% via Google ML Kit On-Device OCR.")
+                val links = extractAnnotationLinks(tempFile)
+                Pair("", links)
+            }
 
             val (finalRawText, tierUsed) = if (tier1Text.trim().length >= AppConstants.TIER_1_CHAR_THRESHOLD) {
                 Pair(tier1Text, "Tier 1: Native Text Layer (PDFBox)")
             } else {
-                val tier2Text = extractWithMlKitFallback(tempFile) { _, _ -> }
-                if (tier2Text.trim().length > tier1Text.trim().length) {
-                    Pair(tier2Text, "Tier 2: ML Kit Optical Character Recognition")
+                onProgress("Scanning pages with Google ML Kit OCR...", 0.15f, 0, initialSections)
+                val tier2Text = extractWithMlKitFallback(tempFile) { step, progress ->
+                    onProgress(step, progress, 0, initialSections)
+                }
+                if (tier2Text.isNotBlank()) {
+                    Pair(tier2Text, "Tier 2: Google ML Kit Optical Character Recognition (On-Device OCR)")
                 } else {
-                    Pair(if (tier1Text.isNotBlank()) tier1Text else tier2Text, "Tier 1 / Fallback Hybrid")
+                    Pair(tier1Text, "Fallback Native Text")
                 }
             }
 
@@ -260,6 +276,30 @@ class PdfExtractionRepository(private val context: Context) {
         return NativePdfData(fallbackText, extractedLinks)
     }
 
+    private fun extractAnnotationLinks(file: File): List<String> {
+        val extractedLinks = mutableListOf<String>()
+        try {
+            PDDocument.load(file).use { document ->
+                for (page in document.pages) {
+                    for (ann in page.annotations) {
+                        if (ann is com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink) {
+                            val act = ann.action
+                            if (act is com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionURI) {
+                                val uri = act.uri
+                                if (!uri.isNullOrBlank() && !extractedLinks.contains(uri)) {
+                                    extractedLinks.add(uri)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(tag, "Extract annotation links error: ${e.message}")
+        }
+        return extractedLinks
+    }
+
     private fun extractStringsFromBlock(block: String, out: StringBuilder) {
         val tjPattern = Pattern.compile("\\((.*?)\\)\\s*Tj")
         val tjMatcher = tjPattern.matcher(block)
@@ -311,13 +351,13 @@ class PdfExtractionRepository(private val context: Context) {
             val pageCount = renderer.pageCount
 
             for (i in 0 until pageCount) {
-                val pageProgress = 0.6f + (0.25f * (i.toFloat() / pageCount.coerceAtLeast(1)))
-                onProgress("Recognizing text from page ${i + 1} of $pageCount...", pageProgress)
+                val pageProgress = 0.1f + (0.35f * ((i + 1).toFloat() / pageCount.coerceAtLeast(1)))
+                onProgress("Google ML Kit OCR: Scanning page ${i + 1} of $pageCount...", pageProgress)
 
                 val page = renderer.openPage(i)
                 val width = page.width * 2
                 val height = page.height * 2
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val bitmap = createBitmap(width, height)
                 bitmap.eraseColor(Color.WHITE)
 
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)

@@ -12,12 +12,12 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  compileSdk = 37
 
   defaultConfig {
     applicationId = "com.aistudio.resumeshowcase.kpxz"
     minSdk = 24
-    targetSdk = 36
+    targetSdk = 37
     versionCode = 1
     versionName = "1.0"
 
@@ -95,9 +95,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.kotlinx.serialization.json)
-  implementation(libs.mlkit.text.recognition)
-  implementation(libs.pdfbox.android)
-  implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.room.ktx)
@@ -119,9 +117,12 @@ dependencies {
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)
   androidTestImplementation(libs.androidx.espresso.core)
+  androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.runner)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)
+  implementation(libs.pdfbox.android)
+  implementation(libs.mlkit.text.recognition)
   implementation("com.google.android.material:material:1.14.0")
   implementation("androidx.recyclerview:recyclerview:1.4.0")
   implementation("androidx.constraintlayout:constraintlayout:2.2.2")

@@ -25,6 +25,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.ui.PdfExtractionLoadingScreen
 import com.example.ui.ResumeEditScreen
 import com.example.ui.ResumeShowcaseScreen
+import com.example.ui.StructureVerificationActivity
 import com.example.ui.theme.ResumeShowcaseTheme
 import com.example.viewmodel.ResumeViewModel
 import com.example.viewmodel.UiState
@@ -239,21 +240,19 @@ class MainActivity : ComponentActivity() {
             is UiState.ExtractedNeedsVerification -> {
                 // PDF extraction is done -> Do NOT display the final resume with info & edit button!
                 // Directly launch the Structure Verification screen
-                viewColdStart.visibility = View.VISIBLE
+                viewColdStart.visibility = View.GONE
+                composeView.visibility = View.VISIBLE
                 overlayProgress.visibility = View.GONE
-                composeView.visibility = View.GONE
-
+                val intent = StructureVerificationActivity.createIntent(this@MainActivity, state.profile)
+                structureVerificationLauncher.launch(intent)
                 viewModel.onVerificationLaunched(state.profile)
-                structureVerificationLauncher.launch(
-                    com.example.ui.StructureVerificationActivity.createIntent(this@MainActivity, state.profile)
-                )
             }
 
             is UiState.VerificationInProgress -> {
                 // Verification is currently active in StructureVerificationActivity
-                viewColdStart.visibility = View.VISIBLE
+                viewColdStart.visibility = View.GONE
+                composeView.visibility = View.VISIBLE
                 overlayProgress.visibility = View.GONE
-                composeView.visibility = View.GONE
             }
 
             is UiState.Success -> {

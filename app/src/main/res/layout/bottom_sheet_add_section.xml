@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_dropzone_card"
+    android:background="@drawable/bg_bottom_sheet"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="Add Custom Section"
+        android:text="@string/add_custom_section"
         android:textColor="@color/app_text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Select a recommended template or type your own title below."
+        android:text="@string/add_section_subtitle"
         android:textColor="@color/app_text_muted"
         android:textSize="13sp" />
 
@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Recommended Templates"
+        android:text="@string/recommended_templates"
         android:textColor="@color/app_text_primary"
         android:textSize="13sp"
         android:textStyle="bold" />
@@ -53,37 +53,67 @@
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Certifications" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_certifications" />
 
         <com.google.android.material.chip.Chip
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Achievements" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_achievements" />
 
         <com.google.android.material.chip.Chip
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Publications" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_publications" />
 
         <com.google.android.material.chip.Chip
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Languages" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_languages" />
 
         <com.google.android.material.chip.Chip
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Volunteer Work" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_volunteer_work" />
 
         <com.google.android.material.chip.Chip
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Honors &amp; Awards" />
+            app:chipBackgroundColor="@color/chip_bg_color"
+            app:chipStrokeColor="@color/chip_stroke_color"
+            app:chipStrokeWidth="1dp"
+            app:chipCornerRadius="8dp"
+            android:textColor="@color/chip_text_color"
+            android:text="@string/template_honors_awards" />
 
     </com.google.android.material.chip.ChipGroup>
 
@@ -94,8 +124,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:hint="Custom Section Title"
-        app:helperText="(Required)"
+        android:hint="@string/hint_custom_section_title"
+        app:helperText="@string/helper_required"
         app:helperTextEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -112,7 +142,7 @@
         android:id="@+id/btnConfirmAddSection"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="Add Section"
+        android:text="@string/action_add_section"
         android:textColor="@android:color/white"
         android:textSize="14sp"
         android:textStyle="bold"

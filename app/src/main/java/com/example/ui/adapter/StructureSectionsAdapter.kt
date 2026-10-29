@@ -1082,7 +1082,14 @@ class StructureSectionsAdapter(
                 val chip = Chip(binding.root.context).apply {
                     text = skill
                     isCloseIconVisible = true
-                    setCloseIconTintResource(R.color.app_text_muted)
+                    setChipBackgroundColorResource(R.color.chip_bg_color)
+                    setChipStrokeColorResource(R.color.chip_stroke_color)
+                    chipStrokeWidth = resources.displayMetrics.density * 1f
+                    setTextColor(ContextCompat.getColor(context, R.color.chip_text_color))
+                    setCloseIconTintResource(R.color.chip_close_icon_tint)
+                    shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                        .setAllCornerSizes(resources.displayMetrics.density * 8f)
+                        .build()
                     setOnCloseIconClickListener {
                         currentSkills = currentSkills.copy(
                             languages = currentSkills.languages.filter { it != skill },

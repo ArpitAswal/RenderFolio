@@ -1,14 +1,13 @@
 package com.example.ui
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -22,16 +21,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.constant.AppConstants
-import com.google.android.play.core.integrity.p
 import kotlin.math.abs
 
 /**
@@ -69,21 +63,34 @@ fun PdfExtractionLoadingScreen(
     }
 
     val currentActiveIndex = activeIndex.coerceIn(0, effectiveSections.lastIndex)
-    val activeSectionTitle = effectiveSections.getOrElse(currentActiveIndex) { step }
 
-    // Smooth 550ms FastOutSlowInEasing transition driving the 3D ListWheel upward roll
-    val animatedIndex by animateFloatAsState(
-        targetValue = currentActiveIndex.toFloat(),
-        animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing),
-        label = "WheelScrollAnimation"
-    )
+    val animatedIndexAnimatable = remember { Animatable(0f) }
+    LaunchedEffect(currentActiveIndex) {
+        if (currentActiveIndex == 0) {
+            // When starting a new extraction, snap directly to 0 with no backward roll animation
+            animatedIndexAnimatable.snapTo(0f)
+        } else {
+            animatedIndexAnimatable.animateTo(
+                targetValue = currentActiveIndex.toFloat(),
+                animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+            )
+        }
+    }
+    val animatedIndex = animatedIndexAnimatable.value
 
-    // Smoothly animated progress bar
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = 400, easing = LinearEasing),
-        label = "ProgressAnimation"
-    )
+    val animatedProgressAnimatable = remember { Animatable(0f) }
+    LaunchedEffect(progress) {
+        val clamped = progress.coerceIn(0f, 1f)
+        if (clamped <= 0.06f) {
+            animatedProgressAnimatable.snapTo(clamped)
+        } else {
+            animatedProgressAnimatable.animateTo(
+                targetValue = clamped,
+                animationSpec = tween(durationMillis = 400, easing = LinearEasing)
+            )
+        }
+    }
+    val animatedProgress = animatedProgressAnimatable.value
 
     // Pulsing glowing indicator for the active center node
     val infiniteTransition = rememberInfiniteTransition(label = "NodeGlowTransition")
@@ -142,7 +149,7 @@ fun PdfExtractionLoadingScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             // 3D ListWheelScrollView Cylindrical Wheel Container
             Box(
@@ -163,21 +170,19 @@ fun PdfExtractionLoadingScreen(
                         val scale = (1.0f - (abs(d) * 0.16f)).coerceIn(0.75f, 1.0f)
                         val rotationX = (-d * 22f).coerceIn(-30f, 30f)
 
-                        // Calibrated Zone Opacity Interpolation:
-                        // Center (d == 0): 100% bright, bold typography, glowing indicator node
-                        // Top completed zone (d < 0): 40% faded memory
-                        // Bottom upcoming zone (d > 0): 22% subtle silhouette (clearly visible in light theme)
+                        // Zone opacity interpolation:
+                        // Center (d == 0): 100% bright
+                        // Top completed zone (d < 0): 30% faded
+                        // Bottom upcoming zone (d > 0): 12% ghost
                         val itemAlpha = when {
                             d < 0f -> {
                                 val t = (1f + d).coerceIn(0f, 1f)
-                                0.40f + (0.60f * t)
+                                0.30f + (0.70f * t)
                             }
-
                             d > 0f -> {
                                 val t = (1f - d).coerceIn(0f, 1f)
-                                0.22f + (0.78f * t)
+                                0.12f + (0.88f * t)
                             }
-
                             else -> 1.0f
                         }.coerceIn(0f, 1.0f)
 
@@ -195,25 +200,14 @@ fun PdfExtractionLoadingScreen(
                                     this.rotationX = rotationX
                                     this.cameraDistance = 12f * density.density
                                     this.alpha = itemAlpha
-                                }
-                                .then(
-                                    if (isCenterActive) {
-                                        Modifier.semantics {
-                                            liveRegion = LiveRegionMode.Polite
-                                            contentDescription =
-                                                "Extracting $activeSectionTitle, ${(animatedProgress * 100).toInt()}% complete"
-                                        }
-                                    } else {
-                                        Modifier
-                                    }
-                                ),
+                                },
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Step Indicator Node on the vertical axis
+                                // Step Indicator Node on the vertical line
                                 Box(
                                     modifier = Modifier
                                         .width(28.dp)
@@ -236,7 +230,6 @@ fun PdfExtractionLoadingScreen(
                                                     .background(MaterialTheme.colorScheme.primary)
                                             )
                                         }
-
                                         isCompleted -> {
                                             // Solid Completed Indicator Node
                                             Box(
@@ -246,7 +239,6 @@ fun PdfExtractionLoadingScreen(
                                                     .background(MaterialTheme.colorScheme.primary)
                                             )
                                         }
-
                                         else -> {
                                             // Dim Inactive Indicator Node
                                             Box(
@@ -309,18 +301,26 @@ fun PdfExtractionLoadingScreen(
 
                                         Spacer(modifier = Modifier.height(10.dp))
 
-                                        // Progress Bar: Seamless continuous capsule (no split gap, no trailing stop indicator)
-                                        LinearProgressIndicator(
-                                            progress = { animatedProgress },
+                                        // Progress Bar: Unified continuous bar without Material 3 gap or stop dot
+                                        Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(6.dp)
-                                                .clip(RoundedCornerShape(3.dp)),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                            gapSize = 0.dp,
-                                            drawStopIndicator = {}
-                                        )
+                                                .height(5.dp)
+                                                .clip(RoundedCornerShape(2.5.dp))
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                                .testTag("pdf_extraction_progress_bar")
+                                        ) {
+                                            if (animatedProgress > 0f) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .fillMaxWidth(animatedProgress.coerceIn(0f, 1f))
+                                                        .clip(RoundedCornerShape(2.5.dp))
+                                                        .background(MaterialTheme.colorScheme.primary)
+                                                )
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -331,13 +331,13 @@ fun PdfExtractionLoadingScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Reassurance Privacy Badge below the section list
+            // Relevant app information displayed below the section list
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
                 )
             ) {
                 Row(
@@ -354,12 +354,11 @@ fun PdfExtractionLoadingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Universal Dynamic Subtext: dynamically reflects candidate's active section title
             Text(
-                text = "Extracting and structuring $activeSectionTitle...",
-                fontSize = 13.sp,
+                text = "Structuring contact links, experience timeline & technical skills",
+                fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )

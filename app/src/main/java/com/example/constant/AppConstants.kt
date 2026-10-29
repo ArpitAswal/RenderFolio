@@ -3,8 +3,10 @@ package com.example.constant
 import androidx.compose.ui.graphics.Color
 
 object AppConstants {
-    const val MAX_FILE_SIZE_BYTES = 10L * 1024L * 1024L
-    const val TIER_1_CHAR_THRESHOLD = 120
+
+    const val DISABLE_NATIVE_PDF_EXTRACTION = false // false = native first with ML Kit fallback
+    const val MAX_FILE_SIZE_BYTES = 10L * 1024L * 1024L // 10MB
+    const val TIER_1_CHAR_THRESHOLD = 150 // Threshold below which ML Kit OCR activates
 
     val DarkBackground = Color(0xFF121418)
     val DarkSurface = Color(0xFF1C2026)
