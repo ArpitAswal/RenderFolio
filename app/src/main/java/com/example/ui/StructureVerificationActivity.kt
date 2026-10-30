@@ -396,11 +396,11 @@ class StructureVerificationActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             preferencesRepository.saveProfile(compiledProfile)
-            Toast.makeText(
-                this@StructureVerificationActivity,
-                "Resume Structure Verified & Compiled!",
-                Toast.LENGTH_SHORT
-            ).show()
+//            Toast.makeText(
+//                this@StructureVerificationActivity,
+//                "Resume Structure Verified & Compiled!",
+//                Toast.LENGTH_SHORT
+//            ).show()
 
             val returnIntent = Intent().apply {
                 putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())

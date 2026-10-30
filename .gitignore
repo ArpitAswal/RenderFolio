@@ -30,6 +30,7 @@ GoogleService-Info.plist
 # IDE and Editor configurations
 .idea/
 .vscode/
+jbr_runtime
 
 # OS-generated files
 .DS_Store

@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Core Brand & Canvas -->
     <color name="app_background">#F4F5F7</color>
     <color name="app_surface">#FFFFFF</color>
     <color name="app_primary">#2563EB</color>
-    <color name="app_text_primary">#111827</color>
-    <color name="app_text_muted">#4B5563</color>
-    <color name="app_border">#1E000000</color>
     <color name="app_primary_container">#1A2563EB</color>
-    <color name="app_progress_track">#1A2563EB</color>
-    <color name="overlay_scrim">#99000000</color>
+    <color name="app_border">#1E000000</color>
+
+    <!-- Typography Tokens -->
+    <color name="app_text_primary">#111827</color>
+    <color name="app_text_secondary">#4B5563</color>
+    <color name="app_text_muted">#6B7280</color>
+
+    <!-- Other UI Elements -->
+    <color name="app_progress_track">#DBEAFE</color>
+    <color name="overlay_scrim">#80000000</color>
     <color name="app_danger">#EF4444</color>
-    <color name="app_danger_container">#1AEF4444</color>
-    <color name="chip_bg_color">#F1F5F9</color>
+    <color name="chip_bg_color">#F0F4F8</color>
     <color name="chip_stroke_color">#CBD5E1</color>
-    <color name="chip_text_color">#1E293B</color>
+    <color name="chip_text_color">#0F172A</color>
     <color name="chip_close_icon_tint">#64748B</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_purple_glow">#8B5CF6</color>
+
+    <!-- Section 1 Hero & Contact Chips Tokens -->
+    <color name="hero_name_text">#111827</color>
+    <color name="hero_headline_text">#2563EB</color>
+    <color name="hero_location_text">#6B7280</color>
+    <color name="hero_chip_bg">#FFFFFF</color>
+    <color name="hero_chip_stroke">#E2E8F0</color>
+    <color name="hero_chip_text">#1E293B</color>
+    <color name="hero_chip_icon_tint">#2563EB</color>
+    <color name="hero_chip_ripple">#1A2563EB</color>
 </resources>

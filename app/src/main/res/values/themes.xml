@@ -2,7 +2,42 @@
 <resources>
     <style name="Theme.MyApplication" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">@color/app_primary_container</item>
+        <item name="colorOnPrimaryContainer">#1D4ED8</item>
+        <item name="colorSecondary">#475569</item>
+        <item name="colorSecondaryContainer">@color/chip_bg_color</item>
+        <item name="colorOnSecondaryContainer">@color/chip_text_color</item>
+        <item name="colorSurface">@color/app_surface</item>
+        <item name="colorOnSurface">@color/app_text_primary</item>
+        <item name="colorSurfaceVariant">@color/chip_bg_color</item>
+        <item name="colorOnSurfaceVariant">@color/app_text_muted</item>
+        <item name="colorOutline">@color/chip_stroke_color</item>
+        <item name="colorOutlineVariant">@color/app_border</item>
         <item name="android:statusBarColor">@color/app_background</item>
-        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorTertiary">@color/app_primary</item>
+        <item name="colorTertiaryContainer">@color/chip_bg_color</item>
+        <item name="colorOnTertiaryContainer">@color/chip_text_color</item>
+        <item name="chipStyle">@style/Widget.App.SkillChip</item>
+        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
+    </style>
+
+    <style name="Widget.App.SkillChip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/chip_bg_color</item>
+        <item name="chipStrokeColor">@color/chip_stroke_color</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipCornerRadius">8dp</item>
+        <item name="android:textColor">@color/chip_text_color</item>
+        <item name="closeIconTint">@color/chip_close_icon_tint</item>
+    </style>
+
+    <style name="AppBottomSheetDialogTheme" parent="Theme.Material3.DayNight.BottomSheetDialog">
+        <item name="colorSurfaceContainerLow">@color/app_surface</item>
+        <item name="bottomSheetStyle">@style/AppModalBottomSheet</item>
+    </style>
+
+    <style name="AppModalBottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/app_surface</item>
     </style>
 </resources>

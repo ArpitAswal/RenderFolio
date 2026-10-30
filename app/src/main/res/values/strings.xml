@@ -114,6 +114,8 @@
     <string name="dialog_title_rename_section">Rename Section</string>
     <string name="hint_section_title">Section Title</string>
     <string name="action_generate">Generate</string>
+
+    <!-- Bottom Sheet Strings -->
     <string name="add_custom_section">Add Custom Section</string>
     <string name="add_section_subtitle">Select a recommended template or type your own title below.</string>
     <string name="recommended_templates">Recommended Templates</string>
@@ -126,4 +128,21 @@
     <string name="hint_custom_section_title">Custom Section Title</string>
     <string name="helper_required">(Required)</string>
     <string name="action_add_section">Add Section</string>
+
+    <!-- Section 1 Identifiers & Accessibility -->
+    <string name="hero_default_name">Professional Candidate</string>
+    <string name="hero_default_headline">Specialist</string>
+    <string name="hero_location_format">%1$s</string>
+
+    <!-- Contact Actions & Content Descriptions -->
+    <string name="cd_hero_phone">Call phone number %1$s</string>
+    <string name="cd_hero_email">Send email to %1$s</string>
+    <string name="cd_hero_profile_link">Open %1$s profile</string>
+
+    <!-- Intent Feedback Toasts -->
+    <string name="toast_error_no_phone_app">Unable to launch phone dialer</string>
+    <string name="toast_error_no_email_app">No email client installed</string>
+    <string name="toast_error_invalid_url">Invalid or unresolvable profile URL</string>
+    <string name="toast_error_cannot_open_link">Cannot open link. Please verify browser availability.</string>
+
 </resources>

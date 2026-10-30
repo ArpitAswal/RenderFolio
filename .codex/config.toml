@@ -1,0 +1,8 @@
+# OpenAI Codex Workspace Configuration
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[project]
+root_instructions = "AGENTS.md"
+skills_dir = "skills"

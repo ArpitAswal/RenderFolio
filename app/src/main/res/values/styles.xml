@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Hero Candidate Name (26sp Bold Centered) -->
+    <style name="TextAppearance.ResumeVisualiser.Hero.Name" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">26sp</item>
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:textColor">@color/hero_name_text</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <!-- Hero Headline Title (15sp Medium Accent Centered) -->
+    <style name="TextAppearance.ResumeVisualiser.Hero.Headline" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/hero_headline_text</item>
+        <item name="android:letterSpacing">0.0</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <!-- Hero Location (13sp Regular Muted Centered) -->
+    <style name="TextAppearance.ResumeVisualiser.Hero.Location" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/hero_location_text</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+    <!-- Contact Chip Label (12sp Medium) -->
+    <style name="TextAppearance.ResumeVisualiser.Chip.Text" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/hero_chip_text</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+</resources>

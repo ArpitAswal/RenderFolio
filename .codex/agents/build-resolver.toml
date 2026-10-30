@@ -1,0 +1,3 @@
+name = "build-resolver"
+description = "Diagnoses and resolves Dart, Kotlin, Swift, and TypeScript build/compile errors with minimal diffs."
+instructions_file = "personas/build-error-resolver.md"

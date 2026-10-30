@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scroll_cold_start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -125,7 +126,7 @@
                 android:textSize="16sp" />
 
             <!-- Primary Action Button: "Upload Resume" (wrap_content, centered, min 48dp height) -->
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_upload_pdf"
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
@@ -134,9 +135,11 @@
                 android:minWidth="180dp"
                 android:layout_marginTop="18dp"
                 android:background="@drawable/bg_button_primary"
-                android:drawableStart="@drawable/ic_description"
-                android:drawablePadding="10dp"
-                android:drawableTint="@android:color/white"
+                app:backgroundTint="@null"
+                app:icon="@drawable/ic_description"
+                app:iconTint="@android:color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:paddingHorizontal="24dp"

@@ -33,6 +33,11 @@
             android:label="Structure Verification"
             android:theme="@style/Theme.MyApplication"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.ResumeVisualiserActivity"
+            android:exported="false"
+            android:label="Resume Visualiser"
+            android:theme="@style/Theme.MyApplication" />
     </application>
 
 </manifest>

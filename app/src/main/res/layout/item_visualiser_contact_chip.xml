@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Minimum 48x48dp touch area wrapping a compact visual chip -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chip_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="48dp"
+    android:minHeight="48dp"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Visual Chip Body -->
+    <LinearLayout
+        android:id="@+id/chip_body"
+        android:layout_width="wrap_content"
+        android:layout_height="34dp"
+        android:background="@drawable/bg_contact_chip"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <ImageView
+            android:id="@+id/iv_chip_icon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:contentDescription="@null"
+            app:tint="@color/hero_chip_icon_tint" />
+
+        <TextView
+            android:id="@+id/tv_chip_label"
+            style="@style/TextAppearance.ResumeVisualiser.Chip.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp" />
+    </LinearLayout>
+</LinearLayout>

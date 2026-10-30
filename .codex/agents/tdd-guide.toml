@@ -1,0 +1,3 @@
+name = "tdd-guide"
+description = "Guides strict RED -> GREEN -> REFACTOR test-driven development."
+instructions_file = "personas/tdd-guide.md"

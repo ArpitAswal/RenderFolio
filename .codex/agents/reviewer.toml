@@ -1,0 +1,3 @@
+name = "reviewer"
+description = "Reviews code diffs for correctness, concurrency, lifecycle leaks, security, and test coverage."
+instructions_file = "personas/code-reviewer.md"

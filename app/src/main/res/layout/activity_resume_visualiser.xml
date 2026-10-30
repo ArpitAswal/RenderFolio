@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 100% Pure XML Root CoordinatorLayout -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fitsSystemWindows="true">
+
+    <!-- NestedScrollView driving the whole-section motion physics -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="always">
+
+        <!-- Outer Column Centered to Screen -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="36dp"
+            android:paddingBottom="48dp">
+
+            <!-- SECTION 1: HERO CONTAINER (Target for Whole-Section Animation) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/hero_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="680dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <!-- 1. Candidate Full Name (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_name"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- 2. Professional Headline / Title (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_headline"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Headline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_name" />
+
+                <!-- 3. Location with Pin (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_location"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:drawablePadding="4dp"
+                    app:drawableStartCompat="@drawable/ic_location_pin_16"
+                    app:drawableTint="@color/hero_location_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_headline" />
+
+                <!-- 4. Multi-Line Wrapping Flow for Contact Chips -->
+                <androidx.constraintlayout.helper.widget.Flow
+                    android:id="@+id/flow_contact_chips"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    app:flow_horizontalAlign="center"
+                    app:flow_horizontalGap="8dp"
+                    app:flow_horizontalStyle="packed"
+                    app:flow_verticalGap="8dp"
+                    app:flow_wrapMode="chain"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_location" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Container for Subsequent Sections (Sections 2..7) -->
+            <FrameLayout
+                android:id="@+id/container_content_sections"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

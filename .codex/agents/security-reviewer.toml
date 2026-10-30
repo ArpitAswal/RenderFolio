@@ -1,0 +1,3 @@
+name = "security-reviewer"
+description = "Audits application code, platform manifests, storage, and networking for security vulnerabilities."
+instructions_file = "personas/security-reviewer.md"

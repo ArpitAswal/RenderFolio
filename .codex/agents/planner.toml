@@ -1,0 +1,3 @@
+name = "planner"
+description = "Creates implementation plans, dependency analyses, and interface contracts before coding."
+instructions_file = "personas/planner.md"

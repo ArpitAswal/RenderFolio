@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scroll_cold_start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -88,7 +89,7 @@
                     android:lineSpacingExtra="4dp"
                     android:text="@string/cold_start_subtitle"
                     android:textColor="@color/app_text_muted"
-                    android:textSize="16sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <!-- Anchored Privacy Badge in Left Column: 13sp -->
@@ -112,8 +113,20 @@
                     android:fontFamily="sans-serif"
                     android:text="@string/cold_start_privacy_note"
                     android:textColor="@color/app_text_muted"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
+
+            <!-- Format Note: "Supports native text PDFs & scanned documents" (13sp) -->
+            <TextView
+                android:id="@+id/tv_format_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:text="@string/cold_start_format_note"
+                android:textColor="@color/app_text_muted"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
@@ -169,7 +182,7 @@
                     android:textSize="18sp" />
 
                 <!-- Primary Action Button: "Upload Resume" (wrap_content, centered, minWidth 200dp, min 48dp height) -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_upload_pdf"
                     android:layout_width="wrap_content"
                     android:layout_height="52dp"
@@ -178,9 +191,11 @@
                     android:minWidth="200dp"
                     android:layout_marginTop="22dp"
                     android:background="@drawable/bg_button_primary"
-                    android:drawableStart="@drawable/ic_description"
-                    android:drawablePadding="10dp"
-                    android:drawableTint="@android:color/white"
+                    app:backgroundTint="@null"
+                    app:icon="@drawable/ic_description"
+                    app:iconTint="@android:color/white"
+                    app:iconGravity="textStart"
+                    app:iconPadding="10dp"
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:paddingHorizontal="24dp"
@@ -221,21 +236,6 @@
                 android:textAllCaps="false"
                 android:textColor="@color/app_primary"
                 android:textSize="14sp" />
-
-            <!-- Format Note: "Supports native text PDFs & scanned documents" (13sp) -->
-            <TextView
-                android:id="@+id/tv_format_note"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="sans-serif"
-                android:gravity="center"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:text="@string/cold_start_format_note"
-                android:textColor="@color/app_text_muted"
-                android:textSize="13sp" />
-
         </LinearLayout>
 
     </LinearLayout>

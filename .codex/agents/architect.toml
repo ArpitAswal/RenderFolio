@@ -1,0 +1,3 @@
+name = "architect"
+description = "Reviews and designs modular, platform-appropriate architecture and separation of concerns."
+instructions_file = "personas/architect.md"

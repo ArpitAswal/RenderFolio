@@ -21,6 +21,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,6 +67,7 @@ fun PdfExtractionLoadingScreen(
     }
 
     val currentActiveIndex = activeIndex.coerceIn(0, effectiveSections.lastIndex)
+    val activeSectionTitle = effectiveSections.getOrElse(currentActiveIndex) { step }
 
     val animatedIndexAnimatable = remember { Animatable(0f) }
     LaunchedEffect(currentActiveIndex) {
@@ -200,7 +205,18 @@ fun PdfExtractionLoadingScreen(
                                     this.rotationX = rotationX
                                     this.cameraDistance = 12f * density.density
                                     this.alpha = itemAlpha
-                                },
+                                }
+                                .then(
+                                    if (isCenterActive) {
+                                        Modifier.semantics {
+                                            liveRegion = LiveRegionMode.Polite
+                                            contentDescription =
+                                                "Extracting $activeSectionTitle, ${(animatedProgress * 100).toInt()}% complete"
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Row(
@@ -354,11 +370,12 @@ fun PdfExtractionLoadingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Universal Dynamic Subtext: dynamically reflects candidate's active section title
             Text(
-                text = "Structuring contact links, experience timeline & technical skills",
-                fontSize = 12.sp,
+                text = "Extracting and structuring $activeSectionTitle...",
+                fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )

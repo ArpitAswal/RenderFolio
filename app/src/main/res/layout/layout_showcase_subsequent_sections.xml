@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subsequent Sections (2..7) embedded into Section 1's container_content_sections -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- 2. ABOUT / PROFESSIONAL SUMMARY (CENTERED BLOCK) -->
+    <LinearLayout
+        android:id="@+id/sectionAboutSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical">
+
+        <!-- Monospace Tracking Header -->
+        <TextView
+            android:id="@+id/tvAboutHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.12"
+            android:text="ABOUT"
+            android:textAllCaps="true"
+            android:textColor="@color/accent_blue"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- Body Block with 2dp solid left accent border & 1.6x line-spacing -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/viewAboutAccentBorder"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="@color/accent_blue" />
+
+            <TextView
+                android:id="@+id/tvAboutSummaryBody"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:lineSpacingMultiplier="1.6"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp"
+                android:textColor="@color/app_text_primary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 3. WORK EXPERIENCE (TEXT LEFT | THEMATIC GRAPHIC RIGHT) -->
+    <FrameLayout
+        android:id="@+id/sectionWorkExperience"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp">
+
+        <!-- Right-aligned background vector graphic overlay (15% opacity) -->
+        <ImageView
+            android:id="@+id/ivGraphicWorkExperience"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="top|end"
+            android:alpha="0.15"
+            android:contentDescription="Work Experience Thematic Graphic"
+            android:src="@drawable/ic_showcase_briefcase" />
+
+        <!-- Left Text & Connected Timeline -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvWorkExperienceHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="WORK EXPERIENCE"
+                android:textAllCaps="true"
+                android:textColor="@color/accent_blue"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvWorkExperienceTimeline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 4. FEATURED PROJECTS (THEMATIC GRAPHIC LEFT | TEXT RIGHT) -->
+    <FrameLayout
+        android:id="@+id/sectionFeaturedProjects"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp">
+
+        <!-- Left-aligned background vector graphic overlay (15% opacity) -->
+        <ImageView
+            android:id="@+id/ivGraphicFeaturedProjects"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="top|start"
+            android:alpha="0.15"
+            android:contentDescription="Featured Projects Thematic Graphic"
+            android:src="@drawable/ic_showcase_code_terminal" />
+
+        <!-- Right Text Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvFeaturedProjectsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="FEATURED PROJECTS"
+                android:textAllCaps="true"
+                android:textColor="@color/accent_blue"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/containerProjectItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 5. TECHNICAL COMPETENCIES (TEXT LEFT | THEMATIC GRAPHIC RIGHT) -->
+    <FrameLayout
+        android:id="@+id/sectionTechnicalCompetencies"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp">
+
+        <!-- Right-aligned background vector graphic overlay (15% opacity) -->
+        <ImageView
+            android:id="@+id/ivGraphicTechnicalCompetencies"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="top|end"
+            android:alpha="0.15"
+            android:contentDescription="Technical Matrix Thematic Graphic"
+            android:src="@drawable/ic_showcase_tech_matrix" />
+
+        <!-- Left Text Content & Categorized Groups -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTechnicalCompetenciesHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="TECHNICAL COMPETENCIES"
+                android:textAllCaps="true"
+                android:textColor="@color/accent_blue"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Languages -->
+            <LinearLayout
+                android:id="@+id/groupLanguages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Languages"
+                    android:textColor="@color/app_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupLanguages"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:singleLine="false" />
+            </LinearLayout>
+
+            <!-- Frameworks & SDKs -->
+            <LinearLayout
+                android:id="@+id/groupFrameworks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Frameworks &amp; SDKs"
+                    android:textColor="@color/app_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupFrameworks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:singleLine="false" />
+            </LinearLayout>
+
+            <!-- Cloud & DevOps -->
+            <LinearLayout
+                android:id="@+id/groupCloudDevOps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cloud &amp; DevOps"
+                    android:textColor="@color/app_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupCloudDevOps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:singleLine="false" />
+            </LinearLayout>
+
+            <!-- Tools & Methodologies -->
+            <LinearLayout
+                android:id="@+id/groupTools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tools &amp; Methodologies"
+                    android:textColor="@color/app_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupTools"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:singleLine="false" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 6. EDUCATIONAL BACKGROUND (THEMATIC GRAPHIC LEFT | TEXT RIGHT) -->
+    <FrameLayout
+        android:id="@+id/sectionEducation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp">
+
+        <!-- Left-aligned background vector graphic overlay (15% opacity) -->
+        <ImageView
+            android:id="@+id/ivGraphicEducation"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="top|start"
+            android:alpha="0.15"
+            android:contentDescription="Education Thematic Graphic"
+            android:src="@drawable/ic_showcase_education_crest" />
+
+        <!-- Right Text Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEducationHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="EDUCATION"
+                android:textAllCaps="true"
+                android:textColor="@color/accent_blue"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/containerEducationItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 7. DYNAMIC CUSTOM SECTIONS (IF PRESENT) -->
+    <LinearLayout
+        android:id="@+id/containerDynamicSections"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical" />
+
+</LinearLayout>
