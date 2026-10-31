@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Whole-Section Target Container for Alternating (Left-to-Right) Motion -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/section_skills_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:contentDescription="@string/cd_section_technical_skills"
+    android:layout_marginTop="28dp">
+
+    <!-- Section Header Title -->
+    <TextView
+        android:id="@+id/tv_skills_section_title"
+        style="@style/TextAppearance.ResumeVisualiser.Section.Header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="12dp"
+        android:text="@string/section_title_technical_skills" />
+
+    <!-- Container for Dynamically Populated Semantic Domain Rows (No chips) -->
+    <LinearLayout
+        android:id="@+id/container_skills_domains"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+</LinearLayout>

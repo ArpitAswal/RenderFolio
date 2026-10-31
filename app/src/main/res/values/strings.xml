@@ -110,16 +110,39 @@
     <!-- Technical Skills Section -->
     <string name="section_title_technical_skills">Technical Skills</string>
     <string name="action_add_skill_chip">+ Add Skill</string>
+    <string name="action_add_domain">+ Add</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="cd_drag_reorder_section">Drag to reorder section</string>
+    <string name="cd_edit_domain_skills">Edit domain skills</string>
+    <string name="cd_delete_domain">Delete domain</string>
+    <string name="skills_empty_state">No skills added yet. Tap \'+ Add\' above.</string>
+    <string name="dialog_title_add_skills_domain">Add Skill Category</string>
+    <string name="dialog_title_edit_skills_domain">Edit %1$s</string>
+    <string name="dialog_title_edit_flat_skills">Edit Technical Skills</string>
+    <string name="hint_skills_domain_name">Category Name (e.g. Languages, Cloud, Frameworks)</string>
+    <string name="hint_skills_comma_separated">Comma-separated skills (e.g. Kotlin, Compose, Room)</string>
+    <string name="helper_skills_domain_note">Separate each skill with a comma or new line</string>
+    <string name="error_domain_name_required">Category name cannot be empty</string>
+    <string name="skills_domain_languages">Languages</string>
+    <string name="skills_domain_frameworks">Frameworks &amp; SDKs</string>
+    <string name="skills_domain_cloud">Cloud &amp; DevOps</string>
+    <string name="skills_domain_tools">Tools &amp; Methodologies</string>
+    <string name="skills_domain_general">General Technical Skills</string>
     <string name="dialog_title_add_skill">Add Technical Skill</string>
     <string name="hint_add_skill">e.g. Flutter, Kotlin, Docker</string>
 
     <!-- Education Section -->
-    <string name="section_title_education">Educational Background</string>
     <string name="action_add_education">+ Add Education Entry</string>
     <string name="education_header_format">Education #%1$d</string>
     <string name="action_remove_education">Remove Education</string>
     <string name="hint_institution_name">Institution / University Name</string>
     <string name="hint_degree">Degree / Course of Study</string>
+    <string name="section_title_education">Education &amp; Academics</string>
+    <string name="cd_section_education">Candidate academic degrees and certifications</string>
+    <string name="cd_custom_section_format">Custom section for %1$s</string>
+    <string name="custom_bullet_format"><![CDATA[•  %1$s]]></string>
+
 
     <!-- Custom / Dynamic Sections -->
     <string name="add_new_item_format">+ Add New %1$s</string>
@@ -171,5 +194,11 @@
     <string name="toast_error_no_email_app">No email client installed</string>
     <string name="toast_error_invalid_url">Invalid or unresolvable profile URL</string>
     <string name="toast_error_cannot_open_link">Cannot open link. Please verify browser availability.</string>
+
+    <!-- Section 5 Strings -->
+    <string name="cd_section_technical_skills">Candidate technical skills and competencies manifest</string>
+    <string name="skills_dot_separator"><![CDATA[  ·  ]]></string>
+    <string name="skills_bullet_prefix"><![CDATA[•  ]]></string>
+
 
 </resources>

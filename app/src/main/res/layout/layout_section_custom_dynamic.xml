@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Container Target for the Credential Scale Reveal Motion -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/section_custom_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="28dp">
+
+    <!-- Custom Section Title (e.g. CERTIFICATIONS / OPEN SOURCE CONTRIBUTIONS) -->
+    <TextView
+        android:id="@+id/tv_custom_section_title"
+        style="@style/TextAppearance.ResumeVisualiser.Section.Header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Container for Items inside this Custom Section -->
+    <LinearLayout
+        android:id="@+id/container_custom_items"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+</LinearLayout>

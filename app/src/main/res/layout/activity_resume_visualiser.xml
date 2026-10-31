@@ -126,12 +126,39 @@
                     layout="@layout/layout_section_projects" />
             </FrameLayout>
 
-            <!-- Container for Subsequent Sections (Sections 5..7) -->
+            <!-- SECTION 5: TECHNICAL SKILLS -->
             <FrameLayout
-                android:id="@+id/container_content_sections"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <include
+                    android:id="@+id/included_section_skills"
+                    layout="@layout/layout_section_technical_skills" />
+            </FrameLayout>
+
+
+            <!-- SECTION 6: EDUCATION -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <include
+                    android:id="@+id/included_section_education"
+                    layout="@layout/layout_section_education" />
+            </FrameLayout>
+
+            <!-- SECTION 7: ALL CUSTOM DYNAMIC SECTIONS -->
+            <LinearLayout
+                android:id="@+id/container_custom_sections"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:maxWidth="680dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp" />

@@ -1027,8 +1027,9 @@ class StructureSectionsAdapter(
     inner class TechnicalSkillsViewHolder(val binding: ItemTechnicalSkillsBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
+        @SuppressLint("ClickableViewAccessibility")
         fun bind() {
+            // Preserve drag-to-reorder functionality on ivDragHandle
             binding.ivDragHandle.setOnTouchListener { _, event ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     onStartDrag(this)
@@ -1038,72 +1039,309 @@ class StructureSectionsAdapter(
                 }
             }
 
-            renderSkillsChips()
+            // Bind exact section title as detected from candidate's resume (e.g. "TECHNICAL SKILLS")
+            binding.tvSectionTitle.text = currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" }
+            binding.tvSectionTitle.setOnClickListener {
+                showRenameSectionDialog()
+            }
 
-            // Requirement 13: Add skill button opens dialog box with input field
+            renderSemanticSkillsDomains()
+
+            // Header "+ Add" button to add a new domain or skill category
             binding.btnAddSkill.setOnClickListener {
-                showAddSkillDialog()
+                showAddOrEditDomainDialog(null, emptyList())
             }
         }
 
-        private fun showAddSkillDialog() {
+        private fun showRenameSectionDialog() {
             val context = binding.root.context
             val input = EditText(context).apply {
-                hint = context.getString(R.string.hint_add_skill)
+                setText(currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" })
+                setSelection(text.length)
                 setPadding(40, 30, 40, 30)
             }
             AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_add_skill))
+                .setTitle(context.getString(R.string.dialog_title_rename_section))
                 .setView(input)
-                .setPositiveButton(context.getString(R.string.action_add)) { dialog, _ ->
-                    val newSkill = input.text.toString().trim()
-                    if (newSkill.isNotBlank()) {
-                        currentSkills = currentSkills.copy(
-                            frameworks = (currentSkills.frameworks + newSkill).distinct()
-                        )
-                        renderSkillsChips()
+                .setPositiveButton(context.getString(R.string.action_save)) { d, _ ->
+                    val newTitle = input.text.toString().trim()
+                    if (newTitle.isNotBlank()) {
+                        currentSkills = currentSkills.copy(sectionTitle = newTitle)
+                        binding.tvSectionTitle.text = newTitle
                     }
-                    dialog.dismiss()
+                    d.dismiss()
                 }
-                .setNegativeButton(context.getString(R.string.action_cancel)) { dialog, _ -> dialog.dismiss() }
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
                 .show()
         }
 
-        private fun renderSkillsChips() {
-            binding.chipGroupSkills.removeAllViews()
-            val allSkills = buildList {
-                addAll(currentSkills.languages)
-                addAll(currentSkills.frameworks)
-                addAll(currentSkills.cloudDevOps)
-                addAll(currentSkills.toolsMethodologies)
-            }.distinct().sortedWith(String.CASE_INSENSITIVE_ORDER) // Alphabetically organized
+        /**
+         * Normalizes and renders the semantic domain matrix:
+         *
+         * CASE 1: CATEGORIZED SKILLS (Domain Label + Inline Skills Stream)
+         * TECHNICAL SKILLS
+         * Mobile Development    Flutter  ·  Android SDK  ·  Swift  ·  Kotlin
+         * Frameworks & Core     Jetpack Compose  ·  Bloc  ·  Provider  ·  Coroutines
+         * Cloud & Database      Firebase  ·  Cloud Firestore  ·  SQLite  ·  REST APIs
+         * Tools & Practices     Git  ·  CI/CD (GitHub Actions)  ·  MVVM
+         *
+         * CASE 2: UNCATEGORIZED / FLAT LIST (Bullets, Zero Random Domain Labels)
+         * TECHNICAL SKILLS
+         * • Flutter      • Android SDK   • Kotlin        • Swift
+         * • Jetpack Compose              • Firebase      • Git
+         */
+        private fun renderSemanticSkillsDomains() {
+            val container = binding.containerSkillsDomains
+            container.removeAllViews()
+            val context = binding.root.context
 
-            allSkills.forEach { skill ->
-                val chip = Chip(binding.root.context).apply {
-                    text = skill
-                    isCloseIconVisible = true
-                    setChipBackgroundColorResource(R.color.chip_bg_color)
-                    setChipStrokeColorResource(R.color.chip_stroke_color)
-                    chipStrokeWidth = resources.displayMetrics.density * 1f
-                    setTextColor(ContextCompat.getColor(context, R.color.chip_text_color))
-                    setCloseIconTintResource(R.color.chip_close_icon_tint)
-                    shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                        .setAllCornerSizes(resources.displayMetrics.density * 8f)
-                        .build()
-                    setOnCloseIconClickListener {
-                        currentSkills = currentSkills.copy(
-                            languages = currentSkills.languages.filter { it != skill },
-                            frameworks = currentSkills.frameworks.filter { it != skill },
-                            cloudDevOps = currentSkills.cloudDevOps.filter { it != skill },
-                            toolsMethodologies = currentSkills.toolsMethodologies.filter { it != skill }
-                        )
-                        renderSkillsChips()
-                    }
+            // Ensure section header matches resume
+            binding.tvSectionTitle.text = currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" }
+
+            // Extract categorized domain map from parsed resume data
+            val categorizedMap = linkedMapOf<String, List<String>>()
+            if (currentSkills.categorizedDomains.isNotEmpty()) {
+                currentSkills.categorizedDomains.forEach { (cat, skills) ->
+                    if (skills.isNotEmpty()) categorizedMap[cat] = skills
                 }
-                binding.chipGroupSkills.addView(chip)
+            } else {
+                // If categorizedDomains is empty, check legacy standard lists if populated with distinct content
+                val standardEntries = listOf(
+                    context.getString(R.string.skills_domain_languages) to currentSkills.languages,
+                    context.getString(R.string.skills_domain_frameworks) to currentSkills.frameworks,
+                    context.getString(R.string.skills_domain_cloud) to currentSkills.cloudDevOps,
+                    context.getString(R.string.skills_domain_tools) to currentSkills.toolsMethodologies
+                ).filter { it.second.isNotEmpty() }
+
+                if (standardEntries.size > 1) {
+                    standardEntries.forEach { (k, v) -> categorizedMap[k] = v }
+                }
+                currentSkills.customCategories.forEach { (k, v) ->
+                    if (v.isNotEmpty()) categorizedMap[k] = v
+                }
             }
 
-            // Single top-anchored + Add Skill button in card header handles adding skills
+            // Case 1 vs Case 2 check
+            val isCase1Categorized = categorizedMap.isNotEmpty()
+
+            if (isCase1Categorized) {
+                // =========================================================================
+                // CASE 1: CATEGORIZED SKILLS (Domain Label + Inline Skills Stream)
+                // Use exact domain names from the resume (e.g. Mobile Development, Networking)
+                // =========================================================================
+                val domainEntries = categorizedMap.entries.toList()
+                val inflater = LayoutInflater.from(context)
+
+                domainEntries.forEachIndexed { index, (domainLabel, skillsList) ->
+                    val rowBinding = ItemSkillsDomainEntryBinding.inflate(inflater, container, false)
+                    rowBinding.tvDomainTitle.visibility = View.VISIBLE
+                    rowBinding.tvDomainTitle.text = domainLabel
+
+                    // Clean midpoint-dot ('·') text stream
+                    rowBinding.tvDomainSkillsContent.text = skillsList.joinToString("  ·  ")
+
+                    rowBinding.btnEditDomain.setOnClickListener {
+                        showAddOrEditDomainDialog(domainLabel, skillsList)
+                    }
+
+                    rowBinding.btnDeleteDomain.setOnClickListener {
+                        deleteDomain(domainLabel)
+                    }
+
+                    // Bottom divider between domain rows (hidden on last item)
+                    rowBinding.dividerDomain.visibility = if (index == domainEntries.lastIndex) View.GONE else View.VISIBLE
+                    container.addView(rowBinding.itemSkillsDomainRoot)
+                }
+            } else {
+                // =========================================================================
+                // CASE 2: UNCATEGORIZED / FLAT LIST (Bullets, ZERO Random Domain Labels)
+                // • Flutter      • Android SDK   • Kotlin        • Swift
+                // • Jetpack Compose              • Firebase      • Git
+                // =========================================================================
+                val flatSkillsList = when {
+                    currentSkills.rawFlatSkills.isNotEmpty() -> currentSkills.rawFlatSkills
+                    currentSkills.frameworks.isNotEmpty() -> currentSkills.frameworks
+                    currentSkills.languages.isNotEmpty() -> currentSkills.languages
+                    else -> buildList {
+                        addAll(currentSkills.languages)
+                        addAll(currentSkills.frameworks)
+                        addAll(currentSkills.cloudDevOps)
+                        addAll(currentSkills.toolsMethodologies)
+                    }
+                }.distinct().filter { it.isNotBlank() }
+
+                if (flatSkillsList.isEmpty()) {
+                    val emptyTv = TextView(context).apply {
+                        text = context.getString(R.string.skills_empty_state)
+                        setTextColor(ContextCompat.getColor(context, R.color.app_text_muted))
+                        textSize = 13f
+                        val pad = (8 * resources.displayMetrics.density).toInt()
+                        setPadding(0, pad, 0, pad)
+                    }
+                    container.addView(emptyTv)
+                    return
+                }
+
+                val inflater = LayoutInflater.from(context)
+                val rowBinding = ItemSkillsDomainEntryBinding.inflate(inflater, container, false)
+
+                // CRITICAL: Absolutely NO random domain label in Case 2!
+                rowBinding.tvDomainTitle.visibility = View.GONE
+
+                // Clean bulleted stream: "•  Flutter   •  Android SDK   •  Kotlin   •  Swift"
+                rowBinding.tvDomainSkillsContent.text = flatSkillsList.joinToString("   •   ", prefix = "•   ")
+
+                rowBinding.btnEditDomain.setOnClickListener {
+                    showAddOrEditDomainDialog(null, flatSkillsList)
+                }
+
+                rowBinding.btnDeleteDomain.setOnClickListener {
+                    currentSkills = currentSkills.copy(
+                        rawFlatSkills = emptyList(),
+                        categorizedDomains = emptyMap(),
+                        languages = emptyList(),
+                        frameworks = emptyList(),
+                        cloudDevOps = emptyList(),
+                        toolsMethodologies = emptyList(),
+                        customCategories = emptyMap()
+                    )
+                    renderSemanticSkillsDomains()
+                }
+
+                rowBinding.dividerDomain.visibility = View.GONE
+                container.addView(rowBinding.itemSkillsDomainRoot)
+            }
+        }
+
+        /**
+         * Opens rapid editing / adding dialog for comma-separated skills.
+         * Allows quick pasting and editing of skills without closing individual chips.
+         */
+        private fun showAddOrEditDomainDialog(existingDomain: String?, existingSkills: List<String>) {
+            val context = binding.root.context
+            val dialogBinding = DialogEditSkillsDomainBinding.inflate(LayoutInflater.from(context))
+
+            val isEditing = existingSkills.isNotEmpty()
+            if (existingDomain != null) {
+                dialogBinding.etDialogDomainName.setText(existingDomain)
+            }
+            if (existingSkills.isNotEmpty()) {
+                dialogBinding.etDialogSkillsComma.setText(existingSkills.joinToString(", "))
+            }
+
+            val dialogTitle = if (existingDomain != null) {
+                context.getString(R.string.dialog_title_edit_skills_domain, existingDomain)
+            } else if (existingSkills.isNotEmpty()) {
+                context.getString(R.string.dialog_title_edit_flat_skills)
+            } else {
+                context.getString(R.string.dialog_title_add_skills_domain)
+            }
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(dialogTitle)
+                .setView(dialogBinding.dialogEditSkillsRoot)
+                .setPositiveButton(context.getString(R.string.action_save), null)
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
+                .create()
+
+            dialog.show()
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val domainName = dialogBinding.etDialogDomainName.text?.toString()?.trim().orEmpty()
+                val rawSkills = dialogBinding.etDialogSkillsComma.text?.toString().orEmpty()
+
+                // Parse comma, bullet, or newline separated skills
+                val parsedSkills = rawSkills.split(Regex("[,\\r\\n|•·]"))
+                    .map { it.trim().removePrefix("•").removePrefix("-").trim() }
+                    .filter { it.isNotBlank() }
+                    .distinct()
+
+                // If existingDomain was null and user didn't enter a domain name:
+                // Treat as Case 2 (flat skills list)
+                if (domainName.isBlank() && existingDomain == null) {
+                    currentSkills = currentSkills.copy(
+                        rawFlatSkills = parsedSkills,
+                        categorizedDomains = emptyMap()
+                    )
+                    renderSemanticSkillsDomains()
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+
+                val finalDomainName = domainName.ifBlank { existingDomain ?: "General" }
+                updateSkills(existingDomain, finalDomainName, parsedSkills)
+                renderSemanticSkillsDomains()
+                dialog.dismiss()
+            }
+        }
+
+        /**
+         * Updates the underlying SkillCategories data structure.
+         * Preserves the exact category domain names and keeps backward-compatible fields in sync.
+         */
+        private fun updateSkills(oldDomain: String?, newDomain: String, skills: List<String>) {
+            val updatedMap = LinkedHashMap(currentSkills.categorizedDomains)
+            if (oldDomain != null && oldDomain != newDomain) {
+                updatedMap.remove(oldDomain)
+            }
+            updatedMap[newDomain] = skills
+
+            // Also synchronize standard backward-compatible lists
+            val languages = mutableListOf<String>()
+            val frameworks = mutableListOf<String>()
+            val cloudDevOps = mutableListOf<String>()
+            val toolsMethodologies = mutableListOf<String>()
+
+            updatedMap.forEach { (cat, list) ->
+                val lower = cat.lowercase()
+                when {
+                    lower.contains("language") || lower.contains("programming") -> languages.addAll(list)
+                    lower.contains("framework") || lower.contains("mobile") || lower.contains("architecture") || lower.contains("state") || lower.contains("core") -> frameworks.addAll(list)
+                    lower.contains("cloud") || lower.contains("devops") || lower.contains("database") || lower.contains("storage") -> cloudDevOps.addAll(list)
+                    else -> toolsMethodologies.addAll(list)
+                }
+            }
+
+            currentSkills = currentSkills.copy(
+                categorizedDomains = updatedMap,
+                rawFlatSkills = emptyList(), // Converted to categorized
+                languages = languages.distinct(),
+                frameworks = frameworks.distinct(),
+                cloudDevOps = cloudDevOps.distinct(),
+                toolsMethodologies = toolsMethodologies.distinct()
+            )
+        }
+
+        /**
+         * Deletes a category and its associated skills.
+         */
+        private fun deleteDomain(domainName: String) {
+            val updatedMap = LinkedHashMap(currentSkills.categorizedDomains)
+            updatedMap.remove(domainName)
+
+            val languages = mutableListOf<String>()
+            val frameworks = mutableListOf<String>()
+            val cloudDevOps = mutableListOf<String>()
+            val toolsMethodologies = mutableListOf<String>()
+
+            updatedMap.forEach { (cat, list) ->
+                val lower = cat.lowercase()
+                when {
+                    lower.contains("language") || lower.contains("programming") -> languages.addAll(list)
+                    lower.contains("framework") || lower.contains("mobile") || lower.contains("architecture") || lower.contains("state") || lower.contains("core") -> frameworks.addAll(list)
+                    lower.contains("cloud") || lower.contains("devops") || lower.contains("database") || lower.contains("storage") -> cloudDevOps.addAll(list)
+                    else -> toolsMethodologies.addAll(list)
+                }
+            }
+
+            currentSkills = currentSkills.copy(
+                categorizedDomains = updatedMap,
+                languages = languages.distinct(),
+                frameworks = frameworks.distinct(),
+                cloudDevOps = cloudDevOps.distinct(),
+                toolsMethodologies = toolsMethodologies.distinct()
+            )
+            renderSemanticSkillsDomains()
         }
     }
 
@@ -1301,17 +1539,17 @@ class StructureSectionsAdapter(
 
                 val linkHint = when {
                     section.sectionTitle.contains("Certif", ignoreCase = true) ||
-                    section.sectionTitle.contains("License", ignoreCase = true) ->
+                            section.sectionTitle.contains("License", ignoreCase = true) ->
                         context.getString(R.string.hint_link_certification)
 
                     section.sectionTitle.contains("Publication", ignoreCase = true) ||
-                    section.sectionTitle.contains("Paper", ignoreCase = true) ||
-                    section.sectionTitle.contains("Article", ignoreCase = true) ->
+                            section.sectionTitle.contains("Paper", ignoreCase = true) ||
+                            section.sectionTitle.contains("Article", ignoreCase = true) ->
                         context.getString(R.string.hint_link_publication)
 
                     section.sectionTitle.contains("Open Source", ignoreCase = true) ||
-                    section.sectionTitle.contains("Repo", ignoreCase = true) ||
-                    section.sectionTitle.contains("Source", ignoreCase = true) ->
+                            section.sectionTitle.contains("Repo", ignoreCase = true) ||
+                            section.sectionTitle.contains("Source", ignoreCase = true) ->
                         context.getString(R.string.hint_link_open_source)
 
                     else ->

@@ -110,11 +110,15 @@
                         android:id="@+id/included_section_summary"
                         layout="@layout/layout_section_summary" />
 
-                    <!-- Subsequent Left Column Sections (Skills, Education...) -->
-                    <FrameLayout
-                        android:id="@+id/container_left_subsequent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                    <!-- Section 5: Technical Skills sits under Summary on Left Pane -->
+                    <include
+                        android:id="@+id/included_section_skills"
+                        layout="@layout/layout_section_technical_skills" />
+
+                    <!-- Section 6: Education sits under Skills on Left Pane -->
+                    <include
+                        android:id="@+id/included_section_education"
+                        layout="@layout/layout_section_education" />
                 </LinearLayout>
 
                 <!-- RIGHT COLUMN (Career Feed: Work Experience, Projects, Custom Sections) -->
@@ -136,11 +140,12 @@
                         android:id="@+id/included_section_projects"
                         layout="@layout/layout_section_projects" />
 
-                    <!-- Right Column Sections (Education, Skills, etc.) -->
-                    <FrameLayout
-                        android:id="@+id/container_content_sections"
+                    <!-- Section 7: All Custom Dynamic Sections -->
+                    <LinearLayout
+                        android:id="@+id/container_custom_sections"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
                 </LinearLayout>
 
             </LinearLayout>

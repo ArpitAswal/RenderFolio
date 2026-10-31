@@ -63,4 +63,27 @@
     <color name="project_tag_text">#1D4ED8</color>
     <color name="project_divider">#E5E7EB</color>
 
+    <!-- Section 5 Technical Skills Tokens (Light Theme) -->
+    <color name="skills_section_title">#2563EB</color>
+    <color name="skills_domain_label">#2563EB</color>
+    <color name="skills_stream_text">#1F2937</color>
+    <color name="skills_stream_dot">#9CA3AF</color>
+    <color name="skills_row_divider">#E5E7EB</color>
+
+    <!-- Section 6 Education Tokens (Light Theme) -->
+    <color name="edu_section_title">#2563EB</color>
+    <color name="edu_degree_title">#111827</color>
+    <color name="edu_institution_text">#2563EB</color>
+    <color name="edu_period_text">#6B7280</color>
+    <color name="edu_divider">#E5E7EB</color>
+
+    <!-- Section 7 Custom Sections Tokens (Light Theme) -->
+    <color name="custom_section_title">#2563EB</color>
+    <color name="custom_item_title">#111827</color>
+    <color name="custom_item_subtitle">#2563EB</color>
+    <color name="custom_item_period">#6B7280</color>
+    <color name="custom_item_desc">#4B5563</color>
+    <color name="custom_item_bullet">#374151</color>
+    <color name="custom_item_divider">#E5E7EB</color>
+
 </resources>

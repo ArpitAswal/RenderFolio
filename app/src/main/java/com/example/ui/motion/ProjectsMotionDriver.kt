@@ -16,10 +16,9 @@ class ProjectsMotionDriver(
     private val sectionContainer: View
 ) {
     companion object {
-        // --- DURATION AND TIMING CONSTANTS (SYNCHRONIZED WITH SECTION 3) ---
         const val ENTRANCE_START_DELAY_MS: Long = 350L     // Post-launch delay ensuring activity window transition finishes
-        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 1100L // Duration synchronized with Sections 1..3 (1100ms)
-        const val EXIT_TRANSLATION_DURATION_MS: Long = 400L // Smooth slide-out and fade-out duration
+        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 550L // Harmonized responsive entrance (550ms)
+        const val EXIT_TRANSLATION_DURATION_MS: Long = 350L // Snappy slide-out and fade-out duration (350ms)
 
         // Viewport threshold ratio (20% margin on both top and bottom)
         const val VIEWPORT_THRESHOLD_RATIO: Float = 0.20f
@@ -80,7 +79,7 @@ class ProjectsMotionDriver(
             .alpha(1f)
             .setStartDelay(ENTRANCE_START_DELAY_MS)
             .setDuration(ENTRANCE_TRANSLATION_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator(1.8f))
+            .setInterpolator(DecelerateInterpolator(2.0f))
             .withEndAction {
                 isInitialAnimationRunning = false
                 sectionContainer.translationX = 0f
@@ -158,7 +157,7 @@ class ProjectsMotionDriver(
             .alpha(1f)
             .setStartDelay(0L)
             .setDuration(ENTRANCE_TRANSLATION_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator(1.8f))
+            .setInterpolator(DecelerateInterpolator(2.0f))
             .start()
     }
 

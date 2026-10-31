@@ -113,4 +113,64 @@
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
     </style>
+
+    <!-- Domain Category Label (13sp Bold Accent Uppercase) -->
+    <style name="TextAppearance.ResumeVisualiser.Skill.Domain" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/skills_domain_label</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <!-- Skills Stream Inline Text (13sp Regular with 20sp Line Height) -->
+    <style name="TextAppearance.ResumeVisualiser.Skill.Stream" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/skills_stream_text</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+    </style>
+
+
+    <!-- Education Degree Title (15sp Bold) -->
+    <style name="TextAppearance.ResumeVisualiser.Edu.Degree" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/edu_degree_title</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Education Institution (13sp Medium Accent) -->
+    <style name="TextAppearance.ResumeVisualiser.Edu.Institution" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/edu_institution_text</item>
+    </style>
+
+    <!-- Custom Item Title (15sp Bold) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/custom_item_title</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Custom Item Subtitle / Issuer / Link (13sp Medium Accent) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Subtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/custom_item_subtitle</item>
+    </style>
+
+    <!-- Custom Item Narrative Description (13sp Regular with 1.35 Line Spacing) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Description" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/custom_item_desc</item>
+        <item name="android:lineSpacingMultiplier">1.35</item>
+    </style>
 </resources>
+

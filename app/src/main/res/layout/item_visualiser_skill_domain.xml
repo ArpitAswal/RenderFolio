@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Single Semantic Domain Row with Domain Label and Midpoint Skills Stream -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_skill_domain_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="6dp"
+    android:paddingBottom="10dp">
+
+    <!-- Domain Title (e.g. MOBILE DEVELOPMENT) -->
+    <TextView
+        android:id="@+id/tv_domain_header"
+        style="@style/TextAppearance.ResumeVisualiser.Skill.Domain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Skills Inline Stream with Midpoint Separators (e.g. Flutter · Android · Kotlin) -->
+    <TextView
+        android:id="@+id/tv_domain_skills_stream"
+        style="@style/TextAppearance.ResumeVisualiser.Skill.Stream"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" />
+
+    <!-- Subtle Divider between domain rows (hidden on last row) -->
+    <View
+        android:id="@+id/divider_skill_domain"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:background="@color/skills_row_divider" />
+
+</LinearLayout>

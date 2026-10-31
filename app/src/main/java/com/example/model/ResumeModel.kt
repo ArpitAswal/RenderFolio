@@ -134,30 +134,63 @@ data class ProjectItem(
 
 @Serializable
 data class SkillCategories(
+    val sectionTitle: String = "TECHNICAL SKILLS",
     val languages: List<String> = emptyList(),
     val frameworks: List<String> = emptyList(),
     val cloudDevOps: List<String> = emptyList(),
-    val toolsMethodologies: List<String> = emptyList()
+    val toolsMethodologies: List<String> = emptyList(),
+    val categorizedDomains: Map<String, List<String>> = emptyMap(),
+    val rawFlatSkills: List<String> = emptyList(),
+    val customCategories: Map<String, List<String>> = emptyMap()
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
+        "sectionTitle" to sectionTitle,
         "languages" to languages,
         "frameworks" to frameworks,
         "cloudDevOps" to cloudDevOps,
-        "toolsMethodologies" to toolsMethodologies
+        "toolsMethodologies" to toolsMethodologies,
+        "categorizedDomains" to categorizedDomains,
+        "rawFlatSkills" to rawFlatSkills,
+        "customCategories" to customCategories
     )
 
     val totalCount: Int
-        get() = languages.size + frameworks.size + cloudDevOps.size + toolsMethodologies.size
+        get() {
+            if (categorizedDomains.isNotEmpty()) {
+                return categorizedDomains.values.sumOf { it.size }
+            }
+            if (rawFlatSkills.isNotEmpty()) {
+                return rawFlatSkills.size
+            }
+            return languages.size + frameworks.size + cloudDevOps.size + toolsMethodologies.size + customCategories.values.sumOf { it.size }
+        }
+
+    val isCategorized: Boolean
+        get() = categorizedDomains.isNotEmpty() || (listOf(languages, frameworks, cloudDevOps, toolsMethodologies).count { it.isNotEmpty() } > 1)
 
     companion object {
         @Suppress("UNCHECKED_CAST")
         fun fromMap(map: Map<String, Any?>?): SkillCategories {
             if (map == null) return SkillCategories()
+            val custom = (map["customCategories"] as? Map<*, *>)?.entries?.associate {
+                (it.key as? String ?: "") to ((it.value as? List<*>)?.filterIsInstance<String>() ?: emptyList())
+            }?.filterKeys { it.isNotBlank() } ?: emptyMap()
+
+            val catDomains = (map["categorizedDomains"] as? Map<*, *>)?.entries?.associate {
+                (it.key as? String ?: "") to ((it.value as? List<*>)?.filterIsInstance<String>() ?: emptyList())
+            }?.filterKeys { it.isNotBlank() } ?: emptyMap()
+
+            val flat = (map["rawFlatSkills"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+
             return SkillCategories(
+                sectionTitle = map["sectionTitle"] as? String ?: "TECHNICAL SKILLS",
                 languages = (map["languages"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
                 frameworks = (map["frameworks"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
                 cloudDevOps = (map["cloudDevOps"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
-                toolsMethodologies = (map["toolsMethodologies"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                toolsMethodologies = (map["toolsMethodologies"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                categorizedDomains = catDomains,
+                rawFlatSkills = flat,
+                customCategories = custom
             )
         }
     }
@@ -379,10 +412,17 @@ data class ResumeProfile(
                         )
                     ),
                     skills = SkillCategories(
+                        sectionTitle = "TECHNICAL SKILLS",
                         languages = listOf("Kotlin", "Java", "Python", "Rust", "SQL"),
                         frameworks = listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Ktor", "Room"),
                         cloudDevOps = listOf("Firebase", "Google Cloud Platform", "GitHub Actions", "Docker"),
-                        toolsMethodologies = listOf("Clean Architecture", "MVVM / MVI", "TDD & Robolectric", "Git")
+                        toolsMethodologies = listOf("Clean Architecture", "MVVM / MVI", "TDD & Robolectric", "Git"),
+                        categorizedDomains = linkedMapOf(
+                            "Languages & Core" to listOf("Kotlin", "Java", "Python", "Rust", "SQL"),
+                            "Frameworks & SDKs" to listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Ktor", "Room"),
+                            "Cloud & DevOps" to listOf("Firebase", "Google Cloud Platform", "GitHub Actions", "Docker"),
+                            "Tools & Methodologies" to listOf("Clean Architecture", "MVVM / MVI", "TDD & Robolectric", "Git")
+                        )
                     ),
                     education = listOf(
                         EducationItem(

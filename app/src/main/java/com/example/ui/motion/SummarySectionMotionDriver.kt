@@ -27,6 +27,7 @@ class SummarySectionMotionDriver(
 
         const val INITIAL_SCALE: Float = 0.80f
         const val INITIAL_TRANSLATION_DP: Float = 50f
+        const val VIEWPORT_THRESHOLD_RATIO: Float = 0.20f
     }
 
     private var entranceAnimator: AnimatorSet? = null
@@ -107,7 +108,7 @@ class SummarySectionMotionDriver(
      * - Downward scrolling: Smooth upward parallax glide (-20% scroll velocity) + perspective fade/scale exit.
      * - Pull-down past top (over-scroll): Elastic rubber-band scaling up to 1.08f.
      */
-    fun onScrollChanged(scrollY: Int) {
+    fun onScrollChanged(scrollY: Int, viewportHeight: Int = 0) {
         currentScrollY = scrollY
 
         // If user touches and scrolls while entrance animation is running, cancel it so scroll motion is immediate
@@ -119,6 +120,11 @@ class SummarySectionMotionDriver(
         hasPlayedInitialEntrance = true
 
         val density = sectionContainer.resources.displayMetrics.density
+        val actualViewportHeight = if (viewportHeight > 0) {
+            viewportHeight
+        } else {
+            sectionContainer.resources.displayMetrics.heightPixels
+        }
 
         if (scrollY < 0) {
             // Elastic pull-down over-scroll (rubber-band past the top)
@@ -154,6 +160,15 @@ class SummarySectionMotionDriver(
                 sectionContainer.scaleY = scale
                 sectionContainer.pivotX = sectionContainer.width / 2f
                 sectionContainer.pivotY = sectionContainer.height * 0.5f
+            }
+
+            // 3. Viewport 20% Threshold Guard: if bottom of view has crossed above top 20% of screen
+            val topThreshold = actualViewportHeight * VIEWPORT_THRESHOLD_RATIO
+            val locationOnScreen = IntArray(2)
+            sectionContainer.getLocationOnScreen(locationOnScreen)
+            val viewBottom = locationOnScreen[1] + sectionContainer.height
+            if (viewBottom <= topThreshold) {
+                sectionContainer.alpha = 0f
             }
         }
     }

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Redesigned Technical Skills Card in Structure Verification -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_technical_skills_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
@@ -16,7 +18,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Card Header with Technical Skills label, Add Skill button, and Drag Handle -->
+        <!-- Card Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="34dp"
                 android:layout_marginEnd="6dp"
-                android:text="@string/action_add_skill_chip"
+                android:text="@string/action_add_domain"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:paddingHorizontal="10dp"
@@ -54,18 +56,17 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Drag to reorder section"
+                android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
                 android:src="@drawable/ic_drag_handle" />
-
         </LinearLayout>
 
-        <!-- Skill Chips Container (Alphabetical Flow Wrap) -->
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupSkills"
+        <!-- Dynamic Container for Semantic Domain Rows (No large chip cloud) -->
+        <LinearLayout
+            android:id="@+id/containerSkillsDomains"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:singleLine="false" />
+            android:orientation="vertical" />
 
     </LinearLayout>
 
