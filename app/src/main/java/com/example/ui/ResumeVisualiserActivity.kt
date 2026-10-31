@@ -6,12 +6,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Patterns
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -24,20 +26,24 @@ import com.example.databinding.ItemShowcaseCustomSectionBinding
 import com.example.databinding.ItemShowcaseEducationBinding
 import com.example.databinding.ItemShowcaseProjectBinding
 import com.example.databinding.ItemVisualiserContactChipBinding
+import com.example.databinding.ItemVisualiserExperienceEntryBinding
+import com.example.databinding.ItemVisualiserProjectEntryBinding
 import com.example.databinding.LayoutShowcaseSubsequentSectionsBinding
 import com.example.model.ContactInfo
 import com.example.model.DynamicSection
 import com.example.model.ProfileHero
+import com.example.model.ProjectItem
 import com.example.model.ResumeProfile
+import com.example.model.WorkExperienceItem
 import com.example.ui.motion.HeroSectionMotionDriver
-import com.example.ui.showcase.ExperienceTimelineAdapter
-import com.example.ui.showcase.TimelineItemDecoration
+import com.example.ui.motion.ProjectsMotionDriver
+import com.example.ui.motion.SummarySectionMotionDriver
+import com.example.ui.motion.WorkExperienceMotionDriver
 import com.example.viewmodel.ResumeViewModel
 import com.example.viewmodel.UiState
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 
 /**
  * Screen 4: Resume Visualizer (ResumeVisualiserActivity)
@@ -57,6 +63,9 @@ class ResumeVisualiserActivity : AppCompatActivity() {
     private lateinit var subsequentBinding: LayoutShowcaseSubsequentSectionsBinding
     private val viewModel: ResumeViewModel by viewModels()
     private lateinit var motionDriver: HeroSectionMotionDriver
+    private lateinit var summaryMotionDriver: SummarySectionMotionDriver
+    private lateinit var experienceMotionDriver: WorkExperienceMotionDriver
+    private lateinit var projectsMotionDriver: ProjectsMotionDriver
     private lateinit var preferencesRepository: ResumePreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +79,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
         preferencesRepository = ResumePreferencesRepository(applicationContext)
 
-        // Inflate and embed subsequent sections (Sections 2..7) inside containerContentSections
+        // Inflate and embed subsequent sections (Sections 3..7) inside containerContentSections
         subsequentBinding = LayoutShowcaseSubsequentSectionsBinding.inflate(layoutInflater, binding.containerContentSections, true)
 
         // Handle window insets on CoordinatorLayout / NestedScrollView
@@ -82,6 +91,15 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         // Setup scroll-driven unified motion
         binding.scrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
             motionDriver.onScrollChanged(scrollY)
+            if (::summaryMotionDriver.isInitialized) {
+                summaryMotionDriver.onScrollChanged(scrollY)
+            }
+            if (::experienceMotionDriver.isInitialized) {
+                experienceMotionDriver.onScrollChanged(binding.scrollView.height)
+            }
+            if (::projectsMotionDriver.isInitialized) {
+                projectsMotionDriver.onScrollChanged(binding.scrollView.height)
+            }
         }
 
         // Observe ViewModel and load intent profile or persisted profile
@@ -108,6 +126,9 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             runCatching {
                 val profile = ResumeProfile.fromJson(rawJson)
                 bindHeroSection(profile.hero)
+                setupSection2(profile.coreSections.profileSummary)
+                setupSection3(profile.coreSections.workExperience)
+                setupSection4(profile.coreSections.projects)
                 bindSubsequentSections(profile)
                 viewModel.updateProfile(profile)
             }.onFailure {
@@ -132,18 +153,30 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                     when (state) {
                         is UiState.Success -> {
                             bindHeroSection(state.profile.hero)
+                            setupSection2(state.profile.coreSections.profileSummary)
+                            setupSection3(state.profile.coreSections.workExperience)
+                            setupSection4(state.profile.coreSections.projects)
                             bindSubsequentSections(state.profile)
                         }
                         is UiState.ExtractedNeedsVerification -> {
                             bindHeroSection(state.profile.hero)
+                            setupSection2(state.profile.coreSections.profileSummary)
+                            setupSection3(state.profile.coreSections.workExperience)
+                            setupSection4(state.profile.coreSections.projects)
                             bindSubsequentSections(state.profile)
                         }
                         is UiState.VerificationInProgress -> {
                             bindHeroSection(state.profile.hero)
+                            setupSection2(state.profile.coreSections.profileSummary)
+                            setupSection3(state.profile.coreSections.workExperience)
+                            setupSection4(state.profile.coreSections.projects)
                             bindSubsequentSections(state.profile)
                         }
                         is UiState.EditMode -> {
                             bindHeroSection(state.draftProfile.hero)
+                            setupSection2(state.draftProfile.coreSections.profileSummary)
+                            setupSection3(state.draftProfile.coreSections.workExperience)
+                            setupSection4(state.draftProfile.coreSections.projects)
                             bindSubsequentSections(state.draftProfile)
                         }
                         else -> {
@@ -275,13 +308,13 @@ class ResumeVisualiserActivity : AppCompatActivity() {
     // --- Intent Helpers with Resilience ---
 
     private fun dialPhoneNumber(phone: String) {
-        val uri = "tel:${phone.trim()}".toUri()
+        val uri = Uri.parse("tel:${phone.trim()}")
         runCatching { startActivity(Intent(Intent.ACTION_DIAL, uri)) }
             .onFailure { Toast.makeText(this, R.string.toast_error_no_phone_app, Toast.LENGTH_SHORT).show() }
     }
 
     private fun sendEmail(email: String) {
-        val uri = "mailto:${email.trim()}".toUri()
+        val uri = Uri.parse("mailto:${email.trim()}")
         runCatching { startActivity(Intent(Intent.ACTION_SENDTO, uri)) }
             .onFailure { Toast.makeText(this, R.string.toast_error_no_email_app, Toast.LENGTH_SHORT).show() }
     }
@@ -296,100 +329,227 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.toast_error_invalid_url, Toast.LENGTH_SHORT).show()
             return
         }
-        val uri = sanitized.toUri()
+        val uri = Uri.parse(sanitized)
         runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
             .onFailure { Toast.makeText(this, R.string.toast_error_cannot_open_link, Toast.LENGTH_SHORT).show() }
     }
 
-    // --- Subsequent Sections (2..7) Binding ---
+    // --- Subsequent Sections (5..7) Binding ---
 
     private fun bindSubsequentSections(profile: ResumeProfile) {
-        bindAboutSummary(profile)
-        bindWorkExperience(profile)
-        bindFeaturedProjects(profile)
         bindTechnicalCompetencies(profile)
         bindEducation(profile)
         bindCustomSections(profile.dynamicSections)
     }
 
-    // 2. ABOUT / PROFESSIONAL SUMMARY
-    private fun bindAboutSummary(profile: ResumeProfile) {
-        val summary = profile.coreSections.profileSummary.trim()
-        if (summary.isNotBlank()) {
-            subsequentBinding.tvAboutSummaryBody.text = summary
-            subsequentBinding.sectionAboutSummary.visibility = View.VISIBLE
-        } else {
-            subsequentBinding.sectionAboutSummary.visibility = View.GONE
+    /**
+     * SECTION 2: Professional Overview & Summary
+     * Implements Dual-Phase Animation Contract:
+     * - Phase 1 (Launch Entrance): Staggered vertical lift (Title 250ms Decelerate, Card 350ms FastOutSlowIn +80ms delay).
+     * - Phase 2 (On-Scroll Reactivity): Reactive parallax glide & elastic over-scroll pull-down scaling.
+     * Visibility guard: Cleanly hidden when summary is blank.
+     */
+    private fun setupSection2(summaryText: String) {
+        val summaryLayout = binding.includedSectionSummary
+        val cleanSummary = summaryText.trim()
+
+        if (cleanSummary.isBlank()) {
+            summaryLayout.sectionSummaryRoot.visibility = View.GONE
+            return
+        }
+
+        summaryLayout.sectionSummaryRoot.visibility = View.VISIBLE
+        summaryLayout.tvSummaryBody.text = cleanSummary
+
+        // Initialize motion driver targeting the whole summary container
+        summaryMotionDriver = SummarySectionMotionDriver(
+            sectionContainer = summaryLayout.sectionSummaryRoot
+        )
+
+        // Trigger Phase 1 initial entrance once layout pass is complete
+        summaryLayout.sectionSummaryRoot.doOnPreDraw {
+            summaryMotionDriver.playInitialEntrance()
         }
     }
 
-    // 3. WORK EXPERIENCE (CONNECTED TIMELINE)
-    private fun bindWorkExperience(profile: ResumeProfile) {
-        val experiences = profile.coreSections.workExperience.filter {
+    /**
+     * SECTION 3: Work Experience
+     * Implements Approach A (Whole Section unified block) with 20% viewport threshold state tracker.
+     */
+    private fun setupSection3(experiences: List<WorkExperienceItem>) {
+        val expLayout = binding.includedSectionExperience
+
+        val validExperiences = experiences.filter {
             it.companyName.isNotBlank() || it.roleTitle.isNotBlank() || it.bulletPoints.isNotEmpty()
         }
 
-        if (experiences.isNotEmpty()) {
-            subsequentBinding.rvWorkExperienceTimeline.layoutManager = LinearLayoutManager(this)
-            subsequentBinding.rvWorkExperienceTimeline.adapter = ExperienceTimelineAdapter(experiences)
-            while (subsequentBinding.rvWorkExperienceTimeline.itemDecorationCount > 0) {
-                subsequentBinding.rvWorkExperienceTimeline.removeItemDecorationAt(0)
+        if (validExperiences.isEmpty()) {
+            expLayout.sectionExperienceRoot.visibility = View.GONE
+            return
+        }
+
+        expLayout.sectionExperienceRoot.visibility = View.VISIBLE
+        val container = expLayout.containerExperienceEntries
+        container.removeAllViews()
+
+        validExperiences.forEachIndexed { index, item ->
+            val entryBinding = ItemVisualiserExperienceEntryBinding.inflate(layoutInflater, container, false)
+
+            // 1. Role Title
+            entryBinding.tvEntryRole.text = item.roleTitle.ifBlank { getString(R.string.exp_default_role) }
+
+            // 2. Company Name
+            entryBinding.tvEntryCompany.text = item.companyName.ifBlank { getString(R.string.exp_default_company) }
+
+            // 3. Duration formatted string
+            val duration = when {
+                item.startDate.isNotBlank() && item.endDate.isNotBlank() ->
+                    getString(R.string.exp_date_range_format, item.startDate, item.endDate)
+                item.startDate.isNotBlank() ->
+                    getString(R.string.exp_single_date_format, item.startDate)
+                else -> ""
             }
-            subsequentBinding.rvWorkExperienceTimeline.addItemDecoration(TimelineItemDecoration(this))
-            subsequentBinding.sectionWorkExperience.visibility = View.VISIBLE
-        } else {
-            subsequentBinding.sectionWorkExperience.visibility = View.GONE
+            entryBinding.tvEntryDuration.text = duration
+
+            // 4. Populate Bullets
+            entryBinding.containerEntryBullets.removeAllViews()
+            item.bulletPoints.forEach { bullet ->
+                val bulletView = TextView(this).apply {
+                    setTextAppearance(R.style.TextAppearance_ResumeVisualiser_Exp_Bullet)
+                    text = getString(R.string.exp_bullet_format, bullet)
+                    setPadding(0, 4, 0, 4)
+                }
+                entryBinding.containerEntryBullets.addView(bulletView)
+            }
+
+            // 5. Tech Stack Tags
+            if (item.techStackTags.isNotEmpty()) {
+                entryBinding.chipGroupEntryTags.removeAllViews()
+                item.techStackTags.forEach { tag ->
+                    val tagChip = Chip(this).apply {
+                        text = tag
+                        setChipBackgroundColorResource(R.color.exp_tag_bg)
+                        setTextColor(getColor(R.color.exp_tag_text))
+                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                            .setAllCornerSizes(resources.displayMetrics.density * 8f)
+                            .build()
+                    }
+                    entryBinding.chipGroupEntryTags.addView(tagChip)
+                }
+                entryBinding.chipGroupEntryTags.visibility = View.VISIBLE
+            } else {
+                entryBinding.chipGroupEntryTags.visibility = View.GONE
+            }
+
+            // Hide divider on the last item
+            if (index == validExperiences.lastIndex) {
+                entryBinding.dividerEntry.visibility = View.GONE
+            } else {
+                entryBinding.dividerEntry.visibility = View.VISIBLE
+            }
+
+            container.addView(entryBinding.itemExperienceEntryRoot)
+        }
+
+        // Initialize motion driver targeting the whole section container
+        experienceMotionDriver = WorkExperienceMotionDriver(expLayout.sectionExperienceRoot)
+
+        // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Section 1 and Section 2)
+        expLayout.sectionExperienceRoot.doOnPreDraw {
+            experienceMotionDriver.playInitialEntrance()
         }
     }
 
-    // 4. FEATURED PROJECTS
-    private fun bindFeaturedProjects(profile: ResumeProfile) {
-        val projects = profile.coreSections.projects.filter { it.projectTitle.isNotBlank() }
-        subsequentBinding.containerProjectItems.removeAllViews()
+    /**
+     * SECTION 4: Featured Projects / Project Experience
+     * Implements Vice-Versa Lateral Motion (Right-to-Left) with 20% viewport threshold state tracker.
+     * Transparent, borderless container directly on canvas (no background card or graphic overlay).
+     */
+    private fun setupSection4(projects: List<ProjectItem>) {
+        val projectsLayout = binding.includedSectionProjects
 
-        if (projects.isNotEmpty()) {
-            val inflater = layoutInflater
-            projects.forEach { proj ->
-                val pBinding = ItemShowcaseProjectBinding.inflate(inflater, subsequentBinding.containerProjectItems, false)
-                pBinding.tvProjectTitle.text = proj.projectTitle
+        val validProjects = projects.filter { it.projectTitle.isNotBlank() }
 
-                if (proj.description.isNotBlank()) {
-                    pBinding.tvProjectDescription.text = proj.description
-                    pBinding.tvProjectDescription.visibility = View.VISIBLE
+        if (validProjects.isEmpty()) {
+            projectsLayout.sectionProjectsRoot.visibility = View.GONE
+            return
+        }
+
+        projectsLayout.sectionProjectsRoot.visibility = View.VISIBLE
+        val container = projectsLayout.containerProjectEntries
+        container.removeAllViews()
+
+        validProjects.forEachIndexed { index, item ->
+            val entryBinding = ItemVisualiserProjectEntryBinding.inflate(layoutInflater, container, false)
+
+            // 1. Project Title
+            entryBinding.tvEntryProjectTitle.text = item.projectTitle
+
+            // 2. Action Button (Live Demo / Code Repository)
+            val targetUrl = item.demoUrl.ifBlank { item.codeUrl }
+            if (targetUrl.isNotBlank()) {
+                entryBinding.btnEntryProjectAction.visibility = View.VISIBLE
+                val isDemo = item.demoUrl.isNotBlank()
+                entryBinding.btnEntryProjectAction.text = if (isDemo) {
+                    getString(R.string.action_project_live_demo)
                 } else {
-                    pBinding.tvProjectDescription.visibility = View.GONE
+                    getString(R.string.action_project_code_repo)
                 }
-
-                val targetUrl = proj.demoUrl.ifBlank { proj.codeUrl }
-                if (targetUrl.isNotBlank()) {
-                    pBinding.btnProjectDemo.visibility = View.VISIBLE
-                    pBinding.btnProjectDemo.setOnClickListener { openProfileUrl(targetUrl) }
+                entryBinding.btnEntryProjectAction.contentDescription = if (isDemo) {
+                    getString(R.string.cd_project_live_demo, item.projectTitle)
                 } else {
-                    pBinding.btnProjectDemo.visibility = View.GONE
+                    getString(R.string.cd_project_code_repo, item.projectTitle)
                 }
+                entryBinding.btnEntryProjectAction.setOnClickListener {
+                    openProfileUrl(targetUrl)
+                }
+            } else {
+                entryBinding.btnEntryProjectAction.visibility = View.GONE
+            }
 
-                pBinding.chipGroupProjectTech.removeAllViews()
-                proj.techStackTags.forEach { tag ->
+            // 3. Description
+            if (item.description.isNotBlank()) {
+                entryBinding.tvEntryProjectDescription.visibility = View.VISIBLE
+                entryBinding.tvEntryProjectDescription.text = item.description
+            } else {
+                entryBinding.tvEntryProjectDescription.visibility = View.GONE
+            }
+
+            // 4. Tech Stack Tags
+            if (item.techStackTags.isNotEmpty()) {
+                entryBinding.chipGroupProjectTech.removeAllViews()
+                item.techStackTags.forEach { tag ->
                     val tagChip = Chip(this).apply {
                         text = tag
-                        setChipBackgroundColorResource(R.color.hero_chip_bg)
-                        setChipStrokeColorResource(R.color.hero_chip_stroke)
-                        chipStrokeWidth = resources.displayMetrics.density * 1f
-                        setTextColor(getColor(R.color.hero_chip_text))
+                        setChipBackgroundColorResource(R.color.project_tag_bg)
+                        setTextColor(getColor(R.color.project_tag_text))
                         shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                            .setAllCornerSizes(resources.displayMetrics.density * 6f)
+                            .setAllCornerSizes(resources.displayMetrics.density * 8f)
                             .build()
                     }
-                    pBinding.chipGroupProjectTech.addView(tagChip)
+                    entryBinding.chipGroupProjectTech.addView(tagChip)
                 }
-                pBinding.chipGroupProjectTech.visibility =
-                    if (proj.techStackTags.isNotEmpty()) View.VISIBLE else View.GONE
-
-                subsequentBinding.containerProjectItems.addView(pBinding.root)
+                entryBinding.chipGroupProjectTech.visibility = View.VISIBLE
+            } else {
+                entryBinding.chipGroupProjectTech.visibility = View.GONE
             }
-            subsequentBinding.sectionFeaturedProjects.visibility = View.VISIBLE
-        } else {
-            subsequentBinding.sectionFeaturedProjects.visibility = View.GONE
+
+            // Hide divider on the last item
+            if (index == validProjects.lastIndex) {
+                entryBinding.dividerProjectEntry.visibility = View.GONE
+            } else {
+                entryBinding.dividerProjectEntry.visibility = View.VISIBLE
+            }
+
+            container.addView(entryBinding.itemProjectEntryRoot)
+        }
+
+        // Initialize motion driver targeting the whole section container
+        projectsMotionDriver = ProjectsMotionDriver(projectsLayout.sectionProjectsRoot)
+
+        // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..3)
+        projectsLayout.sectionProjectsRoot.doOnPreDraw {
+            projectsMotionDriver.playInitialEntrance()
         }
     }
 

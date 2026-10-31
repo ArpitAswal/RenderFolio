@@ -32,4 +32,34 @@
     <color name="hero_chip_text">#F1F5F9</color>
     <color name="hero_chip_icon_tint">#3B82F6</color>
     <color name="hero_chip_ripple">#263B82F6</color>
+
+    <!-- Section 2 Summary Tokens (Dark Theme) -->
+    <color name="summary_section_title">#3B82F6</color>
+    <color name="summary_card_bg">#1C2026</color>
+    <color name="summary_card_stroke">#24FFFFFF</color>
+    <color name="summary_body_text">#CBD5E1</color>
+
+    <!-- Section 3 Work Experience Tokens (Dark Theme) -->
+    <color name="exp_section_title">#3B82F6</color>
+    <color name="exp_card_bg">#1C2026</color>
+    <color name="exp_card_stroke">#24FFFFFF</color>
+    <color name="exp_role_title">#F3F4F6</color>
+    <color name="exp_company_name">#3B82F6</color>
+    <color name="exp_duration_text">#9CA3AF</color>
+    <color name="exp_bullet_text">#D1D5DB</color>
+    <color name="exp_bullet_dot">#3B82F6</color>
+    <color name="exp_divider">#2E3642</color>
+    <color name="exp_tag_bg">#1E293B</color>
+    <color name="exp_tag_text">#93C5FD</color>
+
+    <!-- Section 4 Projects Tokens (Dark Theme) -->
+    <color name="project_section_title">#3B82F6</color>
+    <color name="project_title_text">#F3F4F6</color>
+    <color name="project_desc_text">#CBD5E1</color>
+    <color name="project_action_stroke">#3B82F6</color>
+    <color name="project_action_text">#3B82F6</color>
+    <color name="project_action_ripple">#263B82F6</color>
+    <color name="project_tag_bg">#1E293B</color>
+    <color name="project_tag_text">#93C5FD</color>
+    <color name="project_divider">#2E3642</color>
 </resources>

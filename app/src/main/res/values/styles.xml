@@ -34,4 +34,83 @@
         <item name="android:maxLines">1</item>
         <item name="android:ellipsize">end</item>
     </style>
+
+    <!-- Section Header Label (13sp Medium Uppercase Accent) -->
+    <style name="TextAppearance.ResumeVisualiser.Section.Header" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/summary_section_title</item>
+        <item name="android:letterSpacing">0.05</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- Summary Body Narrative (14sp with 20sp line height for effortless readability) -->
+    <style name="TextAppearance.ResumeVisualiser.Summary.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/summary_body_text</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+    </style>
+
+    <!-- Role / Position Title (16sp Semi-Bold) -->
+    <style name="TextAppearance.ResumeVisualiser.Exp.Role" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/exp_role_title</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Company Name (14sp Medium Primary Accent) -->
+    <style name="TextAppearance.ResumeVisualiser.Exp.Company" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/exp_company_name</item>
+    </style>
+
+    <!-- Duration (12sp Regular Muted) -->
+    <style name="TextAppearance.ResumeVisualiser.Exp.Duration" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/exp_duration_text</item>
+    </style>
+
+    <!-- Bullet Item Text (13sp Regular with 18sp line height for effortless scanning) -->
+    <style name="TextAppearance.ResumeVisualiser.Exp.Bullet" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/exp_bullet_text</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+    </style>
+
+    <!-- Project Title (16sp Bold) -->
+    <style name="TextAppearance.ResumeVisualiser.Project.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/project_title_text</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Project Description (13sp Regular with 1.35 Line Spacing Multiplier) -->
+    <style name="TextAppearance.ResumeVisualiser.Project.Description" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/project_desc_text</item>
+        <item name="android:lineSpacingMultiplier">1.35</item>
+    </style>
+
+    <!-- Outlined Project Action Button (Live Demo / Code) -->
+    <style name="Widget.ResumeVisualiser.Project.Button" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/project_action_text</item>
+        <item name="strokeColor">@color/project_action_stroke</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:minHeight">36dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
 </resources>

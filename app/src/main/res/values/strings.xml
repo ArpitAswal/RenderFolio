@@ -52,12 +52,32 @@
 
     <!-- About / Summary Section -->
     <string name="section_title_about_summary">About / Summary</string>
+    <string name="section_title_professional_summary">Professional Summary</string>
     <string name="hint_profile_summary"><![CDATA[Professional Overview & Summary]]></string>
+    <string name="cd_section_summary">Professional overview and biography summary</string>
     <string name="char_counter_format">%1$d / %2$d max chars</string>
     <string name="error_summary_limit">Summary cannot exceed 600 characters</string>
 
     <!-- Work Experience Section -->
     <string name="section_title_work_experience">Work Experience</string>
+    <string name="cd_section_work_experience">Candidate career timeline and work experience history</string>
+    <string name="exp_present">Present</string>
+    <string name="exp_date_range_format">%1$s – %2$s</string>
+    <string name="exp_single_date_format">%1$s</string>
+    <string name="exp_default_role">Role</string>
+    <string name="exp_default_company">Organization</string>
+    <string name="exp_bullet_format">•  %1$s</string>
+    <string name="header_showcase_featured_projects">Featured Projects</string>
+    <string name="header_showcase_technical_competencies">Technical Competencies</string>
+    <string name="header_showcase_languages">Languages</string>
+    <string name="header_showcase_frameworks">Frameworks &amp; SDKs</string>
+    <string name="header_showcase_cloud_devops">Cloud &amp; DevOps</string>
+    <string name="header_showcase_tools">Tools &amp; Methodologies</string>
+    <string name="header_showcase_education">Education</string>
+    <string name="cd_showcase_projects_graphic">Featured Projects Thematic Graphic</string>
+    <string name="cd_showcase_technical_graphic">Technical Matrix Thematic Graphic</string>
+    <string name="cd_showcase_education_graphic">Education Thematic Graphic</string>
+    <string name="action_showcase_live_demo">↗ Live Demo</string>
     <string name="section_title_work_experience_optional">Work Experience (Optional)</string>
     <string name="candidate_type_fresher">Fresher</string>
     <string name="candidate_type_experienced">Experienced</string>
@@ -72,6 +92,12 @@
     <string name="header_role_responsibilities"><![CDATA[Role & Responsibilities]]></string>
 
     <!-- Projects Section -->
+    <string name="section_title_featured_projects">Featured Projects</string>
+    <string name="action_project_live_demo">Live Demo</string>
+    <string name="action_project_code_repo">Code Repository</string>
+    <string name="cd_section_featured_projects">Candidate featured technical projects showcase</string>
+    <string name="cd_project_live_demo">Open live demo for %1$s</string>
+    <string name="cd_project_code_repo">Open code repository for %1$s</string>
     <string name="section_title_projects">Projects</string>
     <string name="action_add_project">+ Add New Project</string>
     <string name="project_item">Project Item</string>
@@ -114,6 +140,7 @@
     <string name="dialog_title_rename_section">Rename Section</string>
     <string name="hint_section_title">Section Title</string>
     <string name="action_generate">Generate</string>
+
 
     <!-- Bottom Sheet Strings -->
     <string name="add_custom_section">Add Custom Section</string>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 100% Pure XML Root CoordinatorLayout (Tablet Landscape >= 600dp-land / 840dp) -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fitsSystemWindows="true">
+
+    <!-- NestedScrollView driving the whole-section motion physics -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="always">
+
+        <!-- Outer Column Centered to Screen -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingTop="36dp"
+            android:paddingBottom="48dp">
+
+            <!-- SECTION 1: HERO CONTAINER (Target for Whole-Section Animation) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/hero_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp">
+
+                <!-- 1. Candidate Full Name (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_name"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- 2. Professional Headline / Title (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_headline"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Headline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_name" />
+
+                <!-- 3. Location with Pin (Centered) -->
+                <TextView
+                    android:id="@+id/tv_hero_location"
+                    style="@style/TextAppearance.ResumeVisualiser.Hero.Location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:drawablePadding="4dp"
+                    app:drawableStartCompat="@drawable/ic_location_pin_16"
+                    app:drawableTint="@color/hero_location_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_headline" />
+
+                <!-- 4. Multi-Line Wrapping Flow for Contact Chips -->
+                <androidx.constraintlayout.helper.widget.Flow
+                    android:id="@+id/flow_contact_chips"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    app:flow_horizontalAlign="center"
+                    app:flow_horizontalGap="8dp"
+                    app:flow_horizontalStyle="packed"
+                    app:flow_verticalGap="8dp"
+                    app:flow_wrapMode="chain"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_hero_location" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Tablet Landscape Dual-Column Content Structure -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_marginTop="28dp">
+
+                <!-- LEFT COLUMN (Profile Sidebar: Summary, Skills, Education) -->
+                <LinearLayout
+                    android:id="@+id/pane_left_column"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="16dp">
+
+                    <!-- Section 2: Summary sits at the top of the Left Pane -->
+                    <include
+                        android:id="@+id/included_section_summary"
+                        layout="@layout/layout_section_summary" />
+
+                    <!-- Subsequent Left Column Sections (Skills, Education...) -->
+                    <FrameLayout
+                        android:id="@+id/container_left_subsequent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <!-- RIGHT COLUMN (Career Feed: Work Experience, Projects, Custom Sections) -->
+                <LinearLayout
+                    android:id="@+id/pane_right_column"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.2"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <!-- Section 3: Work Experience sits at the top of the Right Pane -->
+                    <include
+                        android:id="@+id/included_section_experience"
+                        layout="@layout/layout_section_work_experience" />
+
+                    <!-- Section 4: Featured Projects -->
+                    <include
+                        android:id="@+id/included_section_projects"
+                        layout="@layout/layout_section_projects" />
+
+                    <!-- Right Column Sections (Education, Skills, etc.) -->
+                    <FrameLayout
+                        android:id="@+id/container_content_sections"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

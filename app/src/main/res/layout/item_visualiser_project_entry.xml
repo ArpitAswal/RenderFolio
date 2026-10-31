@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Single Project Item with Title, Action Button, Description, and Tech Stack Pills -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_project_entry_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="12dp">
+
+    <!-- Row 1: Project Title and Live Demo / Code Action Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_entry_project_title"
+            style="@style/TextAppearance.ResumeVisualiser.Project.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_entry_project_action"
+            style="@style/Widget.ResumeVisualiser.Project.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/action_project_live_demo"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Row 2: Project Description -->
+    <TextView
+        android:id="@+id/tv_entry_project_description"
+        style="@style/TextAppearance.ResumeVisualiser.Project.Description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:visibility="gone" />
+
+    <!-- Row 3: Tech Stack Pills -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_project_tech"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:chipSpacingHorizontal="6dp"
+        app:chipSpacingVertical="4dp"
+        app:singleLine="false"
+        android:visibility="gone" />
+
+    <!-- Subtle Divider between projects (hidden on the last item) -->
+    <View
+        android:id="@+id/divider_project_entry"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="14dp"
+        android:background="@color/project_divider" />
+
+</LinearLayout>

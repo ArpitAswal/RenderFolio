@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 100% Pure XML Root CoordinatorLayout -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/coordinator_root"
@@ -87,7 +87,46 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Container for Subsequent Sections (Sections 2..7) -->
+            <!-- SECTION 2: PROFESSIONAL OVERVIEW & SUMMARY -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <include
+                    android:id="@+id/included_section_summary"
+                    layout="@layout/layout_section_summary" />
+            </FrameLayout>
+
+            <!-- SECTION 3: WORK EXPERIENCE -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <include
+                    android:id="@+id/included_section_experience"
+                    layout="@layout/layout_section_work_experience" />
+            </FrameLayout>
+
+            <!-- SECTION 4: FEATURED PROJECTS -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="680dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <include
+                    android:id="@+id/included_section_projects"
+                    layout="@layout/layout_section_projects" />
+            </FrameLayout>
+
+            <!-- Container for Subsequent Sections (Sections 5..7) -->
             <FrameLayout
                 android:id="@+id/container_content_sections"
                 android:layout_width="match_parent"
