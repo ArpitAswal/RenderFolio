@@ -67,17 +67,6 @@
     <string name="exp_default_role">Role</string>
     <string name="exp_default_company">Organization</string>
     <string name="exp_bullet_format">•  %1$s</string>
-    <string name="header_showcase_featured_projects">Featured Projects</string>
-    <string name="header_showcase_technical_competencies">Technical Competencies</string>
-    <string name="header_showcase_languages">Languages</string>
-    <string name="header_showcase_frameworks">Frameworks &amp; SDKs</string>
-    <string name="header_showcase_cloud_devops">Cloud &amp; DevOps</string>
-    <string name="header_showcase_tools">Tools &amp; Methodologies</string>
-    <string name="header_showcase_education">Education</string>
-    <string name="cd_showcase_projects_graphic">Featured Projects Thematic Graphic</string>
-    <string name="cd_showcase_technical_graphic">Technical Matrix Thematic Graphic</string>
-    <string name="cd_showcase_education_graphic">Education Thematic Graphic</string>
-    <string name="action_showcase_live_demo">↗ Live Demo</string>
     <string name="section_title_work_experience_optional">Work Experience (Optional)</string>
     <string name="candidate_type_fresher">Fresher</string>
     <string name="candidate_type_experienced">Experienced</string>
@@ -200,5 +189,28 @@
     <string name="skills_dot_separator"><![CDATA[  ·  ]]></string>
     <string name="skills_bullet_prefix"><![CDATA[•  ]]></string>
 
+    <!-- Cloud Sync & QR Showcase Strings -->
+    <string name="btn_view_visualizer">View Visualizer</string>
+    <string name="btn_show_qr_code">Show QR Code</string>
+    <string name="title_showcase_ready">Your Showcase is Ready!</string>
+    <string name="subtitle_showcase_ready">Scan to experience your interactive mobile portfolio.</string>
+    <string name="action_save_to_photos">Save to Photos</string>
+    <string name="action_share_link">Share Link</string>
+    <string name="cd_save_qr">Save QR to Gallery</string>
+    <string name="cd_share_qr">Share QR Code</string>
+    <string name="toast_saved_to_photos">QR Code saved to Photos</string>
+    <string name="toast_saved_to_gallery">QR Code saved to Gallery</string>
+    <string name="share_qr_chooser_title">Share Resume QR Code</string>
+    <string name="toast_showcase_expired">Showcase has expired or is unavailable.</string>
+    <string name="toast_offline_sync_later">Saved locally. Cloud QR link will sync when online.</string>
+    <string name="cd_qr_code">Showcase QR Code</string>
+
+    <!-- Target Company & Showcase Deletion -->
+    <string name="hint_target_company">Target Company</string>
+    <string name="helper_target_company">e.g. Spotify, Google</string>
+    <string name="error_target_company_required">Please enter Target Company (e.g. Spotify, Google).</string>
+    <string name="dialog_delete_showcase_title">Delete Tailored Showcase?</string>
+    <string name="dialog_delete_showcase_message">Are you sure you want to delete this tailored resume? This will remove its cloud link, QR code, and visualization.</string>
+    <string name="toast_showcase_deleted">Tailored showcase deleted.</string>
 
 </resources>

@@ -276,12 +276,14 @@ class StructureSectionsAdapter(
             // Field labels
             binding.tilFullName.setRequiredHint(R.string.hint_full_name)
             binding.tilJobTitle.setRequiredHint(R.string.hint_job_title)
+            binding.tilTargetCompany.setRequiredHint(R.string.hint_target_company)
             binding.tilPhone.setRequiredHint(R.string.hint_phone)
             binding.tilEmail.setRequiredHint(R.string.hint_email)
             binding.tilLocation.setRequiredHint(R.string.hint_location)
 
             binding.etFullName.setText(currentHero.fullName)
             binding.etJobTitle.setText(currentHero.headlineTitle)
+            binding.etTargetCompany.setText(currentHero.targetCompany)
             binding.etPhone.setText(currentHero.contactInfo.phone)
             binding.etEmail.setText(currentHero.contactInfo.email)
             binding.etLocation.setText(currentHero.location)
@@ -291,6 +293,9 @@ class StructureSectionsAdapter(
             })
             binding.etJobTitle.addTextChangedListener(SimpleTextWatcher {
                 currentHero = currentHero.copy(headlineTitle = it)
+            })
+            binding.etTargetCompany.addTextChangedListener(SimpleTextWatcher {
+                currentHero = currentHero.copy(targetCompany = it)
             })
             binding.etPhone.addTextChangedListener(SimpleTextWatcher {
                 currentHero = currentHero.copy(

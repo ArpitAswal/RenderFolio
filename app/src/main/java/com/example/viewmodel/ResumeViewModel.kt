@@ -35,7 +35,7 @@ class ResumeViewModel(application: Application) : AndroidViewModel(application) 
 
     private val tag = "ResumeViewModel"
     private val pdfRepository = PdfExtractionRepository(application.applicationContext)
-    private val preferencesRepository = ResumePreferencesRepository(application.applicationContext)
+    private val preferencesRepository = ResumePreferencesRepository.getInstance(application.applicationContext)
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -145,7 +145,6 @@ class ResumeViewModel(application: Application) : AndroidViewModel(application) 
 
             val sample = ResumeProfile.sampleProfile()
             lastSuccessProfile = sample
-            preferencesRepository.saveProfile(sample)
             _uiState.value = UiState.ExtractedNeedsVerification(sample)
         }
     }

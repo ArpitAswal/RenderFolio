@@ -94,6 +94,32 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Target Company -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTargetCompany"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:hint="@string/hint_target_company"
+            app:helperText="@string/helper_target_company"
+            app:helperTextEnabled="true"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTargetCompany"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/app_text_primary" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Phone -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPhone"

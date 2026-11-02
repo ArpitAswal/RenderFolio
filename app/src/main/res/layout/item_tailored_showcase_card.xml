@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_tailored_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_button_outlined"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="14dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="14dp"
+    android:paddingBottom="12dp">
+
+    <!-- Document Badge Icon -->
+    <LinearLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_icon_button_circle"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_description"
+            app:tint="@color/app_primary" />
+    </LinearLayout>
+
+    <!-- Details Column -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Role Headline -->
+        <TextView
+            android:id="@+id/tv_card_headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:textColor="@color/app_text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <!-- Candidate Name -->
+        <TextView
+            android:id="@+id/tv_card_candidate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:maxLines="1"
+            android:textColor="@color/app_primary"
+            android:textSize="13sp" />
+
+        <!-- Expiration / Age Badge (Earliest Expiration) -->
+        <TextView
+            android:id="@+id/tv_card_expiry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif"
+            android:textColor="#D97706"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Actions Container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Manual Delete Button -->
+        <ImageButton
+            android:id="@+id/btn_delete_showcase"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_icon_button_circle"
+            android:contentDescription="Delete Showcase"
+            android:padding="9dp"
+            android:src="@drawable/ic_delete"
+            app:tint="#EF4444" />
+
+        <!-- Right Chevron Indicator -->
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="#94A3B8" />
+
+    </LinearLayout>
+
+</LinearLayout>
+

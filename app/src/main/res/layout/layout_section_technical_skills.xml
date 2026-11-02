@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:contentDescription="@string/cd_section_technical_skills"
+    android:visibility="gone"
     android:layout_marginTop="28dp">
 
     <!-- Section Header Title -->

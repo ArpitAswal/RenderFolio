@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.R
+import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.databinding.ActivityStructureVerificationBinding
 import com.example.model.ResumeProfile
@@ -37,7 +38,7 @@ class StructureVerificationActivity : AppCompatActivity() {
         binding = ActivityStructureVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        preferencesRepository = ResumePreferencesRepository(applicationContext)
+        preferencesRepository = ResumePreferencesRepository.getInstance(applicationContext)
 
         setupToolbar()
         loadProfileAndSetupRecyclerView()
@@ -224,6 +225,10 @@ class StructureVerificationActivity : AppCompatActivity() {
             Toast.makeText(this, "Please provide your Professional Headline / Title.", Toast.LENGTH_SHORT).show()
             return
         }
+        if (hero.targetCompany.isBlank()) {
+            Toast.makeText(this, getString(R.string.error_target_company_required), Toast.LENGTH_SHORT).show()
+            return
+        }
 
         // Strict Phone Validation (rejects standalone country codes like +91 without subscriber digits)
         val digitsOnly = hero.contactInfo.phone.filter { it.isDigit() }
@@ -395,18 +400,42 @@ class StructureVerificationActivity : AppCompatActivity() {
         val compiledProfile = adapter.compileProfile(rightAdapter)
 
         lifecycleScope.launch {
-            preferencesRepository.saveProfile(compiledProfile)
-//            Toast.makeText(
-//                this@StructureVerificationActivity,
-//                "Resume Structure Verified & Compiled!",
-//                Toast.LENGTH_SHORT
-//            ).show()
+            // Attempt Cloud Sync via ResumeCloudRepository
+            val cloudRepo = ResumeCloudRepository()
+            val uploadResult = cloudRepo.uploadResume(compiledProfile)
 
-            val returnIntent = Intent().apply {
-                putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
+            val shareUrl = uploadResult.getOrNull() ?: "${ResumeCloudRepository.BASE_DEEP_LINK_URL}/local"
+            val shareId = shareUrl.substringAfterLast("/")
+
+            val showcase = com.example.model.SavedShowcase(
+                shareId = shareId,
+                shareUrl = shareUrl,
+                candidateName = compiledProfile.hero.fullName,
+                headline = compiledProfile.hero.headlineTitle.ifBlank { "Professional Resume" },
+                profile = compiledProfile,
+                targetCompany = compiledProfile.hero.targetCompany.trim()
+            )
+            preferencesRepository.saveShowcase(showcase)
+
+            if (uploadResult.isFailure) {
+                Toast.makeText(this@StructureVerificationActivity, R.string.toast_offline_sync_later, Toast.LENGTH_SHORT).show()
             }
-            setResult(RESULT_OK, returnIntent)
-            finish()
+
+            // Show Post-Compilation Celebration Modal
+            val celebrationSheet = ShowcaseQrBottomSheet.newInstance(
+                shareUrl = shareUrl,
+                candidateName = compiledProfile.hero.fullName,
+                isCelebration = true
+            )
+            celebrationSheet.onViewVisualizer = {
+                val returnIntent = Intent().apply {
+                    putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
+                }
+                setResult(RESULT_OK, returnIntent)
+                finish()
+            }
+            celebrationSheet.isCancelable = true
+            celebrationSheet.show(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
         }
     }
 

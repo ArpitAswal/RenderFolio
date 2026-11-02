@@ -40,13 +40,15 @@ data class ProfileHero(
     val fullName: String = "",
     val headlineTitle: String = "",
     val location: String = "",
-    val contactInfo: ContactInfo = ContactInfo()
+    val contactInfo: ContactInfo = ContactInfo(),
+    val targetCompany: String = ""
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "fullName" to fullName,
         "headlineTitle" to headlineTitle,
         "location" to location,
-        "contactInfo" to contactInfo.toMap()
+        "contactInfo" to contactInfo.toMap(),
+        "targetCompany" to targetCompany
     )
 
     companion object {
@@ -57,7 +59,8 @@ data class ProfileHero(
                 fullName = map["fullName"] as? String ?: "",
                 headlineTitle = map["headlineTitle"] as? String ?: "",
                 location = map["location"] as? String ?: "",
-                contactInfo = ContactInfo.fromMap(map["contactInfo"] as? Map<String, Any?>)
+                contactInfo = ContactInfo.fromMap(map["contactInfo"] as? Map<String, Any?>),
+                targetCompany = map["targetCompany"] as? String ?: ""
             )
         }
     }

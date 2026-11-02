@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.R
+import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.databinding.ActivityResumeVisualiserBinding
 import com.example.databinding.ItemVisualiserContactChipBinding
@@ -84,7 +85,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         binding = ActivityResumeVisualiserBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        preferencesRepository = ResumePreferencesRepository(applicationContext)
+        preferencesRepository = ResumePreferencesRepository.getInstance(applicationContext)
 
         // Handle window insets on CoordinatorLayout / NestedScrollView
         setupWindowInsets()
@@ -133,32 +134,77 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val uri = intent.data
+        if (uri != null) {
+            handleDeepLinkUri(uri)
+        }
+    }
+
     private fun loadInitialData() {
         val rawJson = intent.getStringExtra(EXTRA_PROFILE_JSON)
         if (!rawJson.isNullOrBlank()) {
             runCatching {
                 val profile = ResumeProfile.fromJson(rawJson)
-                bindHeroSection(profile.hero)
-                setupSection2(profile.coreSections.profileSummary)
-                setupSection3(profile.coreSections.workExperience)
-                setupSection4(profile.coreSections.projects)
-                setupSection5(profile.coreSections.skills)
-                setupSection6(profile.coreSections.education)
-                setupSection7(profile.dynamicSections)
-                viewModel.updateProfile(profile)
+                bindProfileToVisualizer(profile)
             }.onFailure {
                 loadFromPreferencesOrSample()
             }
         } else {
+            val uri = intent.data
+            if (uri != null) {
+                handleDeepLinkUri(uri)
+            } else {
+                loadFromPreferencesOrSample()
+            }
+        }
+    }
+
+    private fun handleDeepLinkUri(uri: Uri) {
+        val shareId = uri.lastPathSegment
+        if (shareId.isNullOrBlank()) {
             loadFromPreferencesOrSample()
+            return
+        }
+
+        // Hide empty canvas with static headings while fetching over network
+        binding.scrollView.visibility = View.INVISIBLE
+        binding.pbVisualiserLoading?.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            val cloudRepo = ResumeCloudRepository()
+            val result = cloudRepo.fetchResume(shareId)
+            binding.pbVisualiserLoading?.visibility = View.GONE
+
+            result.onSuccess { profile ->
+                bindProfileToVisualizer(profile)
+                binding.scrollView.visibility = View.VISIBLE
+            }.onFailure {
+                Toast.makeText(this@ResumeVisualiserActivity, R.string.toast_showcase_expired, Toast.LENGTH_LONG).show()
+                finish()
+            }
         }
     }
 
     private fun loadFromPreferencesOrSample() {
         lifecycleScope.launch {
             val cached = preferencesRepository.profileFlow.firstOrNull() ?: ResumeProfile.sampleProfile()
-            viewModel.updateProfile(cached)
+            bindProfileToVisualizer(cached)
         }
+    }
+
+    private fun bindProfileToVisualizer(profile: ResumeProfile) {
+        bindHeroSection(profile.hero)
+        setupSection2(profile.coreSections.profileSummary)
+        setupSection3(profile.coreSections.workExperience)
+        setupSection4(profile.coreSections.projects)
+        setupSection5(profile.coreSections.skills)
+        setupSection6(profile.coreSections.education)
+        setupSection7(profile.dynamicSections)
+        binding.pbVisualiserLoading?.visibility = View.GONE
+        binding.scrollView.visibility = View.VISIBLE
     }
 
     private fun observeViewModel() {

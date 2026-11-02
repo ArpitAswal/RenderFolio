@@ -125,15 +125,15 @@
                 android:textColor="@color/app_text_primary"
                 android:textSize="16sp" />
 
-            <!-- Primary Action Button: "Upload Resume" (wrap_content, centered, min 48dp height) -->
+            <!-- Primary Action Button: "PDF" with icon -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_upload_pdf"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center_horizontal"
                 android:minHeight="48dp"
-                android:minWidth="180dp"
-                android:layout_marginTop="18dp"
+                android:minWidth="140dp"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/bg_button_primary"
                 app:backgroundTint="@null"
                 app:icon="@drawable/ic_description"
@@ -146,47 +146,27 @@
                 android:text="@string/cold_start_action_button"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <!-- Helper Subtext: "Supported format: PDF • Up to 10MB" -->
+            <!-- Helper Subtext: "PDF format • Up to 10MB" -->
             <TextView
                 android:id="@+id/tv_file_limit_note"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:fontFamily="sans-serif"
                 android:text="@string/cold_start_file_limit"
                 android:textColor="@color/app_text_muted"
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Secondary Pathway: Explore Pre-loaded Demo Showcase -->
-        <!-- wrap_content + center_horizontal clusters icon and text cleanly without stretching -->
-        <Button
-            android:id="@+id/btn_load_demo"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_gravity="center_horizontal"
-            android:minHeight="48dp"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_button_outlined"
-            android:drawableStart="@drawable/ic_play"
-            android:drawablePadding="10dp"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:paddingHorizontal="24dp"
-            android:text="@string/cold_start_demo_button"
-            android:textAllCaps="false"
-            android:textColor="@color/app_primary"
-            android:textSize="14sp" />
-
-        <!-- Format Note: "Supports native text PDFs & scanned documents" -->
+        <!-- Format Note: "Supports native text PDFs & scanned documents via Firebase ML" -->
         <TextView
             android:id="@+id/tv_format_note"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="18dp"
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:paddingHorizontal="16dp"
@@ -199,12 +179,12 @@
             android:id="@+id/layout_privacy_note"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_pill_badge"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="14dp"
-            android:paddingVertical="8dp">
+            android:paddingVertical="7dp">
 
             <TextView
                 android:id="@+id/tv_privacy_note"
@@ -213,8 +193,80 @@
                 android:fontFamily="sans-serif"
                 android:text="@string/cold_start_privacy_note"
                 android:textColor="@color/app_text_muted"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
         </LinearLayout>
+
+        <!-- Container for Conditional Cold Start Actions -->
+        <FrameLayout
+            android:id="@+id/container_cold_start_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp">
+
+            <!-- First-Time Pathway: Demo button -->
+            <Button
+                android:id="@+id/btn_load_demo"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:minHeight="48dp"
+                android:background="@drawable/bg_button_outlined"
+                android:drawableStart="@drawable/ic_play"
+                android:drawablePadding="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:paddingHorizontal="20dp"
+                android:text="@string/cold_start_demo_button"
+                android:textAllCaps="false"
+                android:textColor="@color/app_primary"
+                android:textSize="14sp" />
+
+            <!-- Returning User Pathway: Replaces btn_load_demo when resume is compiled -->
+            <LinearLayout
+                android:id="@+id/layout_active_showcase_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Primary Button: View Visualizer -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_view_active_visualizer"
+                    android:layout_width="match_parent"
+                    android:maxWidth="340dp"
+                    android:layout_height="50dp"
+                    android:minHeight="48dp"
+                    android:background="@drawable/bg_button_primary"
+                    app:backgroundTint="@null"
+                    app:icon="@drawable/ic_visibility"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/btn_view_visualizer"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- Secondary Button: Show QR Code -->
+                <Button
+                    android:id="@+id/btn_show_active_qr"
+                    android:layout_width="match_parent"
+                    android:maxWidth="340dp"
+                    android:layout_height="50dp"
+                    android:minHeight="48dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_button_outlined"
+                    android:drawableStart="@drawable/ic_qr_code"
+                    android:drawablePadding="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/btn_show_qr_code"
+                    android:textAllCaps="false"
+                    android:textColor="@color/app_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </FrameLayout>
 
     </LinearLayout>
 </ScrollView>

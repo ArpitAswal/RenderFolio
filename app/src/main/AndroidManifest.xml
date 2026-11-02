@@ -9,6 +9,10 @@
     <uses-permission
         android:name="android.permission.READ_MEDIA_IMAGES" />
 
+    <!-- Network permissions for Firebase Cloud Sync and Deep Link verification -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,7 +27,6 @@
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -35,9 +38,45 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.ResumeVisualiserActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="Resume Visualiser"
-            android:theme="@style/Theme.MyApplication" />
+            android:theme="@style/Theme.MyApplication">
+            <!-- Web Deep Link: https://lightweight-firebase-projects.web.app/r/{id} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="lightweight-firebase-projects.web.app"
+                    android:pathPrefix="/r/" />
+                <data
+                    android:scheme="https"
+                    android:host="resumeshowcase.web.app"
+                    android:pathPrefix="/r/" />
+            </intent-filter>
+
+            <!-- Custom URI Scheme: resumeshowcase://r/{id} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="resumeshowcase"
+                    android:host="r" />
+            </intent-filter>
+        </activity>
+
+        <!-- Secure FileProvider for sharing QR code images to external apps -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

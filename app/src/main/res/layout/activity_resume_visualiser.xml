@@ -9,12 +9,22 @@
     android:background="@color/app_background"
     android:fitsSystemWindows="true">
 
+    <!-- Centered Indeterminate Loading for Deep Link Ingestion -->
+    <ProgressBar
+        android:id="@+id/pb_visualiser_loading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/app_primary"
+        android:visibility="gone" />
+
     <!-- NestedScrollView driving the whole-section motion physics -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
+        android:visibility="invisible"
         android:overScrollMode="always">
 
         <!-- Outer Column Centered to Screen -->
