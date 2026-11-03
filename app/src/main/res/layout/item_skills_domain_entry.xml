@@ -6,6 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingHorizontal="4dp"
     android:paddingVertical="8dp">
 
     <!-- Domain Header Row -->
@@ -28,21 +32,21 @@
 
         <ImageView
             android:id="@+id/btnEditDomain"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/cd_edit_domain_skills"
-            android:padding="6dp"
+            android:padding="12dp"
             android:src="@drawable/ic_edit_outline_16"
             app:tint="@color/app_text_muted" />
 
         <ImageView
             android:id="@+id/btnDeleteDomain"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/cd_delete_domain"
-            android:padding="6dp"
+            android:padding="12dp"
             android:src="@drawable/ic_delete_outline_16"
             app:tint="@color/app_danger" />
     </LinearLayout>

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:showIn="@layout/item_work_experience"
+    tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets">
 
     <!-- Subtle divider between entries (1dp @color/app_border with 8dp vertical margin) -->
     <View
@@ -39,12 +42,13 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical|end"
             android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:paddingStart="12dp"
+            android:minHeight="36dp"
+            android:paddingStart="8dp"
             android:paddingEnd="4dp"
+            android:paddingVertical="4dp"
             android:text="@string/action_remove_position"
             android:textColor="@color/app_danger"
             android:textSize="12sp"
@@ -52,7 +56,7 @@
 
     </RelativeLayout>
 
-    <!-- Company Name -->
+    <!-- 1. Company Name -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCompanyName"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -63,7 +67,10 @@
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp">
+        app:boxCornerRadiusTopStart="12dp"
+        app:startIconDrawable="@drawable/ic_business"
+        app:startIconMinSize="44dp"
+        app:startIconTint="@color/app_primary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etCompanyName"
@@ -72,60 +79,130 @@
             android:imeOptions="actionNext"
             android:inputType="textCapWords"
             android:maxLines="1"
+            android:maxWidth="488dp"
+            android:paddingStart="46dp"
+            android:paddingEnd="16dp"
             android:textColor="@color/app_text_primary"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            tools:ignore="RtlSymmetry,VisualLintTextFieldSize,WideTextField" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Duration (e.g. 2020 – 2024) -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilCompanyDuration"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:hint="@string/hint_duration_example"
-        app:boxCornerRadiusBottomEnd="12dp"
-        app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCompanyDuration"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:imeOptions="actionNext"
-            android:inputType="text"
-            android:maxLines="1"
-            android:textColor="@color/app_text_primary"
-            android:textSize="14sp" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Role Title -->
+    <!-- 2. Role Title -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilRoleTitle"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="10dp"
         android:hint="@string/hint_role_title"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp">
+        app:boxCornerRadiusTopStart="12dp"
+        app:startIconDrawable="@drawable/ic_work"
+        app:startIconMinSize="44dp"
+        app:startIconTint="@color/app_primary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etRoleTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionNext"
             android:inputType="textCapWords"
             android:maxLines="1"
+            android:maxWidth="488dp"
+            android:paddingStart="46dp"
+            android:paddingEnd="16dp"
             android:textColor="@color/app_text_primary"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            tools:ignore="RtlSymmetry,VisualLintTextFieldSize,WideTextField" />
 
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 3. Duration (e.g. 2020 – 2024) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCompanyDuration"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="@string/hint_duration_example"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:startIconDrawable="@drawable/ic_calendar"
+        app:startIconMinSize="44dp"
+        app:startIconTint="@color/app_primary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCompanyDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:maxWidth="488dp"
+            android:paddingStart="46dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/app_text_primary"
+            android:textSize="14sp"
+            tools:ignore="RtlSymmetry,VisualLintTextFieldSize,WideTextField" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Sub-Section: Client Applications & Deliverables -->
+    <LinearLayout
+        android:id="@+id/containerClientApps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:id="@+id/tvClientAppsHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/header_client_applications"
+                android:textColor="@color/app_text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddClientApp"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="10dp"
+                android:text="@string/action_add_client_app"
+                android:textColor="@color/app_primary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/app_primary" />
+
+        </LinearLayout>
+
+        <!-- ChipGroup to hold interactive client app link chips -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cgClientApps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="4dp" />
+
+    </LinearLayout>
 
     <!-- Sub-Header Row: Role & Responsibilities and compact + Add Bullet -->
     <LinearLayout

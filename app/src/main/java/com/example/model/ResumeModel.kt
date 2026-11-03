@@ -67,6 +67,29 @@ data class ProfileHero(
 }
 
 @Serializable
+data class ClientAppItem(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val url: String = ""
+) {
+    fun toMap(): Map<String, Any?> = mapOf(
+        "id" to id,
+        "name" to name,
+        "url" to url
+    )
+
+    companion object {
+        fun fromMap(map: Map<String, Any?>): ClientAppItem {
+            return ClientAppItem(
+                id = map["id"] as? String ?: UUID.randomUUID().toString(),
+                name = map["name"] as? String ?: "",
+                url = map["url"] as? String ?: ""
+            )
+        }
+    }
+}
+
+@Serializable
 data class WorkExperienceItem(
     val id: String = UUID.randomUUID().toString(),
     val companyName: String = "",
@@ -74,7 +97,8 @@ data class WorkExperienceItem(
     val startDate: String = "",
     val endDate: String = "",
     val bulletPoints: List<String> = emptyList(),
-    val techStackTags: List<String> = emptyList()
+    val techStackTags: List<String> = emptyList(),
+    val clientApps: List<ClientAppItem> = emptyList()
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "id" to id,
@@ -83,7 +107,8 @@ data class WorkExperienceItem(
         "startDate" to startDate,
         "endDate" to endDate,
         "bulletPoints" to bulletPoints,
-        "techStackTags" to techStackTags
+        "techStackTags" to techStackTags,
+        "clientApps" to clientApps.map { it.toMap() }
     )
 
     companion object {
@@ -96,7 +121,14 @@ data class WorkExperienceItem(
                 startDate = map["startDate"] as? String ?: "",
                 endDate = map["endDate"] as? String ?: "",
                 bulletPoints = (map["bulletPoints"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
-                techStackTags = (map["techStackTags"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                techStackTags = (map["techStackTags"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                clientApps = (map["clientApps"] as? List<*>)?.mapNotNull {
+                    when (it) {
+                        is Map<*, *> -> ClientAppItem.fromMap(it as Map<String, Any?>)
+                        is String -> ClientAppItem(name = it)
+                        else -> null
+                    }
+                } ?: emptyList()
             )
         }
     }

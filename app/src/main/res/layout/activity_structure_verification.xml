@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/app_background"
+        android:fitsSystemWindows="true"
         android:stateListAnimator="@null"
         app:elevation="0dp"
         app:liftOnScroll="false">
@@ -27,6 +28,8 @@
             app:navigationContentDescription="Back"
             app:title="Structure Verification"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:contentInsetEnd="16dp"
+            app:contentInsetEndWithActions="16dp"
             app:menu="@menu/menu_structure_verification" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -38,7 +41,7 @@
         android:clipToPadding="false"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
-        android:paddingTop="12dp"
+        android:paddingTop="0dp"
         android:paddingBottom="56dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_personal_info" />

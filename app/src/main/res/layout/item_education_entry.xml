@@ -28,7 +28,7 @@
             android:background="@drawable/bg_pill_badge"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="Education #1"
+            android:text="@string/education_item"
             android:textColor="@color/app_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -39,12 +39,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical|end"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="4dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
             android:text="@string/action_remove_education"
             android:textColor="@color/app_danger"
             android:textSize="12sp"
@@ -55,11 +53,15 @@
     <!-- Institution Name -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilInstitution"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_institution_name"
+        app:errorEnabled="true"
+        app:startIconDrawable="@drawable/ic_business"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
@@ -72,6 +74,8 @@
             android:imeOptions="actionNext"
             android:inputType="textCapWords"
             android:maxLines="1"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/app_text_primary"
             android:textSize="14sp" />
 
@@ -80,11 +84,15 @@
     <!-- Degree / Course -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilDegree"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_degree"
+        app:errorEnabled="true"
+        app:startIconDrawable="@drawable/ic_work"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
@@ -97,6 +105,8 @@
             android:imeOptions="actionNext"
             android:inputType="textCapWords"
             android:maxLines="1"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/app_text_primary"
             android:textSize="14sp" />
 
@@ -105,11 +115,15 @@
     <!-- Duration / Graduation Years (e.g. 2020 – 2024) -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilDuration"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="@string/hint_duration_example"
+        app:errorEnabled="true"
+        app:startIconDrawable="@drawable/ic_calendar"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
@@ -122,6 +136,8 @@
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/app_text_primary"
             android:textSize="14sp" />
 

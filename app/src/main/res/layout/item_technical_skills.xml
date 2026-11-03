@@ -8,7 +8,7 @@
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/app_border"
     app:strokeWidth="1dp">
 
@@ -40,12 +40,13 @@
                 android:id="@+id/btnAddSkill"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="34dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="6dp"
                 android:text="@string/action_add_domain"
-                android:textSize="11sp"
+                android:textColor="@color/app_primary"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:paddingHorizontal="10dp"
+                android:paddingHorizontal="12dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="8dp"
@@ -58,7 +59,8 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
-                android:src="@drawable/ic_drag_handle" />
+                android:src="@drawable/ic_drag_handle"
+                app:tint="@color/app_text_secondary" />
         </LinearLayout>
 
         <!-- Dynamic Container for Semantic Domain Rows (No large chip cloud) -->

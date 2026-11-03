@@ -53,12 +53,15 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
         val btnShareQr = view.findViewById<ImageButton>(R.id.btn_action_share_qr)
         val btnViewVisualizer = view.findViewById<MaterialButton>(R.id.btn_qr_view_visualizer)
 
-        tvTitle.text = getString(R.string.title_showcase_ready)
-        tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
-
         if (isCelebrationMode) {
+            // Post-compilation celebration mode from Structure Verification
+            tvTitle.text = getString(R.string.title_showcase_ready)
+            tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
             btnViewVisualizer.visibility = View.VISIBLE
         } else {
+            // Standalone QR display from Cold Start (candidate name header, no redundant visualizer button)
+            tvTitle.text = if (candidateName.isNotBlank()) candidateName else getString(R.string.title_showcase_ready)
+            tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
             btnViewVisualizer.visibility = View.GONE
         }
 

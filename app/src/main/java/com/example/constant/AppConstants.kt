@@ -8,6 +8,19 @@ object AppConstants {
     const val MAX_FILE_SIZE_BYTES = 10L * 1024L * 1024L // 10MB
     const val TIER_1_CHAR_THRESHOLD = 150 // Threshold below which ML Kit OCR activates
 
+    // Cold-Start Screen UI & Adaptive Tokens
+    const val MAX_COLD_START_CONTENT_WIDTH_DP = 380
+    const val TABLET_COLD_START_CONTENT_WIDTH_DP = 440
+    const val COLD_START_CARD_CORNER_RADIUS_DP = 20
+    const val COLD_START_BUTTON_CORNER_RADIUS_DP = 14
+    const val COLD_START_ENTRANCE_ANIM_DURATION_MS = 280L
+
+    // PDF Extraction Screen Tokens
+    const val EXTRACTION_CONTENT_MAX_WIDTH_DP = 380
+    const val EXTRACTION_WHEEL_HEIGHT_DP = 220
+    const val EXTRACTION_SLOT_HEIGHT_DP = 68
+    const val EXTRACTION_SCROLLING_SPACING_DP = 20
+
     val DarkBackground = Color(0xFF121418)
     val DarkSurface = Color(0xFF1C2026)
     val DarkPrimary = Color(0xFF3B82F6)

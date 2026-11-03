@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Cold-Start PDF Attachment Screen (Mobile Layout)
+    Paradigm: 100% Pure XML (ConstraintLayout inside NestedScrollView)
+    Features:
+      - Centered content container: vertically and horizontally centered on viewport
+      - Clean borderless MaterialCardView (pure surface elevation, zero harsh strokes)
+      - Resolves the "button-inside-a-button" pattern: Card is non-clickable, only btn_upload_pdf triggers file picker
+      - WCAG AA compliant text contrast ratios using @color/app_text_secondary (>6.9:1)
+      - Natural wrap_content button widths (preventing excessively wide buttons)
+      - Minimum 48x48dp touch targets on all interactive components
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scroll_cold_start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,265 +20,310 @@
     android:fillViewport="true"
     android:overScrollMode="ifContentScrolls">
 
-    <!-- Root vertical container: centered content with responsive padding -->
-    <LinearLayout
+    <!-- Root ConstraintLayout: fills viewport height and enables vertical centering of inner container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
         android:paddingHorizontal="24dp"
-        android:paddingVertical="32dp">
+        android:paddingVertical="24dp">
 
-        <!-- App Title Badge: "ResumeShowcase" (18sp Medium to meet WCAG AA contrast threshold) -->
+        <!--
+            Bounded Content Container:
+            - Vertically centered via top/bottom constraints with bias 0.5
+            - Horizontally centered via start/end constraints
+            - Maximum width bounded to 380dp to prevent awkward horizontal stretch on wide phones
+        -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/container_centered_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_pill_badge"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="14dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="6dp">
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_description" />
-
-            <TextView
-                android:id="@+id/tv_app_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/cold_start_app_title"
-                android:textColor="@color/app_primary"
-                android:textSize="18sp" />
-        </LinearLayout>
-
-        <!-- Header Section: Centered Headline and Subtitle -->
-        <LinearLayout
-            android:id="@+id/layout_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="24dp"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <!-- Headline: "Upload your professional background" (22sp Bold) -->
-            <TextView
-                android:id="@+id/tv_headline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif"
-                android:gravity="center"
-                android:lineSpacingExtra="4dp"
-                android:text="@string/cold_start_headline"
-                android:textColor="@color/app_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <!-- Subtitle: "Convert your static PDF resume into an interactive digital showcase." (14sp Muted) -->
-            <TextView
-                android:id="@+id/tv_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:fontFamily="sans-serif"
-                android:gravity="center"
-                android:lineSpacingExtra="3dp"
-                android:maxWidth="340dp"
-                android:text="@string/cold_start_subtitle"
-                android:textColor="@color/app_text_muted"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Primary Dropzone Card -->
-        <!-- Note: clickable="true" and focusable="true" ensure keyboard accessibility and touch compatibility -->
-        <LinearLayout
-            android:id="@+id/card_dropzone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxWidth="400dp"
-            android:background="@drawable/bg_dropzone_card"
-            android:clickable="true"
-            android:elevation="4dp"
-            android:focusable="true"
-            android:gravity="center"
+            android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:outlineProvider="background"
-            android:paddingHorizontal="24dp"
-            android:paddingVertical="28dp">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintWidth_max="380dp">
 
-            <!-- Upload Circle Badge -->
-            <FrameLayout
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="@drawable/bg_upload_icon">
+            <!-- Brand Badge: "ResumeShowcase" (18sp Medium to meet WCAG AA contrast threshold) -->
+            <LinearLayout
+                android:id="@+id/layout_brand_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_badge"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="6dp">
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="center"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_cloud_upload" />
-            </FrameLayout>
+                    android:src="@drawable/ic_description"
+                    app:tint="@color/app_primary" />
 
-            <TextView
-                android:id="@+id/tv_dropzone_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/cold_start_dropzone_title"
-                android:textColor="@color/app_text_primary"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/tv_app_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/cold_start_app_title"
+                    android:textColor="@color/app_primary"
+                    android:textSize="18sp" />
+            </LinearLayout>
 
-            <!-- Primary Action Button: "PDF" with icon -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_upload_pdf"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_gravity="center_horizontal"
-                android:minHeight="48dp"
-                android:minWidth="140dp"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_button_primary"
-                app:backgroundTint="@null"
-                app:icon="@drawable/ic_description"
-                app:iconTint="@android:color/white"
-                app:iconGravity="textStart"
-                app:iconPadding="10dp"
-                android:fontFamily="sans-serif-medium"
-                android:gravity="center"
-                android:paddingHorizontal="24dp"
-                android:text="@string/cold_start_action_button"
-                android:textAllCaps="false"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <!-- Helper Subtext: "PDF format • Up to 10MB" -->
-            <TextView
-                android:id="@+id/tv_file_limit_note"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:fontFamily="sans-serif"
-                android:text="@string/cold_start_file_limit"
-                android:textColor="@color/app_text_muted"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Format Note: "Supports native text PDFs & scanned documents via Firebase ML" -->
-        <TextView
-            android:id="@+id/tv_format_note"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
-            android:paddingHorizontal="16dp"
-            android:text="@string/cold_start_format_note"
-            android:textColor="@color/app_text_muted"
-            android:textSize="12sp" />
-
-        <!-- Privacy Badge: "🔒 100% Private · On-device processing" -->
-        <LinearLayout
-            android:id="@+id/layout_privacy_note"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_pill_badge"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="7dp">
-
-            <TextView
-                android:id="@+id/tv_privacy_note"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif"
-                android:text="@string/cold_start_privacy_note"
-                android:textColor="@color/app_text_muted"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!-- Container for Conditional Cold Start Actions -->
-        <FrameLayout
-            android:id="@+id/container_cold_start_actions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp">
-
-            <!-- First-Time Pathway: Demo button -->
-            <Button
-                android:id="@+id/btn_load_demo"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_gravity="center_horizontal"
-                android:minHeight="48dp"
-                android:background="@drawable/bg_button_outlined"
-                android:drawableStart="@drawable/ic_play"
-                android:drawablePadding="8dp"
-                android:fontFamily="sans-serif-medium"
-                android:gravity="center"
-                android:paddingHorizontal="20dp"
-                android:text="@string/cold_start_demo_button"
-                android:textAllCaps="false"
-                android:textColor="@color/app_primary"
-                android:textSize="14sp" />
-
-            <!-- Returning User Pathway: Replaces btn_load_demo when resume is compiled -->
+            <!-- Header Section: Centered Headline and Subtitle -->
             <LinearLayout
-                android:id="@+id/layout_active_showcase_actions"
+                android:id="@+id/layout_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:layout_marginTop="20dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-                <!-- Primary Button: View Visualizer -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_view_active_visualizer"
-                    android:layout_width="match_parent"
-                    android:maxWidth="340dp"
-                    android:layout_height="50dp"
-                    android:minHeight="48dp"
-                    android:background="@drawable/bg_button_primary"
-                    app:backgroundTint="@null"
-                    app:icon="@drawable/ic_visibility"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="@string/btn_view_visualizer"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp"
+                <!-- Headline: "Transform your resume" (22sp Bold) -->
+                <TextView
+                    android:id="@+id/tv_headline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/cold_start_headline"
+                    android:textColor="@color/app_text_primary"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <!-- Secondary Button: Show QR Code -->
-                <Button
-                    android:id="@+id/btn_show_active_qr"
-                    android:layout_width="match_parent"
-                    android:maxWidth="340dp"
-                    android:layout_height="50dp"
-                    android:minHeight="48dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_button_outlined"
-                    android:drawableStart="@drawable/ic_qr_code"
-                    android:drawablePadding="8dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="@string/btn_show_qr_code"
-                    android:textAllCaps="false"
-                    android:textColor="@color/app_primary"
+                <!-- Subtitle: "Convert your static PDF resume into an interactive digital portfolio." (14sp Regular) -->
+                <TextView
+                    android:id="@+id/tv_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp"
+                    android:maxWidth="320dp"
+                    android:text="@string/cold_start_subtitle"
+                    android:textColor="@color/app_text_secondary"
                     android:textSize="14sp" />
             </LinearLayout>
-        </FrameLayout>
 
-    </LinearLayout>
-</ScrollView>
+            <!-- Primary Dropzone Presentation Card (MaterialCardView: borderless, non-clickable visual container) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_dropzone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:clickable="false"
+                android:focusable="false"
+                app:cardBackgroundColor="@color/app_surface"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="24dp"
+                    android:paddingVertical="26dp">
+
+                    <!-- Upload Circle Badge (60dp x 60dp) -->
+                    <FrameLayout
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:background="@drawable/bg_upload_icon">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_cloud_upload"
+                            app:tint="@color/app_primary" />
+                    </FrameLayout>
+
+                    <!-- Dropzone Title: "Tap to browse your PDF resume" (15sp Medium) -->
+                    <TextView
+                        android:id="@+id/tv_dropzone_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:text="@string/cold_start_dropzone_title"
+                        android:textColor="@color/app_text_primary"
+                        android:textSize="15sp" />
+
+                    <!-- Dedicated Hero Action Button: "Upload Resume" (Only clickable trigger in card) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_upload_pdf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="14dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:minHeight="48dp"
+                        android:minWidth="160dp"
+                        android:paddingHorizontal="24dp"
+                        android:text="@string/cold_start_action_button"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/app_primary"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_description"
+                        app:iconGravity="textStart"
+                        app:iconPadding="10dp"
+                        app:iconTint="@android:color/white" />
+
+                    <!-- Helper Subtext: "Supports PDF up to 10MB" (12sp Regular, high-contrast secondary) -->
+                    <TextView
+                        android:id="@+id/tv_file_limit_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:fontFamily="sans-serif"
+                        android:gravity="center"
+                        android:text="@string/cold_start_file_limit"
+                        android:textColor="@color/app_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Format Note: "Supports native text PDFs & scanned documents" (Explicitly preserved, high-contrast) -->
+            <TextView
+                android:id="@+id/tv_format_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:text="@string/cold_start_format_note"
+                android:textColor="@color/app_text_secondary"
+                android:textSize="12sp" />
+
+            <!-- Privacy Trust Badge: "🔒 100% Private · Parsed on your device" -->
+            <LinearLayout
+                android:id="@+id/layout_privacy_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_pill_badge"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp">
+
+                <TextView
+                    android:id="@+id/tv_privacy_note"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="@string/cold_start_privacy_note"
+                    android:textColor="@color/app_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Container for Conditional Cold Start Actions -->
+            <FrameLayout
+                android:id="@+id/container_cold_start_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <!-- First-Time Pathway: Explore Demo Showcase Button (wrap_content centered, no lint wide-button warning) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_load_demo"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_horizontal"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="24dp"
+                    android:text="@string/cold_start_demo_button"
+                    android:textAllCaps="false"
+                    android:textColor="@color/app_primary"
+                    android:textSize="14sp"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_play"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="@color/app_primary"
+                    app:strokeColor="@color/app_primary"
+                    app:strokeWidth="1.5dp" />
+
+                <!-- Returning User Pathway: Replaces btn_load_demo when resume is compiled -->
+                <LinearLayout
+                    android:id="@+id/layout_active_showcase_actions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- Primary Action: View Visualizer -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_view_active_visualizer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center_horizontal"
+                        android:fontFamily="sans-serif-medium"
+                        android:minHeight="48dp"
+                        android:minWidth="240dp"
+                        android:paddingHorizontal="24dp"
+                        android:text="@string/btn_view_visualizer"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/app_primary"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_visibility"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconTint="@android:color/white" />
+
+                    <!-- Secondary Action: Show QR Code -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_show_active_qr"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:minHeight="48dp"
+                        android:minWidth="240dp"
+                        android:paddingHorizontal="24dp"
+                        android:text="@string/btn_show_qr_code"
+                        android:textAllCaps="false"
+                        android:textColor="@color/app_primary"
+                        android:textSize="14sp"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_qr_code"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconTint="@color/app_primary"
+                        app:strokeColor="@color/app_primary"
+                        app:strokeWidth="1.5dp" />
+                </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

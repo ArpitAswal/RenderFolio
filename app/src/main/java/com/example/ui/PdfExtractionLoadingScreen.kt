@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.constant.AppConstants
 import kotlin.math.abs
 
@@ -43,6 +45,11 @@ import kotlin.math.abs
  *    - For the first section, NO previous section title is shown above.
  *    - For the last section, NO upcoming section title is shown below.
  *    - Items roll smoothly from bottom to top with 3D rotation, scaling, and opacity interpolation.
+ * 4. Harmonized Spacing Rhythm:
+ *    - Completely centered on screen without any artificial card background.
+ *    - Gap 1 (Header -> Wheel): 24dp.
+ *    - Gap 2 (Wheel -> Status): 20dp.
+ *    - 220dp wheel container with 68dp slots to eliminate empty voids.
  */
 @Composable
 fun PdfExtractionLoadingScreen(
@@ -120,6 +127,7 @@ fun PdfExtractionLoadingScreen(
 
     val density = LocalDensity.current
 
+    // Root Canvas: fills entire viewport, centering the unified extraction layout
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -127,19 +135,20 @@ fun PdfExtractionLoadingScreen(
             .testTag(AppConstants.TAG_PROGRESS_INDICATOR),
         contentAlignment = Alignment.Center
     ) {
+        // Centered Content Column: bounded width, zero card background, unified vertical rhythm
         Column(
             modifier = Modifier
-                .widthIn(max = 500.dp)
+                .widthIn(max = AppConstants.EXTRACTION_CONTENT_MAX_WIDTH_DP.dp)
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Header Group
+            // Top Header Component (Static Text Group)
             Text(
-                text = "Extracting Resume Data...",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
+                text = stringResource(R.string.extraction_title),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
@@ -147,30 +156,30 @@ fun PdfExtractionLoadingScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Analyzing document structure & career milestones",
-                fontSize = 13.sp,
+                text = stringResource(R.string.extraction_subtitle),
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            // Spacing above middle scrolling wheel: consistent 16dp
+            Spacer(modifier = Modifier.height(AppConstants.EXTRACTION_SCROLLING_SPACING_DP.dp))
 
-            // 3D ListWheelScrollView Cylindrical Wheel Container
+            // Middle Component: 3D Cylindrical Wheel Animation (height 220dp, seamless canvas background)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
-                    .clip(RoundedCornerShape(12.dp)),
+                    .height(AppConstants.EXTRACTION_WHEEL_HEIGHT_DP.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Render wheel items with 3D cylindrical transform (dots only, no vertical divider line)
+                // Render wheel items with 3D cylindrical transform
                 effectiveSections.forEachIndexed { index, title ->
                     val d = index - animatedIndex
 
                     // Only render items currently visible in the 3-zone cylindrical wheel
                     if (abs(d) < 1.45f) {
-                        val slotHeightPx = with(density) { 76.dp.toPx() }
+                        val slotHeightPx = with(density) { AppConstants.EXTRACTION_SLOT_HEIGHT_DP.dp.toPx() }
                         val translationY = d * slotHeightPx
                         val scale = (1.0f - (abs(d) * 0.16f)).coerceIn(0.75f, 1.0f)
                         val rotationX = (-d * 22f).coerceIn(-30f, 30f)
@@ -223,7 +232,7 @@ fun PdfExtractionLoadingScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Step Indicator Node on the vertical line
+                                // Step Indicator Node on the vertical timeline
                                 Box(
                                     modifier = Modifier
                                         .width(28.dp)
@@ -235,7 +244,7 @@ fun PdfExtractionLoadingScreen(
                                             // Active Glowing Indicator Node
                                             Box(
                                                 modifier = Modifier
-                                                    .size(26.dp * pulseScale)
+                                                    .size(24.dp * pulseScale)
                                                     .clip(CircleShape)
                                                     .background(MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha))
                                             )
@@ -282,7 +291,7 @@ fun PdfExtractionLoadingScreen(
                                     ) {
                                         Text(
                                             text = title,
-                                            fontSize = if (isCenterActive) 18.sp else 16.sp,
+                                            fontSize = if (isCenterActive) 18.sp else 15.sp,
                                             fontWeight = if (isCenterActive) FontWeight.SemiBold else FontWeight.Medium,
                                             color = if (isCenterActive) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -291,15 +300,15 @@ fun PdfExtractionLoadingScreen(
                                             val percentText = "${(animatedProgress * 100).toInt().coerceIn(0, 100)}%"
                                             Text(
                                                 text = percentText,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }
 
                                     if (isCenterActive) {
-                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Spacer(modifier = Modifier.height(5.dp))
 
                                         // Status Badge Label: "Active Extraction"
                                         Surface(
@@ -307,15 +316,15 @@ fun PdfExtractionLoadingScreen(
                                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                                         ) {
                                             Text(
-                                                text = "Active Extraction",
-                                                fontSize = 12.sp,
+                                                text = stringResource(R.string.extraction_active_badge),
+                                                fontSize = 11.sp,
                                                 fontWeight = FontWeight.Medium,
                                                 color = MaterialTheme.colorScheme.primary,
                                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                             )
                                         }
 
-                                        Spacer(modifier = Modifier.height(10.dp))
+                                        Spacer(modifier = Modifier.height(8.dp))
 
                                         // Progress Bar: Unified continuous bar without Material 3 gap or stop dot
                                         Box(
@@ -336,7 +345,6 @@ fun PdfExtractionLoadingScreen(
                                                 )
                                             }
                                         }
-
                                     }
                                 }
                             }
@@ -345,9 +353,10 @@ fun PdfExtractionLoadingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Spacing below middle scrolling wheel: consistent 16dp
+            Spacer(modifier = Modifier.height(AppConstants.EXTRACTION_SCROLLING_SPACING_DP.dp))
 
-            // Relevant app information displayed below the section list
+            // Bottom Component Group: Privacy Trust Pill + Dynamic Section Subtext
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
@@ -357,12 +366,11 @@ fun PdfExtractionLoadingScreen(
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🔒 100% Private · On-device processing",
+                        text = stringResource(R.string.cold_start_privacy_note),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
@@ -370,12 +378,13 @@ fun PdfExtractionLoadingScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Universal Dynamic Subtext: dynamically reflects candidate's active section title
+            // Universal Dynamic Subtext: dynamically reflects active section title
             Text(
-                text = "Extracting and structuring $activeSectionTitle...",
+                text = stringResource(R.string.extraction_status_format, activeSectionTitle),
                 fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )

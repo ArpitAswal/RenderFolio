@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
+        app:errorEnabled="true"
         android:hint="@string/hint_skills_domain_name">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -32,6 +33,7 @@
         style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:errorEnabled="true"
         app:helperText="@string/helper_skills_domain_note"
         android:hint="@string/hint_skills_comma_separated">
 

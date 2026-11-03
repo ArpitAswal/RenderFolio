@@ -12,6 +12,8 @@
         android:id="@+id/btnAddCustomSection"
         android:layout_width="match_parent"
         android:layout_height="52dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:background="@drawable/bg_dashed_button"
         android:text="@string/action_add_custom_section"
         android:textColor="@color/app_primary"

@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
-import androidx.core.graphics.toColorInt
 
 enum class PaneTarget {
     ALL,
@@ -107,6 +106,9 @@ class StructureSectionsAdapter(
     init {
         if (profile.hero.contactInfo.linkedinUrl.isNotBlank()) profileLinks.add(profile.hero.contactInfo.linkedinUrl)
         if (profile.hero.contactInfo.githubUrl.isNotBlank()) profileLinks.add(profile.hero.contactInfo.githubUrl)
+        if (profile.hero.contactInfo.websiteUrl.isNotBlank() && !profileLinks.contains(profile.hero.contactInfo.websiteUrl)) {
+            profileLinks.add(profile.hero.contactInfo.websiteUrl)
+        }
         if (profileLinks.isEmpty()) {
             profileLinks.add("https://github.com/candidate")
         }
@@ -336,6 +338,19 @@ class StructureSectionsAdapter(
                 val linkBinding = ItemProfileLinkBinding.inflate(inflater, binding.llProfileLinks, false)
                 linkBinding.tvProfileLinkUrl.text = link
 
+                // Dynamic platform-aware icon
+                when {
+                    link.contains("github.com", ignoreCase = true) -> {
+                        linkBinding.ivProfileLinkIcon.setImageResource(R.drawable.ic_github_14)
+                    }
+                    link.contains("linkedin.com", ignoreCase = true) -> {
+                        linkBinding.ivProfileLinkIcon.setImageResource(R.drawable.ic_linkedin_14)
+                    }
+                    else -> {
+                        linkBinding.ivProfileLinkIcon.setImageResource(R.drawable.ic_link)
+                    }
+                }
+
                 // Tap-to-edit for profile links
                 linkBinding.root.setOnClickListener {
                     showEditLinkDialog(index, link)
@@ -493,7 +508,9 @@ class StructureSectionsAdapter(
             }
 
             binding.tilSummary.setRequiredHint(R.string.hint_profile_summary)
-            binding.etSummary.setText(currentSummary)
+            if (binding.etSummary.text?.toString() != currentSummary) {
+                binding.etSummary.setText(currentSummary)
+            }
 
             // Allow internal vertical scrolling inside etSummary when nested in RecyclerView
             // and preserve default ArrowKeyMovementMethod for native long-press text selection
@@ -514,11 +531,11 @@ class StructureSectionsAdapter(
                 false
             }
 
-            updateCounter(currentSummary.length)
+            validateSummaryLength(currentSummary.length)
 
             binding.etSummary.addTextChangedListener(SimpleTextWatcher(trim = false) {
                 currentSummary = it
-                updateCounter(it.length)
+                validateSummaryLength(it.length)
             })
 
             binding.etSummary.setOnEditorActionListener { v, actionId, _ ->
@@ -532,18 +549,21 @@ class StructureSectionsAdapter(
             }
         }
 
-        private fun updateCounter(length: Int) {
+        private fun validateSummaryLength(length: Int) {
             val context = binding.root.context
-            binding.tvCharCounter.text = context.getString(R.string.char_counter_format, length, 600)
             if (length > 600) {
-                binding.tvCharCounter.setTextColor("#EF4444".toColorInt())
                 binding.tilSummary.error = context.getString(R.string.error_summary_limit)
             } else {
-                binding.tvCharCounter.setTextColor("#94A3B8".toColorInt())
                 binding.tilSummary.error = null
-                binding.tilSummary.isErrorEnabled = false
             }
         }
+    }
+
+    private fun cleanBulletLine(line: String): String {
+        return line.trim()
+            .replace(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\-*–—\\s]+"), "")
+            .replace(Regex("^[0-9]+[.)\\-]\\s*"), "")
+            .trim()
     }
 
     private fun createBulletView(
@@ -701,9 +721,11 @@ class StructureSectionsAdapter(
             if (isExperienced) {
                 binding.toggleCandidateType.check(R.id.btnExperienced)
                 binding.containerWorkPositions.visibility = View.VISIBLE
+                binding.btnAddWorkExperience.visibility = View.VISIBLE
             } else {
                 binding.toggleCandidateType.check(R.id.btnFresher)
                 binding.containerWorkPositions.visibility = View.GONE
+                binding.btnAddWorkExperience.visibility = View.GONE
             }
             updateToggleStyles(binding)
 
@@ -712,6 +734,7 @@ class StructureSectionsAdapter(
                     val exp = (checkedId == R.id.btnExperienced)
                     isExperienced = exp
                     binding.containerWorkPositions.visibility = if (exp) View.VISIBLE else View.GONE
+                    binding.btnAddWorkExperience.visibility = if (exp) View.VISIBLE else View.GONE
                     updateWorkExperienceHeader()
                     updateToggleStyles(binding)
                 }
@@ -720,18 +743,19 @@ class StructureSectionsAdapter(
             renderWorkExperienceEntries()
 
             binding.btnAddWorkExperience.setOnClickListener {
-                currentExperiences.add(
-                    WorkExperienceItem(
-                        id = UUID.randomUUID().toString(),
-                        companyName = "",
-                        roleTitle = "",
-                        startDate = "",
-                        endDate = "",
-                        bulletPoints = emptyList(),
-                        techStackTags = emptyList()
-                    )
+                val newPosition = WorkExperienceItem(
+                    id = UUID.randomUUID().toString(),
+                    companyName = "",
+                    roleTitle = "",
+                    startDate = "",
+                    endDate = "",
+                    bulletPoints = emptyList(),
+                    techStackTags = emptyList(),
+                    clientApps = emptyList()
                 )
-                renderWorkExperienceEntries()
+                currentExperiences.add(newPosition)
+                addWorkExperienceEntryView(newPosition)
+                updateWorkExperienceEntryHeaders()
             }
         }
 
@@ -779,116 +803,375 @@ class StructureSectionsAdapter(
 
         private fun renderWorkExperienceEntries() {
             binding.llWorkExperienceEntries.removeAllViews()
+            currentExperiences.forEach { expItem ->
+                addWorkExperienceEntryView(expItem)
+            }
+            updateWorkExperienceEntryHeaders()
+        }
+
+        private fun updateWorkExperienceEntryHeaders() {
+            val context = binding.root.context
+            for (i in 0 until binding.llWorkExperienceEntries.childCount) {
+                val child = binding.llWorkExperienceEntries.getChildAt(i)
+                val tvHeader = child.findViewById<TextView>(R.id.tvEntryHeader)
+                val divider = child.findViewById<View>(R.id.dividerEntry)
+                tvHeader?.text = context.getString(R.string.position_header_format, i + 1)
+                divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
+            }
+        }
+
+        private fun addWorkExperienceEntryView(expItem: WorkExperienceItem) {
             val inflater = LayoutInflater.from(binding.root.context)
+            val entryBinding = ItemWorkExperienceEntryBinding.inflate(
+                inflater,
+                binding.llWorkExperienceEntries,
+                false
+            )
+            entryBinding.root.tag = expItem.id
+            binding.llWorkExperienceEntries.addView(entryBinding.root)
+            val context = entryBinding.root.context
 
-            currentExperiences.forEachIndexed { index, expItem ->
-                val entryBinding = ItemWorkExperienceEntryBinding.inflate(
-                    inflater,
-                    binding.llWorkExperienceEntries,
-                    false
-                )
-                val context = entryBinding.root.context
-                entryBinding.dividerEntry.visibility = if (index > 0) View.VISIBLE else View.GONE
-                entryBinding.tvEntryHeader.text = context.getString(R.string.position_header_format, index + 1)
+            fun getPos(): Int {
+                val idx = binding.llWorkExperienceEntries.indexOfChild(entryBinding.root)
+                if (idx >= 0) return idx
+                return currentExperiences.indexOfFirst { it.id == expItem.id }
+            }
 
-                entryBinding.tilCompanyName.setRequiredHint(R.string.hint_company_name)
-                entryBinding.tilCompanyDuration.setRequiredHint(R.string.hint_duration_example)
-                entryBinding.tilRoleTitle.setRequiredHint(R.string.hint_role_title)
+            entryBinding.tilCompanyName.setRequiredHint(R.string.hint_company_name)
+            entryBinding.tilCompanyDuration.setRequiredHint(R.string.hint_duration_example)
+            entryBinding.tilRoleTitle.setRequiredHint(R.string.hint_role_title)
 
-                entryBinding.etCompanyName.setText(expItem.companyName)
-                entryBinding.etCompanyDuration.setText(
-                    if (expItem.startDate.isNotBlank()) {
-                        context.getString(R.string.duration_range_format, expItem.startDate, expItem.endDate)
-                    } else {
-                        expItem.endDate
-                    }
-                )
-                entryBinding.etRoleTitle.setText(expItem.roleTitle)
+            entryBinding.etCompanyName.setText(expItem.companyName)
+            entryBinding.etCompanyDuration.setText(
+                if (expItem.startDate.isNotBlank()) {
+                    context.getString(R.string.duration_range_format, expItem.startDate, expItem.endDate)
+                } else {
+                    expItem.endDate
+                }
+            )
+            entryBinding.etRoleTitle.setText(expItem.roleTitle)
 
-                entryBinding.etCompanyName.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentExperiences[index].copy(companyName = it)
-                    currentExperiences[index] = updated
-                })
+            entryBinding.etCompanyName.addTextChangedListener(SimpleTextWatcher {
+                val pos = getPos()
+                if (pos in currentExperiences.indices) {
+                    currentExperiences[pos] = currentExperiences[pos].copy(companyName = it)
+                }
+            })
 
-                entryBinding.etCompanyDuration.addTextChangedListener(SimpleTextWatcher {
+            entryBinding.etCompanyDuration.addTextChangedListener(SimpleTextWatcher {
+                val pos = getPos()
+                if (pos in currentExperiences.indices) {
                     val parts = it.split(Regex("[–\\-]|to"), 2).map { p -> p.trim() }
                     val sDate = parts.getOrNull(0) ?: it
                     val eDate = parts.getOrNull(1) ?: context.getString(R.string.duration_present)
-                    val updated = currentExperiences[index].copy(startDate = sDate, endDate = eDate)
-                    currentExperiences[index] = updated
-                })
-
-                entryBinding.etRoleTitle.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentExperiences[index].copy(roleTitle = it)
-                    currentExperiences[index] = updated
-                })
-
-                entryBinding.etRoleTitle.setOnEditorActionListener { v, actionId, _ ->
-                    if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                        v.clearFocus()
-                        val imm =
-                            v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
-                        imm?.hideSoftInputFromWindow(v.windowToken, 0)
-                        true
-                    } else false
+                    currentExperiences[pos] = currentExperiences[pos].copy(startDate = sDate, endDate = eDate)
                 }
+            })
 
-                entryBinding.tvRoleHeader.setRequiredHeader(R.string.header_role_responsibilities)
+            entryBinding.etRoleTitle.addTextChangedListener(SimpleTextWatcher {
+                val pos = getPos()
+                if (pos in currentExperiences.indices) {
+                    currentExperiences[pos] = currentExperiences[pos].copy(roleTitle = it)
+                }
+            })
 
-                fun renderBullets() {
-                    entryBinding.llBulletsContainer.removeAllViews()
-                    val bullets = currentExperiences[index].bulletPoints
+            entryBinding.etCompanyDuration.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                    v.clearFocus()
+                    val imm =
+                        v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                    true
+                } else false
+            }
 
-                    bullets.forEachIndexed { bIdx, bText ->
-                        val bulletView = createBulletView(
-                            context = entryBinding.root.context,
-                            text = bText,
-                            onEdit = {
-                                showEditBulletDialog(entryBinding.root.context, bText) { newText ->
-                                    val updatedList = currentExperiences[index].bulletPoints.toMutableList()
+            entryBinding.tvRoleHeader.setRequiredHeader(R.string.header_role_responsibilities)
+
+            fun renderClientApps() {
+                entryBinding.cgClientApps.removeAllViews()
+                val pos = getPos()
+                val apps = if (pos in currentExperiences.indices) currentExperiences[pos].clientApps else expItem.clientApps
+
+                apps.forEachIndexed { aIdx, appItem ->
+                    val chip = Chip(context).apply {
+                        text = appItem.name
+                        isCloseIconVisible = true
+                        closeIconContentDescription = context.getString(R.string.cd_remove_client_app)
+                        setChipBackgroundColorResource(R.color.exp_tag_bg)
+                        setTextColor(ContextCompat.getColor(context, R.color.exp_tag_text))
+                        chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.app_border))
+                        chipStrokeWidth = 1f * resources.displayMetrics.density
+                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                            .setAllCornerSizes(8f * resources.displayMetrics.density)
+                            .build()
+                        if (appItem.url.isNotBlank()) {
+                            setChipIconResource(R.drawable.ic_link_14)
+                            setChipIconTintResource(R.color.app_primary)
+                            isChipIconVisible = true
+                        } else {
+                            isChipIconVisible = false
+                        }
+                        setOnCloseIconClickListener {
+                            val currentPos = getPos()
+                            if (currentPos in currentExperiences.indices) {
+                                val updatedList = currentExperiences[currentPos].clientApps.toMutableList()
+                                if (aIdx in updatedList.indices) {
+                                    updatedList.removeAt(aIdx)
+                                    currentExperiences[currentPos] =
+                                        currentExperiences[currentPos].copy(clientApps = updatedList)
+                                    renderClientApps()
+                                }
+                            }
+                        }
+                        setOnClickListener {
+                            showEditClientAppDialog(context, appItem) { updatedApp ->
+                                val currentPos = getPos()
+                                if (currentPos in currentExperiences.indices) {
+                                    val updatedList = currentExperiences[currentPos].clientApps.toMutableList()
+                                    if (aIdx in updatedList.indices) {
+                                        updatedList[aIdx] = updatedApp
+                                        currentExperiences[currentPos] =
+                                            currentExperiences[currentPos].copy(clientApps = updatedList)
+                                        renderClientApps()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    entryBinding.cgClientApps.addView(chip)
+                }
+            }
+            renderClientApps()
+
+            entryBinding.btnAddClientApp.setOnClickListener {
+                showAddClientAppDialog(context) { newApp ->
+                    val currentPos = getPos()
+                    if (currentPos in currentExperiences.indices) {
+                        val currentList = currentExperiences[currentPos].clientApps.toMutableList()
+                        currentList.add(newApp)
+                        currentExperiences[currentPos] = currentExperiences[currentPos].copy(clientApps = currentList)
+                        renderClientApps()
+                    }
+                }
+            }
+
+            fun renderBullets() {
+                entryBinding.llBulletsContainer.removeAllViews()
+                val currentPos = getPos()
+                val bullets = if (currentPos in currentExperiences.indices) currentExperiences[currentPos].bulletPoints else expItem.bulletPoints
+
+                bullets.forEachIndexed { bIdx, bText ->
+                    val bulletView = createBulletView(
+                        context = entryBinding.root.context,
+                        text = bText,
+                        onEdit = {
+                            showEditBulletDialog(entryBinding.root.context, bText) { newText ->
+                                val posNow = getPos()
+                                if (posNow in currentExperiences.indices) {
+                                    val updatedList = currentExperiences[posNow].bulletPoints.toMutableList()
                                     if (bIdx in updatedList.indices) {
                                         updatedList[bIdx] = newText
-                                        currentExperiences[index] =
-                                            currentExperiences[index].copy(bulletPoints = updatedList)
+                                        currentExperiences[posNow] =
+                                            currentExperiences[posNow].copy(bulletPoints = updatedList)
                                         renderBullets()
                                     }
                                 }
-                            },
-                            onDelete = {
-                                val updatedList = currentExperiences[index].bulletPoints.toMutableList()
+                            }
+                        },
+                        onDelete = {
+                            val posNow = getPos()
+                            if (posNow in currentExperiences.indices) {
+                                val updatedList = currentExperiences[posNow].bulletPoints.toMutableList()
                                 if (bIdx in updatedList.indices) {
                                     updatedList.removeAt(bIdx)
-                                    currentExperiences[index] =
-                                        currentExperiences[index].copy(bulletPoints = updatedList)
+                                    currentExperiences[posNow] =
+                                        currentExperiences[posNow].copy(bulletPoints = updatedList)
                                     renderBullets()
                                 }
                             }
-                        )
+                        }
+                    )
 
-                        entryBinding.llBulletsContainer.addView(bulletView)
-                    }
+                    entryBinding.llBulletsContainer.addView(bulletView)
                 }
-                renderBullets()
+            }
+            renderBullets()
 
-                // Add Bullet button
-                entryBinding.btnAddBullet.setOnClickListener {
-                    val ctx = entryBinding.root.context
-                    showAddBulletDialog(ctx) { newBullet ->
-                        val currentList = currentExperiences[index].bulletPoints.toMutableList()
+            // Add Bullet button
+            entryBinding.btnAddBullet.setOnClickListener {
+                val ctx = entryBinding.root.context
+                showAddBulletDialog(ctx) { newBullet ->
+                    val currentPos = getPos()
+                    if (currentPos in currentExperiences.indices) {
+                        val currentList = currentExperiences[currentPos].bulletPoints.toMutableList()
                         currentList.add(newBullet)
-                        currentExperiences[index] = currentExperiences[index].copy(bulletPoints = currentList)
+                        currentExperiences[currentPos] = currentExperiences[currentPos].copy(bulletPoints = currentList)
                         renderBullets()
                     }
                 }
+            }
 
-                entryBinding.btnRemovePosition.setOnClickListener {
-                    if (index in currentExperiences.indices) {
-                        currentExperiences.removeAt(index)
-                        renderWorkExperienceEntries()
-                    }
+            entryBinding.btnRemovePosition.setOnClickListener {
+                val currentPos = getPos()
+                if (currentPos in currentExperiences.indices) {
+                    currentExperiences.removeAt(currentPos)
+                    binding.llWorkExperienceEntries.removeViewAt(currentPos)
+                    updateWorkExperienceEntryHeaders()
+                }
+            }
+        }
+
+        private fun showAddClientAppDialog(context: Context, onAdd: (ClientAppItem) -> Unit) {
+            val density = context.resources.displayMetrics.density
+            val container = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                val pad = (20 * density).toInt()
+                setPadding(pad, (12 * density).toInt(), pad, 0)
+            }
+
+            val tilName = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_client_app_name)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                isErrorEnabled = true
+            }
+            val etName = TextInputEditText(tilName.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            }
+            tilName.addView(etName)
+
+            val tilUrl = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_client_app_url)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    topMargin = (6 * density).toInt()
+                }
+                isErrorEnabled = true
+            }
+            val etUrl = TextInputEditText(tilUrl.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            }
+            tilUrl.addView(etUrl)
+
+            etName.addTextChangedListener(SimpleTextWatcher { tilName.error = null })
+            etUrl.addTextChangedListener(SimpleTextWatcher { tilUrl.error = null })
+
+            container.addView(tilName)
+            container.addView(tilUrl)
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.dialog_title_add_client_app))
+                .setView(container)
+                .setPositiveButton(context.getString(R.string.action_add), null)
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
+                .create()
+
+            dialog.show()
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = etName.text?.toString()?.trim().orEmpty()
+                var url = etUrl.text?.toString()?.trim().orEmpty()
+                if (url.isNotBlank() && !url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+                    url = "https://$url"
                 }
 
-                binding.llWorkExperienceEntries.addView(entryBinding.root)
+                var hasError = false
+                if (name.isBlank()) {
+                    tilName.error = context.getString(R.string.error_app_name_required)
+                    hasError = true
+                } else {
+                    tilName.error = null
+                }
+
+                if (url.isBlank()) {
+                    tilUrl.error = context.getString(R.string.error_app_url_required)
+                    hasError = true
+                } else if (!android.util.Patterns.WEB_URL.matcher(url).matches()) {
+                    tilUrl.error = context.getString(R.string.error_invalid_url)
+                    hasError = true
+                } else {
+                    tilUrl.error = null
+                }
+
+                if (!hasError) {
+                    onAdd(ClientAppItem(name = name, url = url))
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        private fun showEditClientAppDialog(context: Context, existing: ClientAppItem, onUpdate: (ClientAppItem) -> Unit) {
+            val density = context.resources.displayMetrics.density
+            val container = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                val pad = (20 * density).toInt()
+                setPadding(pad, (12 * density).toInt(), pad, 0)
+            }
+
+            val tilName = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_client_app_name)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                isErrorEnabled = true
+            }
+            val etName = TextInputEditText(tilName.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                setText(existing.name)
+            }
+            tilName.addView(etName)
+
+            val tilUrl = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_client_app_url)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    topMargin = (6 * density).toInt()
+                }
+                isErrorEnabled = true
+            }
+            val etUrl = TextInputEditText(tilUrl.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+                setText(existing.url)
+            }
+            tilUrl.addView(etUrl)
+
+            etName.addTextChangedListener(SimpleTextWatcher { tilName.error = null })
+            etUrl.addTextChangedListener(SimpleTextWatcher { tilUrl.error = null })
+
+            container.addView(tilName)
+            container.addView(tilUrl)
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.dialog_title_edit_client_app))
+                .setView(container)
+                .setPositiveButton(context.getString(R.string.action_save), null)
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
+                .create()
+
+            dialog.show()
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = etName.text?.toString()?.trim().orEmpty()
+                var url = etUrl.text?.toString()?.trim().orEmpty()
+                if (url.isNotBlank() && !url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+                    url = "https://$url"
+                }
+
+                var hasError = false
+                if (name.isBlank()) {
+                    tilName.error = context.getString(R.string.error_app_name_required)
+                    hasError = true
+                } else {
+                    tilName.error = null
+                }
+
+                if (url.isBlank()) {
+                    tilUrl.error = context.getString(R.string.error_app_url_required)
+                    hasError = true
+                } else if (!android.util.Patterns.WEB_URL.matcher(url).matches()) {
+                    tilUrl.error = context.getString(R.string.error_invalid_url)
+                    hasError = true
+                } else {
+                    tilUrl.error = null
+                }
+
+                if (!hasError) {
+                    onUpdate(existing.copy(name = name, url = url))
+                    dialog.dismiss()
+                }
             }
         }
     }
@@ -910,121 +1193,311 @@ class StructureSectionsAdapter(
             renderProjectEntries()
 
             binding.btnAddProject.setOnClickListener {
-                currentProjects.add(
-                    ProjectItem(
-                        id = UUID.randomUUID().toString(),
-                        projectTitle = "",
-                        description = "",
-                        techStackTags = emptyList(),
-                        demoUrl = "",
-                        codeUrl = ""
-                    )
+                val newProject = ProjectItem(
+                    id = UUID.randomUUID().toString(),
+                    projectTitle = "",
+                    description = "",
+                    techStackTags = emptyList(),
+                    demoUrl = "",
+                    codeUrl = ""
                 )
-                renderProjectEntries()
+                currentProjects.add(newProject)
+                addProjectEntryView(newProject)
+                updateProjectEntryHeaders()
             }
         }
 
         private fun renderProjectEntries() {
             binding.llProjectsEntries.removeAllViews()
+            currentProjects.forEach { projItem ->
+                addProjectEntryView(projItem)
+            }
+            updateProjectEntryHeaders()
+        }
+
+        private fun updateProjectEntryHeaders() {
+            val context = binding.root.context
+            for (i in 0 until binding.llProjectsEntries.childCount) {
+                val child = binding.llProjectsEntries.getChildAt(i)
+                val tvHeader = child.findViewById<TextView>(R.id.tvProjectHeader)
+                val divider = child.findViewById<View>(R.id.dividerEntry)
+                tvHeader?.text = context.getString(R.string.project_header_format, i + 1)
+                divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
+            }
+        }
+
+        private fun addProjectEntryView(projItem: ProjectItem) {
             val inflater = LayoutInflater.from(binding.root.context)
+            val entryBinding = ItemProjectEntryBinding.inflate(
+                inflater,
+                binding.llProjectsEntries,
+                false
+            )
+            entryBinding.root.tag = projItem.id
+            binding.llProjectsEntries.addView(entryBinding.root)
+            val context = entryBinding.root.context
 
-            currentProjects.forEachIndexed { index, projItem ->
-                val entryBinding = ItemProjectEntryBinding.inflate(
-                    inflater,
-                    binding.llProjectsEntries,
-                    false
-                )
-                val context = entryBinding.root.context
-                entryBinding.dividerEntry.visibility = if (index > 0) View.VISIBLE else View.GONE
-                entryBinding.tvProjectHeader.text = context.getString(R.string.project_header_format, index + 1)
-                entryBinding.tilProjectTitle.setRequiredHint(R.string.project_title_name)
-                entryBinding.tilProjectLink.setRequiredHint(R.string.repository_deployed_url)
+            fun getPos(): Int {
+                val idx = binding.llProjectsEntries.indexOfChild(entryBinding.root)
+                if (idx >= 0) return idx
+                return currentProjects.indexOfFirst { it.id == projItem.id }
+            }
 
-                entryBinding.etProjectTitle.setText(projItem.projectTitle)
-                val url = projItem.demoUrl.ifBlank { projItem.codeUrl }
-                entryBinding.etProjectLink.setText(url)
+            entryBinding.tilProjectTitle.setRequiredHint(R.string.project_title_name)
+            entryBinding.tilProjectLink.setRequiredHint(R.string.repository_deployed_url)
 
-                entryBinding.etProjectTitle.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentProjects[index].copy(projectTitle = it)
-                    currentProjects[index] = updated
-                })
+            entryBinding.etProjectTitle.setText(projItem.projectTitle)
+            val url = projItem.demoUrl.ifBlank { projItem.codeUrl }
+            entryBinding.etProjectLink.setText(url)
 
-                entryBinding.etProjectLink.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentProjects[index].copy(demoUrl = it, codeUrl = it)
-                    currentProjects[index] = updated
-                })
-
-                entryBinding.etProjectLink.setOnEditorActionListener { v, actionId, _ ->
-                    if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                        v.clearFocus()
-                        val imm =
-                            v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
-                        imm?.hideSoftInputFromWindow(v.windowToken, 0)
-                        true
-                    } else false
+            entryBinding.etProjectTitle.addTextChangedListener(SimpleTextWatcher {
+                entryBinding.tilProjectTitle.error = null
+                val pos = getPos()
+                if (pos in currentProjects.indices) {
+                    currentProjects[pos] = currentProjects[pos].copy(projectTitle = it)
                 }
+            })
 
-                val bulletList = projItem.description.split(Regex("[\\r\\n]+|\\.\\s+"))
-                    .map { it.replace(Regex("^[•\\-*]\\s*"), "").trim().removeSuffix(".") }
+            entryBinding.etProjectLink.addTextChangedListener(SimpleTextWatcher {
+                entryBinding.tilProjectLink.error = null
+                val pos = getPos()
+                if (pos in currentProjects.indices) {
+                    currentProjects[pos] = currentProjects[pos].copy(demoUrl = it, codeUrl = it)
+                }
+            })
+
+            entryBinding.etProjectLink.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                    v.clearFocus()
+                    val imm =
+                        v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                    true
+                } else false
+            }
+
+            // Tech Stack & Platform Tags (Option A)
+            fun renderTechTags() {
+                entryBinding.chipGroupProjectTech.removeAllViews()
+                val pos = getPos()
+                val tags = if (pos in currentProjects.indices) currentProjects[pos].techStackTags else projItem.techStackTags
+
+                tags.forEachIndexed { tIdx, tag ->
+                    val chip = Chip(context).apply {
+                        text = tag
+                        isCloseIconVisible = true
+                        closeIconContentDescription = context.getString(R.string.cd_remove_tech_tag)
+                        setChipBackgroundColorResource(R.color.project_tag_bg)
+                        setTextColor(ContextCompat.getColor(context, R.color.project_tag_text))
+                        chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.app_border))
+                        chipStrokeWidth = 1f * resources.displayMetrics.density
+                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                            .setAllCornerSizes(8f * resources.displayMetrics.density)
+                            .build()
+                        setOnCloseIconClickListener {
+                            val currentPos = getPos()
+                            if (currentPos in currentProjects.indices) {
+                                val updatedList = currentProjects[currentPos].techStackTags.toMutableList()
+                                if (tIdx in updatedList.indices) {
+                                    updatedList.removeAt(tIdx)
+                                    currentProjects[currentPos] =
+                                        currentProjects[currentPos].copy(techStackTags = updatedList)
+                                    renderTechTags()
+                                }
+                            }
+                        }
+                        setOnClickListener {
+                            showEditTechTagDialog(context, tag) { updatedTag ->
+                                val currentPos = getPos()
+                                if (currentPos in currentProjects.indices) {
+                                    val updatedList = currentProjects[currentPos].techStackTags.toMutableList()
+                                    if (tIdx in updatedList.indices) {
+                                        updatedList[tIdx] = updatedTag
+                                        currentProjects[currentPos] =
+                                            currentProjects[currentPos].copy(techStackTags = updatedList)
+                                        renderTechTags()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    entryBinding.chipGroupProjectTech.addView(chip)
+                }
+            }
+            renderTechTags()
+
+            entryBinding.btnAddProjectTechTag.setOnClickListener {
+                showAddTechTagDialog(context) { newTag ->
+                    val currentPos = getPos()
+                    if (currentPos in currentProjects.indices) {
+                        val updatedList = currentProjects[currentPos].techStackTags.toMutableList()
+                        updatedList.add(newTag)
+                        currentProjects[currentPos] =
+                            currentProjects[currentPos].copy(techStackTags = updatedList)
+                        renderTechTags()
+                    }
+                }
+            }
+
+            entryBinding.tvProjectDetailsHeader.setRequiredHeader(R.string.key_highlights_features)
+
+            fun getBulletList(): MutableList<String> {
+                val pos = getPos()
+                val desc = if (pos in currentProjects.indices) currentProjects[pos].description else projItem.description
+                return desc.lines()
+                    .map { cleanBulletLine(it) }
                     .filter { it.isNotBlank() }
                     .toMutableList()
+            }
 
-                entryBinding.tvProjectDetailsHeader.setRequiredHeader(R.string.key_highlights_features)
+            fun renderProjectBullets() {
+                entryBinding.llProjectBulletsContainer.removeAllViews()
+                val bulletList = getBulletList()
 
-                fun renderProjectBullets() {
-                    entryBinding.llProjectBulletsContainer.removeAllViews()
-
-                    bulletList.forEachIndexed { bIdx, bText ->
-                        val bulletView = createBulletView(
-                            context = entryBinding.root.context,
-                            text = bText,
-                            onEdit = {
-                                showEditBulletDialog(entryBinding.root.context, bText) { newText ->
-                                    if (bIdx in bulletList.indices) {
-                                        bulletList[bIdx] = newText
-                                        currentProjects[index] = currentProjects[index].copy(
-                                            description = bulletList.joinToString("\n")
+                bulletList.forEachIndexed { bIdx, bText ->
+                    val bulletView = createBulletView(
+                        context = entryBinding.root.context,
+                        text = bText,
+                        onEdit = {
+                            showEditBulletDialog(entryBinding.root.context, bText) { newText ->
+                                val posNow = getPos()
+                                if (posNow in currentProjects.indices) {
+                                    val currentList = getBulletList()
+                                    if (bIdx in currentList.indices) {
+                                        currentList[bIdx] = newText
+                                        currentProjects[posNow] = currentProjects[posNow].copy(
+                                            description = currentList.joinToString("\n")
                                         )
                                         renderProjectBullets()
                                     }
                                 }
-                            },
-                            onDelete = {
-                                if (bIdx in bulletList.indices) {
-                                    bulletList.removeAt(bIdx)
-                                    currentProjects[index] = currentProjects[index].copy(
-                                        description = bulletList.joinToString("\n")
+                            }
+                        },
+                        onDelete = {
+                            val posNow = getPos()
+                            if (posNow in currentProjects.indices) {
+                                val currentList = getBulletList()
+                                if (bIdx in currentList.indices) {
+                                    currentList.removeAt(bIdx)
+                                    currentProjects[posNow] = currentProjects[posNow].copy(
+                                        description = currentList.joinToString("\n")
                                     )
                                     renderProjectBullets()
                                 }
                             }
-                        )
+                        }
+                    )
 
-                        entryBinding.llProjectBulletsContainer.addView(bulletView)
-                    }
+                    entryBinding.llProjectBulletsContainer.addView(bulletView)
                 }
-                renderProjectBullets()
+            }
+            renderProjectBullets()
 
-                // Add Project Bullet
-                entryBinding.btnAddProjectBullet.setOnClickListener {
-                    val ctx = entryBinding.root.context
-                    showAddBulletDialog(ctx) { newBullet ->
-                        bulletList.add(newBullet)
-                        currentProjects[index] = currentProjects[index].copy(
-                            description = bulletList.joinToString("\n")
+            // Add Project Bullet
+            entryBinding.btnAddProjectBullet.setOnClickListener {
+                val ctx = entryBinding.root.context
+                showAddBulletDialog(ctx) { newBullet ->
+                    val posNow = getPos()
+                    if (posNow in currentProjects.indices) {
+                        val currentList = getBulletList()
+                        currentList.add(newBullet)
+                        currentProjects[posNow] = currentProjects[posNow].copy(
+                            description = currentList.joinToString("\n")
                         )
                         renderProjectBullets()
                     }
                 }
+            }
 
-                entryBinding.btnRemoveProject.setOnClickListener {
-                    if (index in currentProjects.indices) {
-                        currentProjects.removeAt(index)
-                        renderProjectEntries()
-                    }
+            entryBinding.btnRemoveProject.setOnClickListener {
+                val currentPos = getPos()
+                if (currentPos in currentProjects.indices) {
+                    currentProjects.removeAt(currentPos)
+                    binding.llProjectsEntries.removeViewAt(currentPos)
+                    updateProjectEntryHeaders()
                 }
+            }
+        }
 
-                binding.llProjectsEntries.addView(entryBinding.root)
+        private fun showAddTechTagDialog(context: Context, onAdd: (String) -> Unit) {
+            val density = context.resources.displayMetrics.density
+            val container = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                val pad = (20 * density).toInt()
+                setPadding(pad, (12 * density).toInt(), pad, 0)
+            }
+
+            val tilTag = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_tech_tag)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                isErrorEnabled = true
+            }
+            val etTag = TextInputEditText(tilTag.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            }
+            tilTag.addView(etTag)
+            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            container.addView(tilTag)
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.dialog_title_add_tech_tag))
+                .setView(container)
+                .setPositiveButton(context.getString(R.string.action_add), null)
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
+                .create()
+
+            dialog.show()
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val text = etTag.text?.toString()?.trim().orEmpty()
+                if (text.isBlank()) {
+                    tilTag.error = context.getString(R.string.error_tag_required)
+                } else {
+                    tilTag.error = null
+                    onAdd(text)
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        private fun showEditTechTagDialog(context: Context, initialTag: String, onUpdate: (String) -> Unit) {
+            val density = context.resources.displayMetrics.density
+            val container = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                val pad = (20 * density).toInt()
+                setPadding(pad, (12 * density).toInt(), pad, 0)
+            }
+
+            val tilTag = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+                hint = context.getString(R.string.hint_tech_tag)
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                isErrorEnabled = true
+            }
+            val etTag = TextInputEditText(tilTag.context).apply {
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+                setText(initialTag)
+                setSelection(initialTag.length)
+            }
+            tilTag.addView(etTag)
+            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            container.addView(tilTag)
+
+            val dialog = AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.dialog_title_edit_tech_tag))
+                .setView(container)
+                .setPositiveButton(context.getString(R.string.action_save), null)
+                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
+                .create()
+
+            dialog.show()
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val text = etTag.text?.toString()?.trim().orEmpty()
+                if (text.isBlank()) {
+                    tilTag.error = context.getString(R.string.error_tag_required)
+                } else {
+                    tilTag.error = null
+                    onUpdate(text)
+                    dialog.dismiss()
+                }
             }
         }
     }
@@ -1044,15 +1517,20 @@ class StructureSectionsAdapter(
                 }
             }
 
-            // Bind exact section title as detected from candidate's resume (e.g. "TECHNICAL SKILLS")
-            binding.tvSectionTitle.text = currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" }
+            val context = binding.root.context
+            val rawTitle = currentSkills.sectionTitle.ifBlank { "Technical Skills" }
+            binding.tvSectionTitle.text = if (rawTitle.equals("TECHNICAL SKILLS", ignoreCase = true)) {
+                context.getString(R.string.section_title_technical_skills)
+            } else {
+                rawTitle
+            }
             binding.tvSectionTitle.setOnClickListener {
                 showRenameSectionDialog()
             }
 
             renderSemanticSkillsDomains()
 
-            // Header "+ Add" button to add a new domain or skill category
+            // Header "+ Add Category" button to add a new domain or skill category
             binding.btnAddSkill.setOnClickListener {
                 showAddOrEditDomainDialog(null, emptyList())
             }
@@ -1061,7 +1539,7 @@ class StructureSectionsAdapter(
         private fun showRenameSectionDialog() {
             val context = binding.root.context
             val input = EditText(context).apply {
-                setText(currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" })
+                setText(binding.tvSectionTitle.text)
                 setSelection(text.length)
                 setPadding(40, 30, 40, 30)
             }
@@ -1101,7 +1579,12 @@ class StructureSectionsAdapter(
             val context = binding.root.context
 
             // Ensure section header matches resume
-            binding.tvSectionTitle.text = currentSkills.sectionTitle.ifBlank { "TECHNICAL SKILLS" }
+            val rawTitle = currentSkills.sectionTitle.ifBlank { "Technical Skills" }
+            binding.tvSectionTitle.text = if (rawTitle.equals("TECHNICAL SKILLS", ignoreCase = true)) {
+                context.getString(R.string.section_title_technical_skills)
+            } else {
+                rawTitle
+            }
 
             // Extract categorized domain map from parsed resume data
             val categorizedMap = linkedMapOf<String, List<String>>()
@@ -1145,9 +1628,11 @@ class StructureSectionsAdapter(
                     // Clean midpoint-dot ('·') text stream
                     rowBinding.tvDomainSkillsContent.text = skillsList.joinToString("  ·  ")
 
-                    rowBinding.btnEditDomain.setOnClickListener {
+                    val openEdit = {
                         showAddOrEditDomainDialog(domainLabel, skillsList)
                     }
+                    rowBinding.itemSkillsDomainRoot.setOnClickListener { openEdit() }
+                    rowBinding.btnEditDomain.setOnClickListener { openEdit() }
 
                     rowBinding.btnDeleteDomain.setOnClickListener {
                         deleteDomain(domainLabel)
@@ -1196,9 +1681,11 @@ class StructureSectionsAdapter(
                 // Clean bulleted stream: "•  Flutter   •  Android SDK   •  Kotlin   •  Swift"
                 rowBinding.tvDomainSkillsContent.text = flatSkillsList.joinToString("   •   ", prefix = "•   ")
 
-                rowBinding.btnEditDomain.setOnClickListener {
+                val openEdit = {
                     showAddOrEditDomainDialog(null, flatSkillsList)
                 }
+                rowBinding.itemSkillsDomainRoot.setOnClickListener { openEdit() }
+                rowBinding.btnEditDomain.setOnClickListener { openEdit() }
 
                 rowBinding.btnDeleteDomain.setOnClickListener {
                     currentSkills = currentSkills.copy(
@@ -1234,6 +1721,13 @@ class StructureSectionsAdapter(
                 dialogBinding.etDialogSkillsComma.setText(existingSkills.joinToString(", "))
             }
 
+            dialogBinding.etDialogDomainName.addTextChangedListener(SimpleTextWatcher {
+                dialogBinding.tilDialogDomainName.error = null
+            })
+            dialogBinding.etDialogSkillsComma.addTextChangedListener(SimpleTextWatcher {
+                dialogBinding.tilDialogSkillsComma.error = null
+            })
+
             val dialogTitle = if (existingDomain != null) {
                 context.getString(R.string.dialog_title_edit_skills_domain, existingDomain)
             } else if (existingSkills.isNotEmpty()) {
@@ -1261,20 +1755,32 @@ class StructureSectionsAdapter(
                     .filter { it.isNotBlank() }
                     .distinct()
 
-                // If existingDomain was null and user didn't enter a domain name:
-                // Treat as Case 2 (flat skills list)
-                if (domainName.isBlank() && existingDomain == null) {
+                val isCategorizedContext = currentSkills.categorizedDomains.isNotEmpty() || existingDomain != null
+                var hasError = false
+
+                if (isCategorizedContext || domainName.isNotBlank()) {
+                    if (domainName.isBlank()) {
+                        dialogBinding.tilDialogDomainName.error = context.getString(R.string.error_domain_name_required)
+                        hasError = true
+                    }
+                }
+
+                if (parsedSkills.isEmpty()) {
+                    dialogBinding.tilDialogSkillsComma.error = context.getString(R.string.error_skills_required)
+                    hasError = true
+                }
+
+                if (hasError) return@setOnClickListener
+
+                if (isCategorizedContext || domainName.isNotBlank()) {
+                    val finalDomainName = domainName.ifBlank { existingDomain ?: "General" }
+                    updateSkills(existingDomain, finalDomainName, parsedSkills)
+                } else {
                     currentSkills = currentSkills.copy(
                         rawFlatSkills = parsedSkills,
                         categorizedDomains = emptyMap()
                     )
-                    renderSemanticSkillsDomains()
-                    dialog.dismiss()
-                    return@setOnClickListener
                 }
-
-                val finalDomainName = domainName.ifBlank { existingDomain ?: "General" }
-                updateSkills(existingDomain, finalDomainName, parsedSkills)
                 renderSemanticSkillsDomains()
                 dialog.dismiss()
             }
@@ -1367,70 +1873,98 @@ class StructureSectionsAdapter(
             renderEducationEntries()
 
             binding.btnAddEducation.setOnClickListener {
-                currentEducation.add(
-                    EducationItem(
-                        institution = "",
-                        degree = "",
-                        graduationYear = ""
-                    )
+                val newEdu = EducationItem(
+                    institution = "",
+                    degree = "",
+                    graduationYear = ""
                 )
-                renderEducationEntries()
+                currentEducation.add(newEdu)
+                addEducationEntryView(newEdu)
+                updateEducationEntryHeaders()
             }
         }
 
         private fun renderEducationEntries() {
             binding.llEducationEntries.removeAllViews()
+            currentEducation.forEach { eduItem ->
+                addEducationEntryView(eduItem)
+            }
+            updateEducationEntryHeaders()
+        }
+
+        private fun updateEducationEntryHeaders() {
+            val context = binding.root.context
+            for (i in 0 until binding.llEducationEntries.childCount) {
+                val child = binding.llEducationEntries.getChildAt(i)
+                val tvHeader = child.findViewById<TextView>(R.id.tvEducationHeader)
+                val divider = child.findViewById<View>(R.id.dividerEntry)
+                tvHeader?.text = context.getString(R.string.education_header_format, i + 1)
+                divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
+            }
+        }
+
+        private fun addEducationEntryView(eduItem: EducationItem) {
             val inflater = LayoutInflater.from(binding.root.context)
+            val entryBinding = ItemEducationEntryBinding.inflate(
+                inflater,
+                binding.llEducationEntries,
+                false
+            )
+            binding.llEducationEntries.addView(entryBinding.root)
 
-            currentEducation.forEachIndexed { index, eduItem ->
-                val entryBinding = ItemEducationEntryBinding.inflate(
-                    inflater,
-                    binding.llEducationEntries,
-                    false
-                )
-                val context = entryBinding.root.context
-                entryBinding.dividerEntry.visibility = if (index > 0) View.VISIBLE else View.GONE
-                entryBinding.tvEducationHeader.text = context.getString(R.string.education_header_format, index + 1)
-                entryBinding.tilInstitution.setRequiredHint(R.string.hint_institution_name)
-                entryBinding.tilDegree.setRequiredHint(R.string.hint_degree)
-                entryBinding.tilDuration.setRequiredHint(R.string.hint_duration_example)
+            fun getPos(): Int {
+                val idx = binding.llEducationEntries.indexOfChild(entryBinding.root)
+                if (idx >= 0) return idx
+                return currentEducation.indexOf(eduItem)
+            }
 
-                entryBinding.etInstitution.setText(eduItem.institution)
-                entryBinding.etDegree.setText(eduItem.degree)
-                entryBinding.etDuration.setText(eduItem.graduationYear)
+            entryBinding.tilInstitution.setRequiredHint(R.string.hint_institution_name)
+            entryBinding.tilDegree.setRequiredHint(R.string.hint_degree)
+            entryBinding.tilDuration.setRequiredHint(R.string.hint_duration_example)
 
-                entryBinding.etInstitution.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentEducation[index].copy(institution = it)
-                    currentEducation[index] = updated
-                })
-                entryBinding.etDegree.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentEducation[index].copy(degree = it)
-                    currentEducation[index] = updated
-                })
-                entryBinding.etDuration.addTextChangedListener(SimpleTextWatcher {
-                    val updated = currentEducation[index].copy(graduationYear = it)
-                    currentEducation[index] = updated
-                })
+            entryBinding.etInstitution.setText(eduItem.institution)
+            entryBinding.etDegree.setText(eduItem.degree)
+            entryBinding.etDuration.setText(eduItem.graduationYear)
 
-                entryBinding.etDuration.setOnEditorActionListener { v, actionId, _ ->
-                    if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                        v.clearFocus()
-                        val imm =
-                            v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
-                        imm?.hideSoftInputFromWindow(v.windowToken, 0)
-                        true
-                    } else false
+            entryBinding.etInstitution.addTextChangedListener(SimpleTextWatcher {
+                entryBinding.tilInstitution.error = null
+                val pos = getPos()
+                if (pos in currentEducation.indices) {
+                    currentEducation[pos] = currentEducation[pos].copy(institution = it)
                 }
-
-                entryBinding.btnRemoveEducation.visibility = View.VISIBLE
-                entryBinding.btnRemoveEducation.setOnClickListener {
-                    if (index in currentEducation.indices) {
-                        currentEducation.removeAt(index)
-                        renderEducationEntries()
-                    }
+            })
+            entryBinding.etDegree.addTextChangedListener(SimpleTextWatcher {
+                entryBinding.tilDegree.error = null
+                val pos = getPos()
+                if (pos in currentEducation.indices) {
+                    currentEducation[pos] = currentEducation[pos].copy(degree = it)
                 }
+            })
+            entryBinding.etDuration.addTextChangedListener(SimpleTextWatcher {
+                entryBinding.tilDuration.error = null
+                val pos = getPos()
+                if (pos in currentEducation.indices) {
+                    currentEducation[pos] = currentEducation[pos].copy(graduationYear = it)
+                }
+            })
 
-                binding.llEducationEntries.addView(entryBinding.root)
+            entryBinding.etDuration.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                    v.clearFocus()
+                    val imm =
+                        v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                    true
+                } else false
+            }
+
+            entryBinding.btnRemoveEducation.setOnClickListener {
+                val currentPos = getPos()
+                if (currentPos in currentEducation.indices) {
+                    currentEducation.removeAt(currentPos)
+                    binding.llEducationEntries.removeViewAt(currentPos)
+                    updateEducationEntryHeaders()
+                }
             }
         }
     }
@@ -1471,7 +2005,6 @@ class StructureSectionsAdapter(
                                 val updatedSec = currentSec.copy(sectionTitle = newTitle)
                                 sectionItem.customSection = updatedSec
                                 binding.tvSectionTitle.text = newTitle
-                                // Re-render items and button label to reflect the updated singular type and link hints
                                 bind(sectionItem)
                             }
                             d.dismiss()
@@ -1481,7 +2014,6 @@ class StructureSectionsAdapter(
                 }
             }
 
-            binding.tvSectionTitle.setOnClickListener { openRenameDialog() }
             binding.btnEditSection.setOnClickListener { openRenameDialog() }
 
             val context = binding.root.context
@@ -1510,20 +2042,32 @@ class StructureSectionsAdapter(
 
             binding.btnAddCustomItem.setOnClickListener {
                 val currentSec = sectionItem.customSection ?: return@setOnClickListener
-                val updatedItems = currentSec.items.toMutableList()
-                updatedItems.add(
-                    DynamicItem(
-                        title = "",
-                        subtitle = "",
-                        dateOrPeriod = "",
-                        description = "",
-                        link = "",
-                        bulletPoints = emptyList()
-                    )
+                val newItem = DynamicItem(
+                    title = "",
+                    subtitle = "",
+                    dateOrPeriod = "",
+                    description = "",
+                    link = "",
+                    bulletPoints = emptyList()
                 )
-                val updatedSec = currentSec.copy(items = updatedItems)
-                sectionItem.customSection = updatedSec
-                renderCustomItems(sectionItem, singularType)
+                val updatedItems = currentSec.items.toMutableList()
+                updatedItems.add(newItem)
+                sectionItem.customSection = currentSec.copy(items = updatedItems)
+                addCustomItemView(sectionItem, newItem, singularType)
+                updateCustomItemHeaders(singularType)
+            }
+        }
+
+        private fun updateCustomItemHeaders(resolvedSingularType: String) {
+            val context = binding.root.context
+            for (i in 0 until binding.llCustomItems.childCount) {
+                val child = binding.llCustomItems.getChildAt(i)
+                val tvHeader = child.findViewById<TextView>(R.id.tvCustomItemHeader)
+                val btnRemove = child.findViewById<TextView>(R.id.btnRemoveCustomItem)
+                val divider = child.findViewById<View>(R.id.dividerEntry)
+                tvHeader?.text = context.getString(R.string.custom_item_header_format, resolvedSingularType, i + 1)
+                btnRemove?.text = context.getString(R.string.remove_item_format, resolvedSingularType)
+                divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
             }
         }
 
@@ -1532,134 +2076,136 @@ class StructureSectionsAdapter(
             val context = binding.root.context
             val resolvedSingularType = singularType ?: context.getString(R.string.custom_type_item)
             binding.llCustomItems.removeAllViews()
+            section.items.forEach { item ->
+                addCustomItemView(sectionItem, item, resolvedSingularType)
+            }
+            updateCustomItemHeaders(resolvedSingularType)
+        }
+
+        private fun addCustomItemView(sectionItem: SectionItem, item: DynamicItem, resolvedSingularType: String) {
+            val context = binding.root.context
             val inflater = LayoutInflater.from(context)
+            val entryBinding = ItemCustomEntryBinding.inflate(inflater, binding.llCustomItems, false)
+            binding.llCustomItems.addView(entryBinding.root)
 
-            section.items.forEachIndexed { itemIndex, item ->
-                val entryBinding = ItemCustomEntryBinding.inflate(inflater, binding.llCustomItems, false)
-                entryBinding.dividerEntry.visibility = if (itemIndex > 0) View.VISIBLE else View.GONE
-                entryBinding.tvCustomItemHeader.text = context.getString(R.string.custom_item_header_format, resolvedSingularType, itemIndex + 1)
-                entryBinding.btnRemoveCustomItem.text = context.getString(R.string.remove_item_format, resolvedSingularType)
-                entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title)
-                entryBinding.etCustomTitle.setText(item.title)
+            fun getPos(): Int {
+                val idx = binding.llCustomItems.indexOfChild(entryBinding.root)
+                if (idx >= 0) return idx
+                val cur = sectionItem.customSection ?: return -1
+                return cur.items.indexOf(item)
+            }
 
-                val linkHint = when {
-                    section.sectionTitle.contains("Certif", ignoreCase = true) ||
-                            section.sectionTitle.contains("License", ignoreCase = true) ->
-                        context.getString(R.string.hint_link_certification)
+            val section = sectionItem.customSection ?: return
+            entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title)
+            entryBinding.etCustomTitle.setText(item.title)
 
-                    section.sectionTitle.contains("Publication", ignoreCase = true) ||
-                            section.sectionTitle.contains("Paper", ignoreCase = true) ||
-                            section.sectionTitle.contains("Article", ignoreCase = true) ->
-                        context.getString(R.string.hint_link_publication)
+            val linkHint = when {
+                section.sectionTitle.contains("Certif", ignoreCase = true) ||
+                        section.sectionTitle.contains("License", ignoreCase = true) ->
+                    context.getString(R.string.hint_link_certification)
 
-                    section.sectionTitle.contains("Open Source", ignoreCase = true) ||
-                            section.sectionTitle.contains("Repo", ignoreCase = true) ||
-                            section.sectionTitle.contains("Source", ignoreCase = true) ->
-                        context.getString(R.string.hint_link_open_source)
+                section.sectionTitle.contains("Publication", ignoreCase = true) ||
+                        section.sectionTitle.contains("Paper", ignoreCase = true) ||
+                        section.sectionTitle.contains("Article", ignoreCase = true) ->
+                    context.getString(R.string.hint_link_publication)
 
-                    else ->
-                        context.getString(R.string.hint_link_general)
+                section.sectionTitle.contains("Open Source", ignoreCase = true) ||
+                        section.sectionTitle.contains("Repo", ignoreCase = true) ||
+                        section.sectionTitle.contains("Source", ignoreCase = true) ->
+                    context.getString(R.string.hint_link_open_source)
+
+                else ->
+                    context.getString(R.string.hint_link_general)
+            }
+            entryBinding.tilCustomLink.hint = linkHint
+            entryBinding.etCustomLink.setText(item.link)
+
+            entryBinding.etCustomTitle.addTextChangedListener(SimpleTextWatcher { newTitle ->
+                entryBinding.tilCustomTitle.error = null
+                val cur = sectionItem.customSection ?: return@SimpleTextWatcher
+                val pos = getPos()
+                if (pos in cur.items.indices) {
+                    val updatedItems = cur.items.toMutableList()
+                    updatedItems[pos] = updatedItems[pos].copy(title = newTitle)
+                    sectionItem.customSection = cur.copy(items = updatedItems)
                 }
-                entryBinding.tilCustomLink.hint = linkHint
-                entryBinding.etCustomLink.setText(item.link)
+            })
 
-                entryBinding.etCustomTitle.addTextChangedListener(SimpleTextWatcher { newTitle ->
-                    val cur = sectionItem.customSection ?: return@SimpleTextWatcher
-                    if (itemIndex in cur.items.indices) {
-                        val updatedItems = cur.items.toMutableList()
-                        updatedItems[itemIndex] = updatedItems[itemIndex].copy(title = newTitle)
-                        sectionItem.customSection = cur.copy(items = updatedItems)
+            entryBinding.etCustomLink.addTextChangedListener(SimpleTextWatcher(trim = false) { rawLink ->
+                val cur = sectionItem.customSection ?: return@SimpleTextWatcher
+                val pos = getPos()
+                if (pos in cur.items.indices) {
+                    val trimmed = rawLink.trim()
+                    val normalized = if (trimmed.isNotEmpty() && !trimmed.startsWith("http://", ignoreCase = true) && !trimmed.startsWith("https://", ignoreCase = true)) {
+                        "https://$trimmed"
+                    } else {
+                        trimmed
                     }
-                })
 
-                entryBinding.etCustomLink.addTextChangedListener(SimpleTextWatcher(trim = false) { rawLink ->
-                    val cur = sectionItem.customSection ?: return@SimpleTextWatcher
-                    if (itemIndex in cur.items.indices) {
-                        val trimmed = rawLink.trim()
-                        val normalized = if (trimmed.isNotEmpty() && !trimmed.startsWith("http://", ignoreCase = true) && !trimmed.startsWith("https://", ignoreCase = true)) {
-                            "https://$trimmed"
-                        } else {
-                            trimmed
-                        }
-
-                        if (normalized.isNotEmpty() && !android.util.Patterns.WEB_URL.matcher(normalized).matches()) {
-                            entryBinding.tilCustomLink.error = context.getString(R.string.error_invalid_url)
-                        } else {
-                            entryBinding.tilCustomLink.error = null
-                            entryBinding.tilCustomLink.isErrorEnabled = false
-                        }
-
-                        val updatedItems = cur.items.toMutableList()
-                        updatedItems[itemIndex] = updatedItems[itemIndex].copy(link = normalized)
-                        sectionItem.customSection = cur.copy(items = updatedItems)
+                    if (normalized.isNotEmpty() && !android.util.Patterns.WEB_URL.matcher(normalized).matches()) {
+                        entryBinding.tilCustomLink.error = context.getString(R.string.error_invalid_url)
+                    } else {
+                        entryBinding.tilCustomLink.error = null
+                        entryBinding.tilCustomLink.isErrorEnabled = false
                     }
-                })
 
-                entryBinding.etCustomLink.setOnFocusChangeListener { _, hasFocus ->
-                    if (!hasFocus) {
-                        val cur = sectionItem.customSection ?: return@setOnFocusChangeListener
-                        if (itemIndex in cur.items.indices) {
-                            val savedLink = cur.items[itemIndex].link
-                            if (entryBinding.etCustomLink.text?.toString() != savedLink) {
-                                entryBinding.etCustomLink.setText(savedLink)
-                            }
+                    val updatedItems = cur.items.toMutableList()
+                    updatedItems[pos] = updatedItems[pos].copy(link = normalized)
+                    sectionItem.customSection = cur.copy(items = updatedItems)
+                }
+            })
+
+            entryBinding.etCustomLink.setOnFocusChangeListener { _, hasFocus ->
+                if (!hasFocus) {
+                    val cur = sectionItem.customSection ?: return@setOnFocusChangeListener
+                    val pos = getPos()
+                    if (pos in cur.items.indices) {
+                        val savedLink = cur.items[pos].link
+                        if (entryBinding.etCustomLink.text?.toString() != savedLink) {
+                            entryBinding.etCustomLink.setText(savedLink)
                         }
                     }
                 }
+            }
 
-                entryBinding.etCustomLink.setOnEditorActionListener { v, actionId, _ ->
-                    if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                        v.clearFocus()
-                        val imm =
-                            v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
-                        imm?.hideSoftInputFromWindow(v.windowToken, 0)
-                        true
-                    } else false
-                }
+            entryBinding.etCustomLink.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                    v.clearFocus()
+                    val imm =
+                        v.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                    true
+                } else false
+            }
 
-                // Bullet points
-                val bullets = if (item.bulletPoints.isNotEmpty()) {
-                    item.bulletPoints.toMutableList()
-                } else {
-                    item.description.split(Regex("[\\r\\n]+"))
-                        .map { it.replace(Regex("^[•\\-*]\\s*"), "").trim() }
-                        .filter { it.isNotBlank() }
-                        .toMutableList()
-                }
+            // Bullet points
+            val bullets = if (item.bulletPoints.isNotEmpty()) {
+                item.bulletPoints.toMutableList()
+            } else {
+                item.description.split(Regex("[\\r\\n]+"))
+                    .map { it.replace(Regex("^[•\\-*]\\s*"), "").trim() }
+                    .filter { it.isNotBlank() }
+                    .toMutableList()
+            }
 
-                entryBinding.tvCustomDetailsHeader.setRequiredHeader(R.string.header_custom_details)
+            entryBinding.tvCustomDetailsHeader.setRequiredHeader(R.string.header_custom_details)
 
-                fun renderCustomBullets() {
-                    entryBinding.llCustomBulletsContainer.removeAllViews()
+            fun renderCustomBullets() {
+                entryBinding.llCustomBulletsContainer.removeAllViews()
 
-                    bullets.forEachIndexed { bIdx, bText ->
-                        val bulletView = createBulletView(
-                            context = entryBinding.root.context,
-                            text = bText,
-                            onEdit = {
-                                showEditBulletDialog(entryBinding.root.context, bText) { newText ->
-                                    if (bIdx in bullets.indices) {
-                                        bullets[bIdx] = newText
-                                        val cur = sectionItem.customSection
-                                        if (cur != null && itemIndex in cur.items.indices) {
-                                            val updatedItems = cur.items.toMutableList()
-                                            updatedItems[itemIndex] = updatedItems[itemIndex].copy(
-                                                bulletPoints = bullets,
-                                                description = bullets.joinToString("\n")
-                                            )
-                                            sectionItem.customSection = cur.copy(items = updatedItems)
-                                        }
-                                        renderCustomBullets()
-                                    }
-                                }
-                            },
-                            onDelete = {
+                bullets.forEachIndexed { bIdx, bText ->
+                    val bulletView = createBulletView(
+                        context = entryBinding.root.context,
+                        text = bText,
+                        onEdit = {
+                            showEditBulletDialog(entryBinding.root.context, bText) { newText ->
                                 if (bIdx in bullets.indices) {
-                                    bullets.removeAt(bIdx)
+                                    bullets[bIdx] = newText
                                     val cur = sectionItem.customSection
-                                    if (cur != null && itemIndex in cur.items.indices) {
+                                    val pos = getPos()
+                                    if (cur != null && pos in cur.items.indices) {
                                         val updatedItems = cur.items.toMutableList()
-                                        updatedItems[itemIndex] = updatedItems[itemIndex].copy(
+                                        updatedItems[pos] = updatedItems[pos].copy(
                                             bulletPoints = bullets,
                                             description = bullets.joinToString("\n")
                                         )
@@ -1668,43 +2214,60 @@ class StructureSectionsAdapter(
                                     renderCustomBullets()
                                 }
                             }
-                        )
-
-                        entryBinding.llCustomBulletsContainer.addView(bulletView)
-                    }
-                }
-                renderCustomBullets()
-
-                // Add Bullet
-                entryBinding.btnAddCustomBullet.setOnClickListener {
-                    val ctx = entryBinding.root.context
-                    showAddBulletDialog(ctx) { newBullet ->
-                        bullets.add(newBullet)
-                        val cur = sectionItem.customSection
-                        if (cur != null && itemIndex in cur.items.indices) {
-                            val updatedItems = cur.items.toMutableList()
-                            updatedItems[itemIndex] = updatedItems[itemIndex].copy(
-                                bulletPoints = bullets,
-                                description = bullets.joinToString("\n")
-                            )
-                            sectionItem.customSection = cur.copy(items = updatedItems)
+                        },
+                        onDelete = {
+                            if (bIdx in bullets.indices) {
+                                bullets.removeAt(bIdx)
+                                val cur = sectionItem.customSection
+                                val pos = getPos()
+                                if (cur != null && pos in cur.items.indices) {
+                                    val updatedItems = cur.items.toMutableList()
+                                    updatedItems[pos] = updatedItems[pos].copy(
+                                        bulletPoints = bullets,
+                                        description = bullets.joinToString("\n")
+                                    )
+                                    sectionItem.customSection = cur.copy(items = updatedItems)
+                                }
+                                renderCustomBullets()
+                            }
                         }
-                        renderCustomBullets()
-                    }
-                }
+                    )
 
-                entryBinding.btnRemoveCustomItem.setOnClickListener {
-                    val cur = sectionItem.customSection ?: return@setOnClickListener
-                    if (itemIndex in cur.items.indices) {
+                    entryBinding.llCustomBulletsContainer.addView(bulletView)
+                }
+            }
+            renderCustomBullets()
+
+            // Add Bullet
+            entryBinding.btnAddCustomBullet.setOnClickListener {
+                val ctx = entryBinding.root.context
+                showAddBulletDialog(ctx) { newBullet ->
+                    bullets.add(newBullet)
+                    val cur = sectionItem.customSection
+                    val pos = getPos()
+                    if (cur != null && pos in cur.items.indices) {
                         val updatedItems = cur.items.toMutableList()
-                        updatedItems.removeAt(itemIndex)
-                        val updatedSec = cur.copy(items = updatedItems)
-                        sectionItem.customSection = updatedSec
-                        renderCustomItems(sectionItem, singularType)
+                        updatedItems[pos] = updatedItems[pos].copy(
+                            bulletPoints = bullets,
+                            description = bullets.joinToString("\n")
+                        )
+                        sectionItem.customSection = cur.copy(items = updatedItems)
                     }
+                    renderCustomBullets()
                 }
+            }
 
-                binding.llCustomItems.addView(entryBinding.root)
+            entryBinding.btnRemoveCustomItem.setOnClickListener {
+                val cur = sectionItem.customSection ?: return@setOnClickListener
+                val pos = getPos()
+                if (pos in cur.items.indices) {
+                    val updatedItems = cur.items.toMutableList()
+                    updatedItems.removeAt(pos)
+                    val updatedSec = cur.copy(items = updatedItems)
+                    sectionItem.customSection = updatedSec
+                    binding.llCustomItems.removeViewAt(pos)
+                    updateCustomItemHeaders(resolvedSingularType)
+                }
             }
         }
     }
@@ -1749,11 +2312,15 @@ class StructureSectionsAdapter(
             ?: normalizedProfileLinks.getOrNull(0) ?: ""
         val github = normalizedProfileLinks.firstOrNull { it.contains("github", ignoreCase = true) }
             ?: normalizedProfileLinks.getOrNull(1) ?: ""
+        val website = normalizedProfileLinks.firstOrNull {
+            !it.contains("linkedin", ignoreCase = true) && !it.contains("github", ignoreCase = true)
+        } ?: ""
 
         val finalHero = targetLeft.currentHero.copy(
             contactInfo = targetLeft.currentHero.contactInfo.copy(
                 linkedinUrl = linkedIn,
-                githubUrl = github
+                githubUrl = github,
+                websiteUrl = website
             )
         )
 

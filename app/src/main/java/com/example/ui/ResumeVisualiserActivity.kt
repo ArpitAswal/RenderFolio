@@ -485,9 +485,32 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 entryBinding.containerEntryBullets.addView(bulletView)
             }
 
-            // 5. Tech Stack Tags
-            if (item.techStackTags.isNotEmpty()) {
+            // 5. Client Apps & Tech Stack Tags
+            val hasClientApps = item.clientApps.isNotEmpty()
+            val hasTags = item.techStackTags.isNotEmpty()
+            if (hasClientApps || hasTags) {
                 entryBinding.chipGroupEntryTags.removeAllViews()
+                item.clientApps.forEach { app ->
+                    val appChip = Chip(this).apply {
+                        text = app.name
+                        setChipBackgroundColorResource(R.color.exp_tag_bg)
+                        setTextColor(getColor(R.color.exp_tag_text))
+                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
+                            .setAllCornerSizes(resources.displayMetrics.density * 8f)
+                            .build()
+                        if (app.url.isNotBlank()) {
+                            setChipIconResource(R.drawable.ic_link_14)
+                            setChipIconTintResource(R.color.app_primary)
+                            isChipIconVisible = true
+                            setOnClickListener {
+                                try {
+                                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(app.url)))
+                                } catch (_: Exception) {}
+                            }
+                        }
+                    }
+                    entryBinding.chipGroupEntryTags.addView(appChip)
+                }
                 item.techStackTags.forEach { tag ->
                     val tagChip = Chip(this).apply {
                         text = tag

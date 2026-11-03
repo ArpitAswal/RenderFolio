@@ -5,6 +5,6 @@
     android:viewportHeight="24">
     <!-- 6-dot drag handle ⋮⋮ -->
     <path
-        android:fillColor="#94A3B8"
+        android:fillColor="@color/app_text_secondary"
         android:pathData="M9,5a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3zM9,10.5a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3zM9,16a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3zM15,5a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3zM15,10.5a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3zM15,16a1.5,1.5 0 1,1 0,3 1.5,1.5 0 0,1 0,-3z" />
 </vector>

@@ -45,3 +45,7 @@ Thumbs.db
 # Explicitly ignore test cases as per configuration instructions
 **/src/test/
 **/src/androidTest/
+
+# Local documents and test PDFs containing personal data / PII
+docs/
+*.pdf

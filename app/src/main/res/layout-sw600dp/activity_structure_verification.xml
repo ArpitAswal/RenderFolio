@@ -27,6 +27,8 @@
             app:navigationContentDescription="Back"
             app:title="Structure Verification"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:contentInsetEnd="16dp"
+            app:contentInsetEndWithActions="16dp"
             app:menu="@menu/menu_structure_verification" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -77,13 +79,17 @@
 
             </LinearLayout>
 
-            <!-- Shared Full-Width Add Custom Section Button Anchoring Both Panes -->
+            <!-- Shared Add Custom Section Button Anchored Across Panes (Max width 320dp per Material Design) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddCustomSection"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"
+                android:maxWidth="320dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
                 android:background="@drawable/bg_dashed_button"
                 android:text="@string/action_add_custom_section"
                 android:textColor="@color/app_primary"

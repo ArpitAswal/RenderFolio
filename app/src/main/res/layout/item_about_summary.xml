@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/app_border"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:showIn="@layout/activity_structure_verification"
+    tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="10dp">
 
         <!-- Card Header with Drag Handle -->
         <RelativeLayout
@@ -27,11 +33,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/ivDragHandle"
+                android:layout_marginEnd="8dp"
                 android:layout_centerVertical="true"
-                android:text="@string/section_title_about_summary"
+                android:text="@string/section_title_professional_summary"
                 android:textColor="@color/app_text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:ignore="SystemUIOverlay,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
             <ImageView
                 android:id="@+id/ivDragHandle"
@@ -40,13 +49,14 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Drag to reorder section"
+                android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
-                android:src="@drawable/ic_drag_handle" />
+                android:src="@drawable/ic_drag_handle"
+                app:tint="@color/app_text_secondary" />
 
         </RelativeLayout>
 
-        <!-- Summary Multi-line Input in Scrollable Fixed-Height Container -->
+        <!-- Summary Multi-line Input with Native M3 Counter -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilSummary"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -56,7 +66,11 @@
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:counterEnabled="true"
+            app:counterMaxLength="600"
+            app:counterOverflowTextColor="@color/app_danger"
+            app:counterTextColor="@color/app_text_muted">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSummary"
@@ -64,25 +78,15 @@
                 android:layout_height="wrap_content"
                 android:gravity="top|start"
                 android:inputType="textMultiLine|textCapSentences"
-                android:maxLength="600"
-                android:maxHeight="160dp"
+                android:maxWidth="488dp"
                 android:minLines="4"
+                android:maxLines="6"
                 android:scrollbars="vertical"
                 android:textColor="@color/app_text_primary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="VisualLintTextFieldSize,WideTextField" />
 
         </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Bottom Right Counter: 600 max chars -->
-        <TextView
-            android:id="@+id/tvCharCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="6dp"
-            android:text="0 / 600 max chars"
-            android:textColor="@color/app_text_muted"
-            android:textSize="12sp" />
 
     </LinearLayout>
 

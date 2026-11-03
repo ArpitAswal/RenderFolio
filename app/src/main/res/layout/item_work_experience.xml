@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/app_border"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:showIn="@layout/activity_structure_verification"
+    tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +19,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Card Header with Work Experience label, Drag Handle, and Fresher/Experienced toggle -->
+        <!-- Card Header with Section Title, Drag Handle, and Action Sub-Header -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,20 +37,22 @@
                 app:layout_constraintBottom_toBottomOf="@+id/ivDragHandle"
                 app:layout_constraintEnd_toStartOf="@+id/ivDragHandle"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/ivDragHandle" />
+                app:layout_constraintTop_toTopOf="@+id/ivDragHandle"
+                tools:ignore="SystemUIOverlay,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
             <ImageView
                 android:id="@+id/ivDragHandle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Drag to reorder section"
+                android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
                 android:src="@drawable/ic_drag_handle"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/app_text_secondary" />
 
-            <!-- Fresher | Experienced Toggle Button Group -->
+            <!-- Row 2: Candidate Type Toggle on Left -->
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/toggleCandidateType"
                 android:layout_width="wrap_content"
@@ -87,6 +92,25 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
+            <!-- Header-Aligned Add Position Button (Option A) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddWorkExperience"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="12dp"
+                android:text="@string/action_add_experience"
+                android:textColor="@color/app_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/app_primary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/toggleCandidateType"
+                app:layout_constraintBottom_toBottomOf="@+id/toggleCandidateType" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Positions Container (hidden if Fresher is selected) -->
@@ -102,19 +126,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
-
-            <!-- Add Work Experience Entry Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddWorkExperience"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/action_add_experience"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                app:cornerRadius="10dp"
-                app:strokeColor="@color/app_primary" />
 
         </LinearLayout>
 

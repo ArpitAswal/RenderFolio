@@ -1,9 +1,13 @@
 package com.example
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -11,8 +15,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -48,6 +54,20 @@ class MainActivity : AppCompatActivity() {
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             viewModel.processPdfResume(uri)
+        }
+    }
+
+    // Native Runtime Permission launcher with graceful handling for all user decisions
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // User Allowed -> Toast feedback and immediately launch PDF picker!
+            Toast.makeText(this, R.string.permission_granted_toast, Toast.LENGTH_SHORT).show()
+            launchPdfPicker()
+        } else {
+            // User Denied -> Graceful explanation dialog with retry, settings, or demo options
+            showPermissionDeniedDialog()
         }
     }
 
@@ -133,17 +153,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupColdStart() {
         val btnSelectPdf = findViewById<Button>(R.id.btn_upload_pdf)
-        val cardDropzone = findViewById<View>(R.id.card_dropzone)
         val btnDemoPdf = findViewById<Button>(R.id.btn_load_demo)
         val btnViewActive = findViewById<View>(R.id.btn_view_active_visualizer)
         val btnShowQr = findViewById<View>(R.id.btn_show_active_qr)
 
+        // Only the dedicated Upload Resume button launches the file picker, guarded by runtime permissions
         btnSelectPdf?.setOnClickListener {
-            filePickerLauncher.launch("application/pdf")
-        }
-
-        cardDropzone?.setOnClickListener {
-            filePickerLauncher.launch("application/pdf")
+            checkAndRequestPermission()
         }
 
         btnDemoPdf?.setOnClickListener {
@@ -214,6 +230,95 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Checks if storage permission is already granted.
+     * If granted -> launches PDF picker directly.
+     * If not granted -> requests runtime permission with user rationale handling.
+     */
+    private fun checkAndRequestPermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+                // Permission already granted -> launch document picker immediately
+                launchPdfPicker()
+            }
+            shouldShowRequestPermissionRationale(permission) -> {
+                // User previously denied -> show rationale dialog before asking again
+                showPermissionRationaleDialog(permission)
+            }
+            else -> {
+                // First-time ask -> trigger native system permission dialog
+                requestPermissionLauncher.launch(permission)
+            }
+        }
+    }
+
+    private fun launchPdfPicker() {
+        try {
+            filePickerLauncher.launch("application/pdf")
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not open file library: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Rationale Dialog shown when explaining why permission is required before re-asking.
+     */
+    private fun showPermissionRationaleDialog(permission: String) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.permission_title)
+            .setMessage(R.string.permission_rationale_message)
+            .setPositiveButton(R.string.permission_grant_button) { dialog, _ ->
+                dialog.dismiss()
+                requestPermissionLauncher.launch(permission)
+            }
+            .setNegativeButton(R.string.permission_demo_button) { dialog, _ ->
+                dialog.dismiss()
+                val sample = ResumeProfile.sampleProfile()
+                startActivity(ResumeVisualiserActivity.createIntent(this, sample))
+            }
+            .show()
+    }
+
+    /**
+     * Graceful fallback dialog when user denies permission with actionable paths (Settings, Demo, or Cancel).
+     */
+    private fun showPermissionDeniedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.permission_title)
+            .setMessage(R.string.permission_dialog_message)
+            .setPositiveButton(R.string.permission_settings_button) { dialog, _ ->
+                dialog.dismiss()
+                openAppSettings()
+            }
+            .setNeutralButton(R.string.permission_demo_button) { dialog, _ ->
+                dialog.dismiss()
+                val sample = ResumeProfile.sampleProfile()
+                startActivity(ResumeVisualiserActivity.createIntent(this, sample))
+            }
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                dialog.dismiss()
+                Toast.makeText(this, R.string.permission_denied_toast, Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not open app settings: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun observeCompiledProfile() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -238,29 +343,39 @@ class MainActivity : AppCompatActivity() {
             try {
                 val assetNames = listOf(
                     "arpit_aswal_resume.pdf",
-                    "sample_resume.pdf",
-                    "ArpitAswal_Flutter_Experience_Resume_0fae348f.pdf"
+                    "ArpitAswal_CV.pdf",
+                    "ArpitAswal_Resume.pdf",
+                    "sample_resume.pdf"
                 )
-                var tempFile: File? = null
+
+                var matchedAsset: String? = null
                 for (name in assetNames) {
                     try {
-                        val input = assets.open(name)
-                        val outFile = File(cacheDir, "sample_resume.pdf")
-                        FileOutputStream(outFile).use { output ->
-                            input.copyTo(output)
-                        }
-                        tempFile = outFile
+                        assets.open(name).close()
+                        matchedAsset = name
                         break
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                 }
 
-                if (tempFile != null && tempFile.exists()) {
+                if (matchedAsset == null) {
+                    val allAssets = assets.list("") ?: emptyArray()
+                    matchedAsset = allAssets.firstOrNull { it.endsWith(".pdf", ignoreCase = true) }
+                }
+
+                if (matchedAsset != null) {
+                    val tempFile = File(cacheDir, "sample_bundled_resume.pdf")
+                    assets.open(matchedAsset).use { input ->
+                        FileOutputStream(tempFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
                     viewModel.processPdfResume(Uri.fromFile(tempFile))
                 } else {
                     viewModel.loadSampleProfile()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Could not load demo resume: ${e.message}", Toast.LENGTH_SHORT).show()
+                viewModel.loadSampleProfile()
             }
         }
     }

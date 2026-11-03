@@ -39,12 +39,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?attr/selectableItemBackground"
             android:gravity="center_vertical|end"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="4dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
             android:text="@string/remove_project"
             android:textColor="@color/app_danger"
             android:textSize="12sp"
@@ -55,11 +53,14 @@
     <!-- Project Title -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilProjectTitle"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/project_title_name"
+        app:startIconDrawable="@drawable/ic_work"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
@@ -72,6 +73,8 @@
             android:imeOptions="actionNext"
             android:inputType="textCapWords"
             android:maxLines="1"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/app_text_primary"
             android:textSize="14sp" />
 
@@ -80,11 +83,15 @@
     <!-- Deployed / Code Link -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilProjectLink"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="?attr/textInputOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="@string/repository_deployed_url"
+        app:errorEnabled="true"
+        app:startIconDrawable="@drawable/ic_link_14"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
@@ -97,10 +104,56 @@
             android:imeOptions="actionDone"
             android:inputType="textUri"
             android:maxLines="1"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/app_text_primary"
             android:textSize="14sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Sub-Header Row: Platforms & Tech Stack and compact + Add Tag (Option A) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/tvProjectTechHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/platforms_tech_stack"
+            android:textColor="@color/app_text_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddProjectTechTag"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="12dp"
+            android:text="@string/action_add_tag"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            app:strokeColor="@color/app_primary" />
+
+    </LinearLayout>
+
+    <!-- ChipGroup for Tech Stack / Platform tags (Option A) -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupProjectTech"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:chipSpacingHorizontal="6dp"
+        app:chipSpacingVertical="4dp"
+        app:singleLine="false" />
 
     <!-- Sub-Header Row: Key Highlights & Features and compact + Add Bullet -->
     <LinearLayout

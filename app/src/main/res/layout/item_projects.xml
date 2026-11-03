@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_projects_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/app_border"
     app:strokeWidth="1dp">
 
@@ -16,35 +17,51 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Card Header with Drag Handle -->
-        <RelativeLayout
+        <!-- Card Header with Header-Aligned Add Project Button and Drag Handle -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:id="@+id/tvSectionTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
+                android:layout_weight="1"
                 android:text="@string/section_title_projects"
                 android:textColor="@color/app_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddProject"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="6dp"
+                android:text="@string/action_add_project"
+                android:textColor="@color/app_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="12dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/app_primary" />
+
             <ImageView
                 android:id="@+id/ivDragHandle"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Drag to reorder section"
+                android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
-                android:src="@drawable/ic_drag_handle" />
+                android:src="@drawable/ic_drag_handle"
+                app:tint="@color/app_text_secondary" />
 
-        </RelativeLayout>
+        </LinearLayout>
 
         <!-- Project Entries Container -->
         <LinearLayout
@@ -52,19 +69,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
-
-        <!-- Add Project Entry Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddProject"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/action_add_project"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            app:cornerRadius="10dp"
-            app:strokeColor="@color/app_primary" />
 
     </LinearLayout>
 

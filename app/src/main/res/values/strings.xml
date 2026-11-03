@@ -2,15 +2,21 @@
 <resources>
     <string name="app_name">ResumeShowcase</string>
     <string name="cold_start_app_title">ResumeShowcase</string>
-    <string name="cold_start_headline">Upload your professional background</string>
-    <string name="cold_start_subtitle">Convert your static PDF resume into an interactive digital showcase.</string>
+    <string name="cold_start_headline">Transform your resume</string>
+    <string name="cold_start_subtitle">Convert your static PDF resume into an interactive digital portfolio.</string>
     <string name="cold_start_action_button">Upload Resume</string>
-    <string name="cold_start_file_limit">Supported format: PDF • Up to 10MB</string>
+    <string name="cold_start_file_limit">Supports PDF up to 10MB</string>
     <string name="cold_start_format_note">Supports native text PDFs &amp; scanned documents</string>
-    <string name="cold_start_privacy_note">🔒 100% Private · On-device processing</string>
-    <string name="cold_start_dropzone_title">Select your PDF file</string>
-    <string name="cold_start_demo_button">Explore Pre-loaded Demo Showcase</string>
+    <string name="cold_start_privacy_note">🔒 100% Private · Parsed on your device</string>
+    <string name="cold_start_dropzone_title">Tap to browse your PDF resume</string>
+    <string name="cold_start_demo_button">Explore Demo Showcase</string>
     <string name="processing_resume_title">Processing Resume</string>
+
+    <!-- PDF Extraction Loading Screen Strings -->
+    <string name="extraction_title">Extracting Resume Data…</string>
+    <string name="extraction_subtitle">Analyzing document structure &amp; career milestones</string>
+    <string name="extraction_active_badge">Active Extraction</string>
+    <string name="extraction_status_format">Extracting and structuring %1$s…</string>
 
     <!-- Permission Dialog Strings -->
     <string name="permission_title">Storage Permission Required</string>
@@ -47,30 +53,32 @@
     <string name="dialog_title_edit_profile_link">Edit Profile Link</string>
     <string name="dialog_title_add_profile_link">Add Profile Link</string>
     <string name="msg_profile_link_removed">Profile link removed</string>
+    <string name="cd_profile_link">Profile link</string>
+    <string name="cd_remove_profile_link">Remove profile link</string>
     <string name="error_invalid_url"><![CDATA[Please enter a valid URL (e.g. https://linkedin.com/...)]]></string>
     <string name="error_url_empty">URL cannot be empty</string>
 
     <!-- About / Summary Section -->
     <string name="section_title_about_summary">About / Summary</string>
     <string name="section_title_professional_summary">Professional Summary</string>
-    <string name="hint_profile_summary"><![CDATA[Professional Overview & Summary]]></string>
+    <string name="hint_profile_summary">Overview</string>
     <string name="cd_section_summary">Professional overview and biography summary</string>
     <string name="char_counter_format">%1$d / %2$d max chars</string>
     <string name="error_summary_limit">Summary cannot exceed 600 characters</string>
 
-    <!-- Work Experience Section -->
-    <string name="section_title_work_experience">Work Experience</string>
-    <string name="cd_section_work_experience">Candidate career timeline and work experience history</string>
+    <!-- Professional Experience Section -->
+    <string name="section_title_work_experience">Professional Experience</string>
+    <string name="cd_section_work_experience">Candidate career timeline and professional experience history</string>
     <string name="exp_present">Present</string>
     <string name="exp_date_range_format">%1$s – %2$s</string>
     <string name="exp_single_date_format">%1$s</string>
     <string name="exp_default_role">Role</string>
     <string name="exp_default_company">Organization</string>
     <string name="exp_bullet_format">•  %1$s</string>
-    <string name="section_title_work_experience_optional">Work Experience (Optional)</string>
+    <string name="section_title_work_experience_optional">Professional Experience (Optional)</string>
     <string name="candidate_type_fresher">Fresher</string>
     <string name="candidate_type_experienced">Experienced</string>
-    <string name="action_add_experience">+ Add New Experience</string>
+    <string name="action_add_experience">+ Add Position</string>
     <string name="position_header_format">Position #%1$d</string>
     <string name="action_remove_position">Remove Position</string>
     <string name="hint_company_name">Company / Organization Name</string>
@@ -79,6 +87,15 @@
     <string name="duration_range_format"><![CDATA[%1$s – %2$s]]></string>
     <string name="duration_present">Present</string>
     <string name="header_role_responsibilities"><![CDATA[Role & Responsibilities]]></string>
+    <string name="header_client_applications"><![CDATA[Client Applications & Deliverables]]></string>
+    <string name="action_add_client_app">+ Add App</string>
+    <string name="dialog_title_add_client_app">Add Client Application</string>
+    <string name="dialog_title_edit_client_app">Edit Client Application</string>
+    <string name="hint_client_app_name"><![CDATA[Application Name *]]></string>
+    <string name="hint_client_app_url"><![CDATA[Application Store / Web URL *]]></string>
+    <string name="error_app_name_required">Application name is required</string>
+    <string name="error_app_url_required">Application URL is required</string>
+    <string name="cd_remove_client_app">Remove client application</string>
 
     <!-- Projects Section -->
     <string name="section_title_featured_projects">Featured Projects</string>
@@ -88,24 +105,31 @@
     <string name="cd_project_live_demo">Open live demo for %1$s</string>
     <string name="cd_project_code_repo">Open code repository for %1$s</string>
     <string name="section_title_projects">Projects</string>
-    <string name="action_add_project">+ Add New Project</string>
+    <string name="action_add_project">+ Add Project</string>
     <string name="project_item">Project Item</string>
     <string name="project_header_format">Project #%1$d</string>
     <string name="remove_project">Remove Project</string>
     <string name="project_title_name">Project Title / Name</string>
     <string name="repository_deployed_url">Repository / Deployed URL</string>
+    <string name="platforms_tech_stack">Platforms &amp; Tech Stack</string>
+    <string name="action_add_tag">+ Add Tag</string>
+    <string name="cd_remove_tech_tag">Remove platform or tech tag</string>
+    <string name="dialog_title_add_tech_tag">Add Platform or Tech Tag</string>
+    <string name="dialog_title_edit_tech_tag">Edit Platform or Tech Tag</string>
+    <string name="hint_tech_tag">e.g. Android, iOS, Flutter, Tablets</string>
+    <string name="error_tag_required">Tag cannot be blank</string>
     <string name="key_highlights_features"><![CDATA[Key Highlights & Features]]></string>
 
     <!-- Technical Skills Section -->
     <string name="section_title_technical_skills">Technical Skills</string>
     <string name="action_add_skill_chip">+ Add Skill</string>
-    <string name="action_add_domain">+ Add</string>
+    <string name="action_add_domain">+ Add Category</string>
     <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
     <string name="cd_drag_reorder_section">Drag to reorder section</string>
     <string name="cd_edit_domain_skills">Edit domain skills</string>
     <string name="cd_delete_domain">Delete domain</string>
-    <string name="skills_empty_state">No skills added yet. Tap \'+ Add\' above.</string>
+    <string name="skills_empty_state">No skills added yet. Tap \'+ Add Category\' above.</string>
     <string name="dialog_title_add_skills_domain">Add Skill Category</string>
     <string name="dialog_title_edit_skills_domain">Edit %1$s</string>
     <string name="dialog_title_edit_flat_skills">Edit Technical Skills</string>
@@ -113,6 +137,7 @@
     <string name="hint_skills_comma_separated">Comma-separated skills (e.g. Kotlin, Compose, Room)</string>
     <string name="helper_skills_domain_note">Separate each skill with a comma or new line</string>
     <string name="error_domain_name_required">Category name cannot be empty</string>
+    <string name="error_skills_required">Please enter at least one skill</string>
     <string name="skills_domain_languages">Languages</string>
     <string name="skills_domain_frameworks">Frameworks &amp; SDKs</string>
     <string name="skills_domain_cloud">Cloud &amp; DevOps</string>
@@ -122,12 +147,13 @@
     <string name="hint_add_skill">e.g. Flutter, Kotlin, Docker</string>
 
     <!-- Education Section -->
-    <string name="action_add_education">+ Add Education Entry</string>
+    <string name="action_add_education">+ Add Entry</string>
     <string name="education_header_format">Education #%1$d</string>
+    <string name="education_item">Education Item</string>
     <string name="action_remove_education">Remove Education</string>
     <string name="hint_institution_name">Institution / University Name</string>
     <string name="hint_degree">Degree / Course of Study</string>
-    <string name="section_title_education">Education &amp; Academics</string>
+    <string name="section_title_education">Education</string>
     <string name="cd_section_education">Candidate academic degrees and certifications</string>
     <string name="cd_custom_section_format">Custom section for %1$s</string>
     <string name="custom_bullet_format"><![CDATA[•  %1$s]]></string>

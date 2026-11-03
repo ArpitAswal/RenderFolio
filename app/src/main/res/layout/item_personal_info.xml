@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/app_surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:strokeColor="@color/app_border"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:showIn="@layout/activity_structure_verification"
+    tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,11 +30,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/ivDragHandle"
+                android:layout_marginEnd="8dp"
                 android:layout_centerVertical="true"
                 android:text="@string/personal_info_contact"
                 android:textColor="@color/app_text_primary"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:ignore="SystemUIOverlay,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
             <ImageView
                 android:id="@+id/ivDragHandle"
@@ -40,12 +46,14 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Drag to reorder section"
+                android:contentDescription="@string/cd_drag_reorder_section"
                 android:padding="12dp"
-                android:src="@drawable/ic_drag_handle" />
+                android:src="@drawable/ic_drag_handle"
+                app:tint="@color/app_text_secondary" />
 
         </RelativeLayout>
 
+        <!-- Cluster 1: Identity & Target Context -->
         <!-- Full Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilFullName"
@@ -54,19 +62,24 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_full_name"
+            app:startIconDrawable="@drawable/ic_person"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etFullName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionNext"
                 android:inputType="textPersonName|textCapWords"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,19 +91,24 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_job_title"
+            app:startIconDrawable="@drawable/ic_work"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etJobTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionNext"
                 android:inputType="textCapWords"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,26 +118,30 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:hint="@string/hint_target_company"
-            app:helperText="@string/helper_target_company"
-            app:helperTextEnabled="true"
+            app:startIconDrawable="@drawable/ic_business"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTargetCompany"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionNext"
                 android:inputType="textCapWords"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Cluster 2: Contact & Location -->
         <!-- Phone -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPhone"
@@ -128,19 +150,24 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_phone"
+            app:startIconDrawable="@drawable/ic_phone"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionNext"
                 android:inputType="phone"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -152,19 +179,24 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_email"
+            app:startIconDrawable="@drawable/ic_email"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionNext"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -174,33 +206,39 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="16dp"
             android:hint="@string/hint_location"
+            app:startIconDrawable="@drawable/ic_place"
+            app:startIconTint="@color/app_primary"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            tools:ignore="VisualLintTextFieldSize,WideTextField">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxWidth="488dp"
                 android:imeOptions="actionDone"
                 android:inputType="textCapWords"
                 android:maxLines="1"
-                android:textColor="@color/app_text_primary" />
+                android:textColor="@color/app_text_primary"
+                tools:ignore="SystemUIOverlay,VisualLintTextFieldSize,WideTextField,DuplicateSpeakableTextCheck,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Profile Links Sub-Group -->
+        <!-- Cluster 3: Online Presence (Profile Links) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="@string/header_profile_links"
-            android:textColor="@color/app_text_muted"
+            android:textColor="@color/app_text_secondary"
             android:textSize="12sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="SystemUIOverlay,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
         <!-- Full-Width Profile Links Container -->
         <LinearLayout
@@ -214,11 +252,13 @@
             android:id="@+id/btnAddProfileLink"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="@string/action_add_profile_link"
             android:textSize="12sp"
-            app:cornerRadius="8dp"
-            app:strokeColor="@color/app_primary" />
+            app:cornerRadius="10dp"
+            app:strokeColor="@color/app_primary"
+            tools:ignore="SystemUIOverlay,VisualLintBounds,VisualLintOverlap,VisualLintSystemWindow,VisualLintSystemUi,VisualLintSystemUI,VisualLintSystemWindowInsets" />
 
     </LinearLayout>
 
