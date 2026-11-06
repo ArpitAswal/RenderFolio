@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Hero Candidate Name (26sp Bold Centered) -->
-    <style name="TextAppearance.ResumeVisualiser.Hero.Name" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="android:textSize">26sp</item>
-        <item name="android:fontFamily">sans-serif-black</item>
+    <!-- Hero Candidate Name (27sp Extra Bold Centered) -->
+    <style name="TextAppearance.ResumeVisualiser.Hero.Name" parent="">
+        <item name="android:textSize">27sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/hero_name_text</item>
         <item name="android:letterSpacing">-0.02</item>
         <item name="android:gravity">center_horizontal</item>
     </style>
 
-    <!-- Hero Headline Title (15sp Medium Accent Centered) -->
+    <!-- Hero Headline Title (15sp Medium Centered) -->
     <style name="TextAppearance.ResumeVisualiser.Hero.Headline" parent="TextAppearance.Material3.BodyLarge">
         <item name="android:textSize">15sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
@@ -18,21 +19,22 @@
         <item name="android:gravity">center_horizontal</item>
     </style>
 
-    <!-- Hero Location (13sp Regular Muted Centered) -->
+    <!-- Hero Location Chip Text (13sp Medium Centered) -->
     <style name="TextAppearance.ResumeVisualiser.Hero.Location" parent="TextAppearance.Material3.BodySmall">
         <item name="android:textSize">13sp</item>
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="android:textColor">@color/hero_location_text</item>
-        <item name="android:gravity">center_horizontal</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/hero_location_pill_text</item>
+        <item name="android:gravity">center_vertical</item>
     </style>
 
-    <!-- Contact Chip Label (12sp Medium) -->
-    <style name="TextAppearance.ResumeVisualiser.Chip.Text" parent="TextAppearance.Material3.LabelMedium">
-        <item name="android:textSize">12sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/hero_chip_text</item>
-        <item name="android:maxLines">1</item>
-        <item name="android:ellipsize">end</item>
+    <!-- Hero Monogram Initials (26sp Serif Bold) -->
+    <style name="TextAppearance.ResumeVisualiser.Hero.Initials" parent="">
+        <item name="android:textSize">26sp</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/hero_avatar_text</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <!-- Section Header Label (13sp Medium Uppercase Accent) -->

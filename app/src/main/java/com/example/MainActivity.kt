@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             cloudRepository.purgeExpiredResumes()
             val cloudShowcases = cloudRepository.fetchUserShowcases().getOrNull()
-            if (cloudShowcases != null && cloudShowcases.isNotEmpty()) {
+            if (!cloudShowcases.isNullOrEmpty()) {
                 preferencesRepository.syncFromCloud(cloudShowcases)
             }
         }

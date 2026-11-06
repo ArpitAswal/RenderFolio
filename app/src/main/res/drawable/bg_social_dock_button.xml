@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Frosted Glass Squircle Quick-Contact Tile (Alex Morgan Borderless Spec) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/hero_social_ripple">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/hero_social_bg" />
+            <stroke
+                android:width="1.5dp"
+                android:color="@color/hero_social_stroke" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</ripple>

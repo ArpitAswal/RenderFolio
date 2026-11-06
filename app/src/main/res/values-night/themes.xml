@@ -21,6 +21,35 @@
         <item name="colorOnTertiaryContainer">@color/chip_text_color</item>
         <item name="chipStyle">@style/Widget.App.SkillChip</item>
         <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+    </style>
+
+    <!-- Dedicated Theme for ResumeVisualiserActivity (Atmospheric Canvas - Night) -->
+    <style name="Theme.ResumeVisualiser" parent="Theme.MyApplication">
+        <item name="android:windowBackground">@drawable/bg_canvas_ambient</item>
+        <item name="android:statusBarColor">@color/ambient_canvas_start</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/app_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/app_surface</item>
+        <item name="colorSurfaceContainer">@color/app_surface</item>
+        <item name="colorSurfaceContainerHighest">@color/app_surface</item>
+        <item name="colorSurfaceContainerLow">@color/app_surface</item>
+        <item name="colorSurfaceContainerLowest">@color/app_surface</item>
+        <item name="colorOnSurface">@color/app_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/app_text_muted</item>
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="backgroundTint">@color/app_surface</item>
+        <item name="android:backgroundTint">@color/app_surface</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Dialog" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">20dp</item>
     </style>
 
     <style name="Widget.App.SkillChip" parent="Widget.Material3.Chip.Assist">

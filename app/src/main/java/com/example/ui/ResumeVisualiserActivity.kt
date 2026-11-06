@@ -23,7 +23,6 @@ import com.example.R
 import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.databinding.ActivityResumeVisualiserBinding
-import com.example.databinding.ItemVisualiserContactChipBinding
 import com.example.databinding.ItemVisualiserCustomEntryBinding
 import com.example.databinding.ItemVisualiserEducationEntryBinding
 import com.example.databinding.ItemVisualiserExperienceEntryBinding
@@ -258,17 +257,22 @@ class ResumeVisualiserActivity : AppCompatActivity() {
     }
 
     /**
-     * SECTION 1: Binds candidate data and dynamically populates wrapping Flow chips.
-     * Symmetrical horizontal centering with whole-section target.
+     * SECTION 1: Binds candidate data and sets up the interactive avatar monogram,
+     * status badge, primary email CTA, and quick-contact toolbar (Call, GitHub, LinkedIn, Portfolio).
      */
     private fun bindHeroSection(hero: ProfileHero) {
-        // 1. Candidate Full Name (Centered)
-        binding.tvHeroName.text = hero.fullName.ifBlank { getString(R.string.hero_default_name) }
+        // 1. Monogram Initials & Glassmorphism Syllable Disc
+        binding.tvHeroInitials.text = extractInitials(hero.fullName)
 
-        // 2. Professional Headline (Centered)
+        // 2. Candidate Full Name (Centered)
+        binding.tvHeroName.text = hero.fullName.ifBlank { getString(R.string.hero_default_name) }
+        binding.tvHeroName.typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+        binding.tvHeroName.paint.isFakeBoldText = true
+
+        // 3. Professional Headline (Centered)
         binding.tvHeroHeadline.text = hero.headlineTitle.ifBlank { getString(R.string.hero_default_headline) }
 
-        // 3. Location with Pin (Centered, with visibility guard)
+        // 4. Location Chip / Pill (Centered, with visibility guard)
         if (hero.location.isNotBlank()) {
             binding.tvHeroLocation.visibility = View.VISIBLE
             binding.tvHeroLocation.text = hero.location
@@ -276,102 +280,108 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             binding.tvHeroLocation.visibility = View.GONE
         }
 
-        // 4. Populate Contact Chips into ConstraintLayout Flow
-        populateContactChips(hero.contactInfo)
+        // 5. Direct Outreach CTA Button Label ("Email {FirstName}" or "Email")
+        val firstName = hero.fullName.trim().split("\\s+".toRegex()).firstOrNull()?.replaceFirstChar { it.uppercase() } ?: ""
+        val emailBtnText = if (firstName.isNotBlank()) getString(R.string.btn_hero_email_format, firstName) else getString(R.string.btn_hero_email)
+        binding.btnActionEmail.text = emailBtnText
 
-        // 5. Initial Load Entrance Animation (Fade and Scale-up)
-        binding.heroContainer.post {
-            motionDriver.startEntranceAnimation()
+        // 6. Populate Structured Interactive Contact Actions
+        setupContactActions(hero.contactInfo)
+
+        // 7. Harmonized Initial Load Entrance Animation (identical behavior to Section 2 Summary)
+        motionDriver = HeroSectionMotionDriver(binding.heroContainer)
+        binding.heroContainer.doOnPreDraw {
+            motionDriver.playInitialEntrance()
         }
     }
 
     /**
-     * Dynamically instantiates contact chip views with guaranteed 48x48dp touch bounds
-     * and binds their generated IDs into ConstraintLayout Flow for multi-line centered wrapping.
+     * Binds Direct Outreach Primary CTA (Email) and Quick-Contact & Social Toolbar (Call, GitHub, LinkedIn, Portfolio).
+     * Provides tap to launch and long-press to copy with feedback.
      */
-    private fun populateContactChips(contact: ContactInfo) {
-        val flow = binding.flowContactChips
-        val container = binding.heroContainer
+    private fun setupContactActions(contact: ContactInfo) {
+        val hasEmail = contact.email.isNotBlank()
 
-        // Clear existing dynamically generated chip views
-        val currentReferencedIds = flow.referencedIds
-        for (id in currentReferencedIds) {
-            container.findViewById<View>(id)?.let { container.removeView(it) }
+        // 1. Direct Outreach CTA: Email
+        if (hasEmail) {
+            binding.btnActionEmail.visibility = View.VISIBLE
+            binding.btnActionEmail.setOnClickListener { sendEmail(contact.email) }
+            binding.btnActionEmail.setOnLongClickListener {
+                copyToClipboard("Email", contact.email)
+                true
+            }
+        } else {
+            binding.btnActionEmail.visibility = View.GONE
         }
 
-        val referencedIds = mutableListOf<Int>()
+        // 2. Quick-Contact & Social Toolbar (Call, GitHub, LinkedIn, Portfolio)
+        val toolbarItems = listOf(
+            Triple(binding.btnActionCall, contact.phone, "Phone"),
+            Triple(binding.btnSocialGithub, contact.githubUrl, "GitHub URL"),
+            Triple(binding.btnSocialLinkedin, contact.linkedinUrl, "LinkedIn URL"),
+            Triple(binding.btnSocialPortfolio, contact.websiteUrl, "Portfolio URL")
+        )
 
-        fun addChip(iconRes: Int, text: String, contentDesc: String, onClick: () -> Unit) {
-            val chipBinding = ItemVisualiserContactChipBinding.inflate(layoutInflater, container, false)
-            val chipId = View.generateViewId()
-            chipBinding.root.id = chipId
-
-            chipBinding.ivChipIcon.setImageResource(iconRes)
-            chipBinding.tvChipLabel.text = text
-            chipBinding.root.contentDescription = contentDesc
-            chipBinding.root.setOnClickListener { onClick() }
-
-            container.addView(chipBinding.root)
-            referencedIds.add(chipId)
-        }
-
-        // Phone chip (ACTION_DIAL)
-        if (contact.phone.isNotBlank()) {
-            addChip(
-                iconRes = R.drawable.ic_phone_14,
-                text = contact.phone,
-                contentDesc = getString(R.string.cd_hero_phone, contact.phone)
-            ) {
-                dialPhoneNumber(contact.phone)
+        val density = resources.displayMetrics.density
+        var visibleToolbarCount = 0
+        for ((button, rawValue, label) in toolbarItems) {
+            val value = rawValue.trim()
+            if (value.isNotBlank()) {
+                button.visibility = View.VISIBLE
+                val params = button.layoutParams as? android.view.ViewGroup.MarginLayoutParams
+                if (params != null) {
+                    params.marginStart = if (visibleToolbarCount == 0) 0 else (10 * density).toInt()
+                    button.layoutParams = params
+                }
+                button.setOnClickListener {
+                    button.animate()
+                        .scaleX(0.88f).scaleY(0.88f).setDuration(100)
+                        .withEndAction {
+                            button.animate().scaleX(1.0f).scaleY(1.0f).setDuration(220)
+                                .setInterpolator(android.view.animation.OvershootInterpolator(2.0f)).start()
+                            if (button == binding.btnActionCall) {
+                                dialPhoneNumber(value)
+                            } else {
+                                openProfileUrl(value)
+                            }
+                        }.start()
+                }
+                button.setOnLongClickListener {
+                    copyToClipboard(label, value)
+                    true
+                }
+                visibleToolbarCount++
+            } else {
+                button.visibility = View.GONE
             }
         }
 
-        // Email chip (ACTION_SENDTO)
-        if (contact.email.isNotBlank()) {
-            addChip(
-                iconRes = R.drawable.ic_email_14,
-                text = contact.email,
-                contentDesc = getString(R.string.cd_hero_email, contact.email)
-            ) {
-                sendEmail(contact.email)
-            }
-        }
+        binding.layoutSocialDock.visibility = if (visibleToolbarCount > 0) View.VISIBLE else View.GONE
+    }
 
-        // LinkedIn chip
-        if (contact.linkedinUrl.isNotBlank()) {
-            addChip(
-                iconRes = R.drawable.ic_linkedin_14,
-                text = "LinkedIn",
-                contentDesc = getString(R.string.cd_hero_profile_link, "LinkedIn")
-            ) {
-                openProfileUrl(contact.linkedinUrl)
-            }
-        }
+    /**
+     * Dynamically extracts up to 2 uppercase monogram initials from candidate full name.
+     * Uses first letter of the first word and first letter of the last word for multi-word names.
+     * Falls back to @string/hero_default_initials if name is blank or devoid of letters.
+     */
+    private fun extractInitials(fullName: String): String {
+        val words = fullName.trim()
+            .split("\\s+".toRegex())
+            .map { it.filter { char -> char.isLetter() } }
+            .filter { it.isNotBlank() }
 
-        // GitHub chip
-        if (contact.githubUrl.isNotBlank()) {
-            addChip(
-                iconRes = R.drawable.ic_github_14,
-                text = "GitHub",
-                contentDesc = getString(R.string.cd_hero_profile_link, "GitHub")
-            ) {
-                openProfileUrl(contact.githubUrl)
-            }
+        return when {
+            words.isEmpty() -> getString(R.string.hero_default_initials)
+            words.size == 1 -> words[0].take(2).uppercase()
+            else -> "${words.first().first().uppercase()}${words.last().first().uppercase()}"
         }
+    }
 
-        // Website / Portfolio chip
-        if (contact.websiteUrl.isNotBlank()) {
-            addChip(
-                iconRes = R.drawable.ic_link_14,
-                text = "Portfolio",
-                contentDesc = getString(R.string.cd_hero_profile_link, "Portfolio")
-            ) {
-                openProfileUrl(contact.websiteUrl)
-            }
-        }
-
-        // Connect chips to the Flow helper
-        flow.referencedIds = referencedIds.toIntArray()
+    private fun copyToClipboard(label: String, text: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "$label copied to clipboard! ✨", Toast.LENGTH_SHORT).show()
     }
 
     // --- Intent Helpers with Resilience ---
@@ -803,8 +813,17 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
         containerCustom.visibility = View.VISIBLE
 
-        validSections.forEach { section ->
+        validSections.forEachIndexed { sectionIdx, section ->
             val sectionBinding = LayoutSectionCustomDynamicBinding.inflate(layoutInflater, containerCustom, false)
+            if (sectionIdx > 0) {
+                val params = android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = (32 * resources.displayMetrics.density).toInt()
+                }
+                sectionBinding.root.layoutParams = params
+            }
             sectionBinding.tvCustomSectionTitle.text = section.sectionTitle
             sectionBinding.sectionCustomRoot.contentDescription = getString(R.string.cd_custom_section_format, section.sectionTitle)
 

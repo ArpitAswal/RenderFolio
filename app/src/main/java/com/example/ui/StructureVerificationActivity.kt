@@ -8,6 +8,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,7 +44,31 @@ class StructureVerificationActivity : AppCompatActivity() {
         preferencesRepository = ResumePreferencesRepository.getInstance(applicationContext)
 
         setupToolbar()
+        setupKeyboardAndInsetsHandling()
         loadProfileAndSetupRecyclerView()
+    }
+
+    private fun setupKeyboardAndInsetsHandling() {
+        val density = resources.displayMetrics.density
+        val basePaddingBottom = (96 * density).toInt()
+
+        binding.rvSections?.let { rv ->
+            ViewCompat.setOnApplyWindowInsetsListener(rv) { v, insets ->
+                val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                v.updatePadding(bottom = basePaddingBottom + maxOf(imeBottom, navBottom))
+                insets
+            }
+        }
+
+        binding.nestedScrollSections?.let { scroll ->
+            ViewCompat.setOnApplyWindowInsetsListener(scroll) { v, insets ->
+                val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                v.updatePadding(bottom = basePaddingBottom + maxOf(imeBottom, navBottom))
+                insets
+            }
+        }
     }
 
     private fun setupToolbar() {

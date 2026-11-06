@@ -1,0 +1,70 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Subtle Background Document Body -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M38,20 L86,20 C89.3,20 92,22.7 92,26 L92,94 C92,97.3 89.3,100 86,100 L38,100 C34.7,100 32,97.3 32,94 L32,26 C32,22.7 34.7,20 38,20 Z" />
+
+    <!-- Corner Fold -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M76,20 L76,34 L92,34" />
+
+    <!-- Editorial Quotation Motif (Left Quotation Mark) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M18,36 C18,24 26,18 36,18 L36,26 C30,26 26,30 26,36 L36,36 L36,54 L18,54 Z" />
+
+    <!-- Editorial Quotation Motif (Right Quotation Mark) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42,36 C42,24 50,18 60,18 L60,26 C54,26 50,30 50,36 L60,36 L60,54 L42,54 Z" />
+
+    <!-- Document Text Lines -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M44,48 L80,48" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M44,60 L80,60" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M44,72 L72,72" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M44,84 L64,84" />
+
+    <!-- Quill / Pen Accent Line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M98,82 C104,72 108,58 110,42 C100,50 90,56 86,64 L84,76 L96,78 Z" />
+
+</vector>
+

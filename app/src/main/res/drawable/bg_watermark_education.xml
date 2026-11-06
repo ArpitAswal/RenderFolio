@@ -1,0 +1,54 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Graduation Mortarboard Rhombus Cap Top -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M60,14 L108,30 L60,46 L12,30 Z" />
+
+    <!-- Cap Skull Base -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M32,36 V50 C32,58 44,64 60,64 C76,64 88,58 88,50 V36 C80,42 70,45 60,45 C50,45 40,42 32,36 Z" />
+
+    <!-- Tassel Ribbon & Bell -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M60,30 C50,32 38,40 36,54 V70" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M33,70 H39 V78 H33 Z" />
+
+    <!-- Classical University Facade / Temple Pediment -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M18,80 L60,66 L102,80 Z" />
+
+    <!-- Architrave / Top Beam -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M14,80 H106 V84 H14 Z" />
+
+    <!-- 4 Academic Columns -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M22,84 H30 V106 H22 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M44,84 H52 V106 H44 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M68,84 H76 V106 H68 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M90,84 H98 V106 H90 Z" />
+
+    <!-- Plinth / University Steps -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,106 H108 V110 H12 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6,110 H114 V114 H6 Z" />
+
+</vector>
+

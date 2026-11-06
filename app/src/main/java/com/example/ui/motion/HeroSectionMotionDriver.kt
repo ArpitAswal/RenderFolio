@@ -54,6 +54,8 @@ class HeroSectionMotionDriver(
     /**
      * Executes the initial fade-and-scale-up entrance animation matching Section 2.
      */
+    fun playInitialEntrance(onComplete: (() -> Unit)? = null) = startEntranceAnimation(onComplete)
+
     fun startEntranceAnimation(onComplete: (() -> Unit)? = null) {
         if (isEntranceAnimated) return
 

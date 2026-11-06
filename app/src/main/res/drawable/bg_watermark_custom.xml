@@ -1,0 +1,59 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Medallion Draped Left Ribbon -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M48,64 L36,106 L50,96 L60,106 L56,72 Z" />
+
+    <!-- Medallion Draped Right Ribbon -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M72,64 L84,106 L70,96 L60,106 L64,72 Z" />
+
+    <!-- Ribbon Accent Border -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineJoin="round"
+        android:pathData="M36,106 L50,96 L60,106 L70,96 L84,106" />
+
+    <!-- Outer Seal Ring -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M60,16 C76.57,16 90,29.43 90,46 C90,62.57 76.57,76 60,76 C43.43,76 30,62.57 30,46 C30,29.43 43.43,16 60,16 Z" />
+
+    <!-- Inner Seal Ring Cutout -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M60,22 C73.25,22 84,32.75 84,46 C84,59.25 73.25,70 60,70 C46.75,70 36,59.25 36,46 C36,32.75 46.75,22 60,22 Z" />
+
+    <!-- Center 5-Pointed Faceted Star -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M60,26 L64.8,37.5 L77,38.5 L67.8,46.6 L70.7,58.5 L60,52.2 L49.3,58.5 L52.2,46.6 L43,38.5 L55.2,37.5 Z" />
+
+    <!-- Laurel Wreath Left Leaf Cluster -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M24,46 C24,34 30,24 40,16 M20,44 C18,34 24,24 32,18" />
+
+    <!-- Laurel Wreath Right Leaf Cluster -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M96,46 C96,34 90,24 80,16 M100,44 C102,34 96,24 88,18" />
+
+</vector>
+

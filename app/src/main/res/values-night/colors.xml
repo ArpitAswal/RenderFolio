@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Core Brand & Canvas -->
+    <color name="white">#FFFFFF</color>
     <color name="app_background">#121418</color>
+    <color name="ambient_canvas_start">#0D111A</color>
+    <color name="ambient_canvas_mid">#10141F</color>
+    <color name="ambient_canvas_end">#121724</color>
     <color name="app_surface">#1C2026</color>
     <color name="app_primary">#3B82F6</color>
     <color name="app_primary_container">#263B82F6</color>
@@ -23,15 +27,25 @@
     <color name="accent_blue">#3B82F6</color>
     <color name="accent_purple_glow">#8B5CF6</color>
 
-    <!-- Section 1 Hero & Contact Chips Tokens -->
+    <!-- Section 1 Hero Typography Tokens -->
     <color name="hero_name_text">#F3F4F6</color>
-    <color name="hero_headline_text">#3B82F6</color>
+    <color name="hero_headline_text">#CBD5E1</color>
     <color name="hero_location_text">#9CA3AF</color>
-    <color name="hero_chip_bg">#1C2026</color>
-    <color name="hero_chip_stroke">#2E3642</color>
-    <color name="hero_chip_text">#F1F5F9</color>
-    <color name="hero_chip_icon_tint">#3B82F6</color>
-    <color name="hero_chip_ripple">#263B82F6</color>
+
+    <!-- Section 1 Hero Glassmorphism & Connect Tokens -->
+    <color name="hero_avatar_text">#F8FAFC</color>
+    <color name="hero_avatar_glass_start">#2A3548</color>
+    <color name="hero_avatar_glass_end">#18202C</color>
+    <color name="hero_avatar_glass_stroke">#3E4D64</color>
+    <color name="hero_verified_badge_bg">#2563EB</color>
+    <color name="hero_verified_badge_ring">#0F131C</color>
+    <color name="hero_location_pill_bg">#1E2530</color>
+    <color name="hero_location_pill_stroke">#2E3642</color>
+    <color name="hero_location_pill_text">#CBD5E1</color>
+    <color name="hero_email_glass_stroke">#40FFFFFF</color>
+    <color name="hero_social_bg">#1C2026</color>
+    <color name="hero_social_stroke">#2E3642</color>
+    <color name="hero_social_ripple">#263B82F6</color>
 
     <!-- Section 2 Summary Tokens (Dark Theme) -->
     <color name="summary_section_title">#3B82F6</color>
@@ -85,4 +99,7 @@
     <color name="custom_item_desc">#CBD5E1</color>
     <color name="custom_item_bullet">#D1D5DB</color>
     <color name="custom_item_divider">#2E3642</color>
+
+    <!-- Watermark Tokens -->
+    <color name="watermark_tint">#3B82F6</color>
 </resources>

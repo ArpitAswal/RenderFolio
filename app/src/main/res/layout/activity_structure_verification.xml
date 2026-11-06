@@ -42,7 +42,7 @@
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
         android:paddingTop="0dp"
-        android:paddingBottom="56dp"
+        android:paddingBottom="96dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_personal_info" />
 

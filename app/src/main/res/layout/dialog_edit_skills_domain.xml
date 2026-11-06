@@ -17,12 +17,21 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         app:errorEnabled="true"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:startIconDrawable="@drawable/ic_work"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         android:hint="@string/hint_skills_domain_name">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_dialog_domain_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:inputType="textCapWords"
             android:maxLines="1"
             android:textColor="@color/app_text_primary" />
@@ -34,6 +43,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:errorEnabled="true"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:startIconDrawable="@drawable/ic_edit"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
         app:helperText="@string/helper_skills_domain_note"
         android:hint="@string/hint_skills_comma_separated">
 
@@ -41,6 +57,8 @@
             android:id="@+id/et_dialog_skills_comma"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
             android:gravity="top|start"
             android:inputType="textMultiLine"
             android:minLines="3"

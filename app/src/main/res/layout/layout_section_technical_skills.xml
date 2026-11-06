@@ -1,29 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Whole-Section Target Container for Alternating (Left-to-Right) Motion -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Whole-Section Target Container for Alternating Motion & Faded Background Watermark -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/section_skills_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:contentDescription="@string/cd_section_technical_skills"
-    android:visibility="gone"
-    android:layout_marginTop="28dp">
+    android:visibility="gone">
 
-    <!-- Section Header Title -->
-    <TextView
-        android:id="@+id/tv_skills_section_title"
-        style="@style/TextAppearance.ResumeVisualiser.Section.Header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/section_title_technical_skills" />
+    <!-- Faded Thematic Background Watermark Artwork -->
+    <ImageView
+        android:id="@+id/iv_skills_watermark"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-6dp"
+        android:layout_marginEnd="-12dp"
+        android:alpha="0.06"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/bg_watermark_skills"
+        app:tint="@color/watermark_tint" />
 
-    <!-- Container for Dynamically Populated Semantic Domain Rows (No chips) -->
+    <!-- Content Column -->
     <LinearLayout
-        android:id="@+id/container_skills_domains"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:orientation="vertical">
 
-</LinearLayout>
+        <!-- Section Header Title -->
+        <TextView
+            android:id="@+id/tv_skills_section_title"
+            style="@style/TextAppearance.ResumeVisualiser.Section.Header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:drawablePadding="8dp"
+            app:drawableStartCompat="@drawable/ic_terminal_16"
+            app:drawableTint="@color/summary_section_title"
+            android:text="@string/section_title_technical_skills" />
+
+        <!-- Container for Dynamically Populated Semantic Domain Rows (No chips) -->
+        <LinearLayout
+            android:id="@+id/container_skills_domains"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+</FrameLayout>

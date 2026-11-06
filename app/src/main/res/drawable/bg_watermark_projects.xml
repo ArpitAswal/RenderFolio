@@ -1,0 +1,94 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- IDE Code Window Outer Shell -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M18,18 H106 C109.3,18 112,20.7 112,24 V96 C112,99.3 109.3,102 106,102 H18 C14.7,102 12,99.3 12,96 V24 C12,20.7 14.7,18 18,18 Z" />
+
+    <!-- Title Bar Divider -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:pathData="M12,32 H112" />
+
+    <!-- Window Control Dots -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:pathData="M22,25 A2.5,2.5 0 1,1 22,25.01" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:pathData="M30,25 A2.5,2.5 0 1,1 30,25.01" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:pathData="M38,25 A2.5,2.5 0 1,1 38,25.01" />
+
+    <!-- Central Code Motifs: Left Angle Bracket '<' -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M40,48 L26,60 L40,72" />
+
+    <!-- Slash '/' -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M56,76 L66,44" />
+
+    <!-- Right Angle Bracket '>' -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M82,48 L96,60 L82,72" />
+
+    <!-- Git Branch Pipeline Graph along bottom -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M24,90 H98" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M40,90 C46,90 50,82 58,82 H84" />
+
+    <!-- Git Commit Nodes -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M30,90 A3,3 0 1,1 30,90.01" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M64,90 A3,3 0 1,1 64,90.01" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M72,82 A3,3 0 1,1 72,82.01" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M92,90 A3,3 0 1,1 92,90.01" />
+
+</vector>
+

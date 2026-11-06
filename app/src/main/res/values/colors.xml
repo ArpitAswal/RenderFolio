@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Core Brand & Canvas -->
+    <color name="white">#FFFFFF</color>
     <color name="app_background">#F4F5F7</color>
+    <color name="ambient_canvas_start">#E0ECFA</color>
+    <color name="ambient_canvas_mid">#EBF2FB</color>
+    <color name="ambient_canvas_end">#F4F8FD</color>
     <color name="app_surface">#FFFFFF</color>
     <color name="app_primary">#2563EB</color>
     <color name="app_primary_container">#1A2563EB</color>
     <color name="app_border">#1E000000</color>
 
     <!-- Typography Tokens -->
-    <color name="app_text_primary">#111827</color>
-    <color name="app_text_secondary">#4B5563</color>
-    <color name="app_text_muted">#6B7280</color>
+    <color name="app_text_primary">#0F172A</color>
+    <color name="app_text_secondary">#475569</color>
+    <color name="app_text_muted">#64748B</color>
 
     <!-- Other UI Elements -->
     <color name="app_progress_track">#DBEAFE</color>
@@ -23,15 +27,25 @@
     <color name="accent_blue">#3B82F6</color>
     <color name="accent_purple_glow">#8B5CF6</color>
 
-    <!-- Section 1 Hero & Contact Chips Tokens -->
-    <color name="hero_name_text">#111827</color>
-    <color name="hero_headline_text">#2563EB</color>
-    <color name="hero_location_text">#6B7280</color>
-    <color name="hero_chip_bg">#FFFFFF</color>
-    <color name="hero_chip_stroke">#E2E8F0</color>
-    <color name="hero_chip_text">#1E293B</color>
-    <color name="hero_chip_icon_tint">#2563EB</color>
-    <color name="hero_chip_ripple">#1A2563EB</color>
+    <!-- Section 1 Hero Typography Tokens -->
+    <color name="hero_name_text">#0F172A</color>
+    <color name="hero_headline_text">#475569</color>
+    <color name="hero_location_text">#64748B</color>
+
+    <!-- Section 1 Hero Glassmorphism & Connect Tokens -->
+    <color name="hero_avatar_text">#0F172A</color>
+    <color name="hero_avatar_glass_start">#F0F4FC</color>
+    <color name="hero_avatar_glass_end">#DCE6F8</color>
+    <color name="hero_avatar_glass_stroke">#FFFFFF</color>
+    <color name="hero_verified_badge_bg">#0066FF</color>
+    <color name="hero_verified_badge_ring">#EBF2FB</color>
+    <color name="hero_location_pill_bg">#FFFFFF</color>
+    <color name="hero_location_pill_stroke">#FFFFFF</color>
+    <color name="hero_location_pill_text">#334155</color>
+    <color name="hero_email_glass_stroke">#59FFFFFF</color>
+    <color name="hero_social_bg">#FFFFFF</color>
+    <color name="hero_social_stroke">#FFFFFF</color>
+    <color name="hero_social_ripple">#1A2563EB</color>
 
     <!-- Section 2 Summary Tokens (Light Theme) -->
     <color name="summary_section_title">#2563EB</color>
@@ -85,5 +99,8 @@
     <color name="custom_item_desc">#4B5563</color>
     <color name="custom_item_bullet">#374151</color>
     <color name="custom_item_divider">#E5E7EB</color>
+
+    <!-- Watermark Tokens -->
+    <color name="watermark_tint">#2563EB</color>
 
 </resources>

@@ -1,7 +1,8 @@
 package com.example.ui.adapter
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.content.Context
 import android.text.Editable
 import android.text.InputType
@@ -22,9 +23,12 @@ import com.google.android.material.textfield.TextInputLayout
 import java.util.UUID
 
 import android.content.res.ColorStateList
+import android.graphics.drawable.InsetDrawable
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 
@@ -259,6 +263,150 @@ class StructureSectionsAdapter(
         }
     }
 
+    // --- DIALOG HELPERS ---
+
+    private fun createDialogContainer(context: Context): LinearLayout {
+        val density = context.resources.displayMetrics.density
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            val padHorizontal = (24 * density).toInt()
+            val padTop = (16 * density).toInt()
+            val padBottom = (4 * density).toInt()
+            setPadding(padHorizontal, padTop, padHorizontal, padBottom)
+        }
+    }
+
+    private fun createDialogTextInputLayout(
+        context: Context,
+        hint: String,
+        startIconRes: Int? = null,
+        isMultiline: Boolean = false,
+        minLines: Int = 1
+    ): Pair<TextInputLayout, TextInputEditText> {
+        val density = context.resources.displayMetrics.density
+        val til = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
+            this.hint = hint
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            isErrorEnabled = true
+            setBoxCornerRadii(12 * density, 12 * density, 12 * density, 12 * density)
+            if (startIconRes != null) {
+                setStartIconDrawable(startIconRes)
+                setStartIconTintList(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.app_primary)))
+                startIconMinSize = (44 * density).toInt()
+            }
+        }
+        val et = TextInputEditText(til.context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setTextColor(ContextCompat.getColor(context, R.color.app_text_primary))
+            textSize = 14f
+            if (startIconRes != null) {
+                setPadding((46 * density).toInt(), (12 * density).toInt(), (12 * density).toInt(), (12 * density).toInt())
+            }
+            if (isMultiline) {
+                this.minLines = minLines
+                gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            }
+        }
+        til.addView(et)
+        return Pair(til, et)
+    }
+
+    private fun createMaterialDialog(
+        context: Context,
+        title: String,
+        message: CharSequence? = null,
+        customView: View? = null,
+        positiveText: String = context.getString(R.string.action_save),
+        negativeText: String = context.getString(R.string.action_cancel),
+        isDestructive: Boolean = false,
+        onPositiveClick: ((AlertDialog) -> Unit)? = null
+    ): AlertDialog {
+        val builder = MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_MaterialAlertDialog)
+            .setTitle(title)
+            .setPositiveButton(positiveText, null)
+            .setNegativeButton(negativeText) { d, _ -> d.dismiss() }
+
+        if (message != null) {
+            builder.setMessage(message)
+        }
+        if (customView != null) {
+            builder.setView(customView)
+        }
+
+        val dialog = builder.create()
+
+        val density = context.resources.displayMetrics.density
+        val bgDrawable = MaterialShapeDrawable(
+            ShapeAppearanceModel.builder()
+                .setAllCornerSizes(20 * density)
+                .build()
+        ).apply {
+            fillColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.app_surface))
+            strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.app_border))
+            strokeWidth = 1 * density
+        }
+        val insetH = (24 * density).toInt()
+        val insetV = (24 * density).toInt()
+        val windowBg = InsetDrawable(bgDrawable, insetH, insetV, insetH, insetV)
+        dialog.window?.setBackgroundDrawable(windowBg)
+
+        dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawable(windowBg)
+
+            val titleView = dialog.findViewById<TextView>(androidx.appcompat.R.id.alertTitle)
+            titleView?.setTextColor(ContextCompat.getColor(context, R.color.app_text_primary))
+
+            val messageView = dialog.findViewById<TextView>(android.R.id.message)
+            messageView?.setTextColor(ContextCompat.getColor(context, R.color.app_text_secondary))
+            messageView?.textSize = 14f
+
+            val btnPos = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            val posColorRes = if (isDestructive) R.color.app_danger else R.color.app_primary
+            btnPos?.setTextColor(ContextCompat.getColor(context, posColorRes))
+            btnPos?.typeface = android.graphics.Typeface.DEFAULT_BOLD
+            if (onPositiveClick != null) {
+                btnPos?.setOnClickListener { onPositiveClick(dialog) }
+            }
+            val btnNeg = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+            btnNeg?.setTextColor(ContextCompat.getColor(context, R.color.app_text_muted))
+        }
+        return dialog
+    }
+
+    private fun formatBoldMessage(context: Context, resId: Int, boldText: String): CharSequence {
+        val encoded = android.text.TextUtils.htmlEncode(boldText)
+        val formatted = context.getString(resId, encoded)
+        return HtmlCompat.fromHtml(formatted, HtmlCompat.FROM_HTML_MODE_LEGACY)
+    }
+
+    private fun showConfirmationDialog(
+        context: Context,
+        title: String,
+        message: CharSequence,
+        positiveButtonText: String = context.getString(R.string.action_remove),
+        onConfirm: () -> Unit
+    ) {
+        val dialog = createMaterialDialog(
+            context = context,
+            title = title,
+            message = message,
+            positiveText = positiveButtonText,
+            negativeText = context.getString(R.string.action_cancel),
+            isDestructive = true
+        ) { d ->
+            onConfirm()
+            d.dismiss()
+        }
+        dialog.show()
+    }
+
     // --- VIEW HOLDERS ---
 
     inner class PersonalInfoViewHolder(val binding: ItemPersonalInfoBinding) :
@@ -380,43 +528,23 @@ class StructureSectionsAdapter(
 
         private fun showEditLinkDialog(index: Int, existingLink: String) {
             val context = binding.root.context
-            val inputLayout = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    val margin = (20 * resources.displayMetrics.density).toInt()
-                    setMargins(margin, (12 * resources.displayMetrics.density).toInt(), margin, 0)
-                }
-                hint = context.getString(R.string.hint_profile_link_url)
-                isErrorEnabled = true
-            }
-            val input = TextInputEditText(inputLayout.context).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-                setText(existingLink)
-                setSelection(existingLink.length)
-            }
-            inputLayout.addView(input)
+            val container = createDialogContainer(context)
+            val (inputLayout, input) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_profile_link_url),
+                startIconRes = R.drawable.ic_link_14
+            )
+            input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            input.setText(existingLink)
+            input.setSelection(existingLink.length)
+            container.addView(inputLayout)
 
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(inputLayout)
-            }
-
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_edit_profile_link))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_save), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_edit_profile_link),
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
                 var text = input.text?.toString()?.trim().orEmpty()
                 if (text.isNotBlank() && !text.startsWith("http://", ignoreCase = true) && !text.startsWith("https://", ignoreCase = true)) {
                     text = "https://$text"
@@ -429,51 +557,32 @@ class StructureSectionsAdapter(
                         profileLinks[index] = text
                         refreshProfileLinks()
                     }
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
             input.addTextChangedListener(SimpleTextWatcher {
                 inputLayout.error = null
             })
+            dialog.show()
         }
 
         private fun showAddLinkDialog() {
             val context = binding.root.context
-            val inputLayout = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    val margin = (20 * resources.displayMetrics.density).toInt()
-                    setMargins(margin, (12 * resources.displayMetrics.density).toInt(), margin, 0)
-                }
-                hint = context.getString(R.string.hint_profile_link_url)
-                isErrorEnabled = true
-            }
-            val input = TextInputEditText(inputLayout.context).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-            }
-            inputLayout.addView(input)
+            val container = createDialogContainer(context)
+            val (inputLayout, input) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_profile_link_url),
+                startIconRes = R.drawable.ic_link_14
+            )
+            input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            container.addView(inputLayout)
 
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(inputLayout)
-            }
-
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_add_profile_link))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_add), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_add_profile_link),
+                customView = container,
+                positiveText = context.getString(R.string.action_add)
+            ) { d ->
                 var text = input.text?.toString()?.trim().orEmpty()
                 if (text.isNotBlank() && !text.startsWith("http://", ignoreCase = true) && !text.startsWith("https://", ignoreCase = true)) {
                     text = "https://$text"
@@ -484,12 +593,13 @@ class StructureSectionsAdapter(
                     inputLayout.error = null
                     profileLinks.add(text)
                     refreshProfileLinks()
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
             input.addTextChangedListener(SimpleTextWatcher {
                 inputLayout.error = null
             })
+            dialog.show()
         }
     }
 
@@ -651,25 +761,32 @@ class StructureSectionsAdapter(
         context: Context,
         onAdd: (String) -> Unit
     ) {
-        val bulletInput = EditText(context).apply {
-            hint = context.getString(R.string.hint_bullet_description)
-            inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        val container = createDialogContainer(context)
+        val (til, et) = createDialogTextInputLayout(
+            context,
+            hint = context.getString(R.string.hint_bullet_description),
+            startIconRes = R.drawable.ic_edit,
+            isMultiline = true,
             minLines = 3
-            setPadding(40, 30, 40, 30)
-        }
-        AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.dialog_title_add_bullet))
-            .setView(bulletInput)
-            .setPositiveButton(context.getString(R.string.action_add)) { d, _ ->
-                val text = bulletInput.text.toString().trim()
-                if (text.isNotBlank()) {
-                    onAdd(text)
-                }
+        )
+        container.addView(til)
+
+        val dialog = createMaterialDialog(
+            context = context,
+            title = context.getString(R.string.dialog_title_add_bullet),
+            customView = container,
+            positiveText = context.getString(R.string.action_add)
+        ) { d ->
+            val text = et.text?.toString()?.trim().orEmpty()
+            if (text.isNotBlank()) {
+                onAdd(text)
                 d.dismiss()
+            } else {
+                til.error = context.getString(R.string.error_domain_name_required)
             }
-            .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-            .show()
+        }
+        et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+        dialog.show()
     }
 
     private fun showEditBulletDialog(
@@ -677,27 +794,34 @@ class StructureSectionsAdapter(
         existingText: String,
         onSave: (String) -> Unit
     ) {
-        val bulletInput = EditText(context).apply {
-            hint = context.getString(R.string.hint_bullet_description)
-            inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        val container = createDialogContainer(context)
+        val (til, et) = createDialogTextInputLayout(
+            context,
+            hint = context.getString(R.string.hint_bullet_description),
+            startIconRes = R.drawable.ic_edit,
+            isMultiline = true,
             minLines = 3
-            setText(existingText)
-            setSelection(existingText.length)
-            setPadding(40, 30, 40, 30)
-        }
-        AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.dialog_title_edit_bullet))
-            .setView(bulletInput)
-            .setPositiveButton(context.getString(R.string.action_save)) { d, _ ->
-                val text = bulletInput.text.toString().trim()
-                if (text.isNotBlank()) {
-                    onSave(text)
-                }
+        )
+        et.setText(existingText)
+        et.setSelection(existingText.length)
+        container.addView(til)
+
+        val dialog = createMaterialDialog(
+            context = context,
+            title = context.getString(R.string.dialog_title_edit_bullet),
+            customView = container,
+            positiveText = context.getString(R.string.action_save)
+        ) { d ->
+            val text = et.text?.toString()?.trim().orEmpty()
+            if (text.isNotBlank()) {
+                onSave(text)
                 d.dismiss()
+            } else {
+                til.error = context.getString(R.string.error_domain_name_required)
             }
-            .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-            .show()
+        }
+        et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+        dialog.show()
     }
 
     inner class WorkExperienceViewHolder(val binding: ItemWorkExperienceBinding) :
@@ -1014,58 +1138,67 @@ class StructureSectionsAdapter(
             entryBinding.btnRemovePosition.setOnClickListener {
                 val currentPos = getPos()
                 if (currentPos in currentExperiences.indices) {
-                    currentExperiences.removeAt(currentPos)
-                    binding.llWorkExperienceEntries.removeViewAt(currentPos)
-                    updateWorkExperienceEntryHeaders()
+                    val exp = currentExperiences[currentPos]
+                    val isBlank = exp.companyName.isBlank() && exp.roleTitle.isBlank() &&
+                            exp.startDate.isBlank() && exp.endDate.isBlank() &&
+                            exp.bulletPoints.isEmpty() && exp.clientApps.isEmpty()
+                    val doRemove = {
+                        val posToRemove = getPos()
+                        if (posToRemove in currentExperiences.indices) {
+                            currentExperiences.removeAt(posToRemove)
+                            binding.llWorkExperienceEntries.removeViewAt(posToRemove)
+                            updateWorkExperienceEntryHeaders()
+                        }
+                    }
+                    if (isBlank) {
+                        doRemove()
+                    } else {
+                        val ctx = entryBinding.root.context
+                        val company = exp.companyName.trim()
+                        val msg: CharSequence = if (company.isNotBlank()) {
+                            formatBoldMessage(ctx, R.string.dialog_message_remove_position, company)
+                        } else {
+                            ctx.getString(R.string.dialog_title_remove_position_generic)
+                        }
+                        showConfirmationDialog(
+                            context = ctx,
+                            title = ctx.getString(R.string.dialog_title_remove_position),
+                            message = msg,
+                            onConfirm = doRemove
+                        )
+                    }
                 }
             }
         }
 
         private fun showAddClientAppDialog(context: Context, onAdd: (ClientAppItem) -> Unit) {
+            val container = createDialogContainer(context)
+            val (tilName, etName) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_client_app_name),
+                startIconRes = R.drawable.ic_work
+            )
+            etName.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+
+            val (tilUrl, etUrl) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_client_app_url),
+                startIconRes = R.drawable.ic_link_14
+            )
+            etUrl.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+
             val density = context.resources.displayMetrics.density
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                val pad = (20 * density).toInt()
-                setPadding(pad, (12 * density).toInt(), pad, 0)
-            }
-
-            val tilName = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_client_app_name)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                isErrorEnabled = true
-            }
-            val etName = TextInputEditText(tilName.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
-            }
-            tilName.addView(etName)
-
-            val tilUrl = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_client_app_url)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = (6 * density).toInt()
-                }
-                isErrorEnabled = true
-            }
-            val etUrl = TextInputEditText(tilUrl.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-            }
-            tilUrl.addView(etUrl)
-
-            etName.addTextChangedListener(SimpleTextWatcher { tilName.error = null })
-            etUrl.addTextChangedListener(SimpleTextWatcher { tilUrl.error = null })
+            (tilUrl.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin = (10 * density).toInt()
 
             container.addView(tilName)
             container.addView(tilUrl)
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_add_client_app))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_add), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_add_client_app),
+                customView = container,
+                positiveText = context.getString(R.string.action_add)
+            ) { d ->
                 val name = etName.text?.toString()?.trim().orEmpty()
                 var url = etUrl.text?.toString()?.trim().orEmpty()
                 if (url.isNotBlank() && !url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
@@ -1092,58 +1225,45 @@ class StructureSectionsAdapter(
 
                 if (!hasError) {
                     onAdd(ClientAppItem(name = name, url = url))
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
-        }
-
-        private fun showEditClientAppDialog(context: Context, existing: ClientAppItem, onUpdate: (ClientAppItem) -> Unit) {
-            val density = context.resources.displayMetrics.density
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                val pad = (20 * density).toInt()
-                setPadding(pad, (12 * density).toInt(), pad, 0)
-            }
-
-            val tilName = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_client_app_name)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                isErrorEnabled = true
-            }
-            val etName = TextInputEditText(tilName.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
-                setText(existing.name)
-            }
-            tilName.addView(etName)
-
-            val tilUrl = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_client_app_url)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = (6 * density).toInt()
-                }
-                isErrorEnabled = true
-            }
-            val etUrl = TextInputEditText(tilUrl.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-                setText(existing.url)
-            }
-            tilUrl.addView(etUrl)
 
             etName.addTextChangedListener(SimpleTextWatcher { tilName.error = null })
             etUrl.addTextChangedListener(SimpleTextWatcher { tilUrl.error = null })
+            dialog.show()
+        }
+
+        private fun showEditClientAppDialog(context: Context, existing: ClientAppItem, onUpdate: (ClientAppItem) -> Unit) {
+            val container = createDialogContainer(context)
+            val (tilName, etName) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_client_app_name),
+                startIconRes = R.drawable.ic_work
+            )
+            etName.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            etName.setText(existing.name)
+
+            val (tilUrl, etUrl) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_client_app_url),
+                startIconRes = R.drawable.ic_link_14
+            )
+            etUrl.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            etUrl.setText(existing.url)
+
+            val density = context.resources.displayMetrics.density
+            (tilUrl.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin = (10 * density).toInt()
 
             container.addView(tilName)
             container.addView(tilUrl)
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_edit_client_app))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_save), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_edit_client_app),
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
                 val name = etName.text?.toString()?.trim().orEmpty()
                 var url = etUrl.text?.toString()?.trim().orEmpty()
                 if (url.isNotBlank() && !url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
@@ -1170,9 +1290,13 @@ class StructureSectionsAdapter(
 
                 if (!hasError) {
                     onUpdate(existing.copy(name = name, url = url))
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
+
+            etName.addTextChangedListener(SimpleTextWatcher { tilName.error = null })
+            etUrl.addTextChangedListener(SimpleTextWatcher { tilUrl.error = null })
+            dialog.show()
         }
     }
 
@@ -1412,93 +1536,96 @@ class StructureSectionsAdapter(
             entryBinding.btnRemoveProject.setOnClickListener {
                 val currentPos = getPos()
                 if (currentPos in currentProjects.indices) {
-                    currentProjects.removeAt(currentPos)
-                    binding.llProjectsEntries.removeViewAt(currentPos)
-                    updateProjectEntryHeaders()
+                    val proj = currentProjects[currentPos]
+                    val isBlank = proj.projectTitle.isBlank() && proj.description.isBlank() &&
+                            proj.codeUrl.isBlank() && proj.demoUrl.isBlank() && proj.techStackTags.isEmpty()
+                    val doRemove = {
+                        val posToRemove = getPos()
+                        if (posToRemove in currentProjects.indices) {
+                            currentProjects.removeAt(posToRemove)
+                            binding.llProjectsEntries.removeViewAt(posToRemove)
+                            updateProjectEntryHeaders()
+                        }
+                    }
+                    if (isBlank) {
+                        doRemove()
+                    } else {
+                        val ctx = entryBinding.root.context
+                        val title = proj.projectTitle.trim()
+                        val msg: CharSequence = if (title.isNotBlank()) {
+                            formatBoldMessage(ctx, R.string.dialog_message_remove_project, title)
+                        } else {
+                            ctx.getString(R.string.dialog_title_remove_project_generic)
+                        }
+                        showConfirmationDialog(
+                            context = ctx,
+                            title = ctx.getString(R.string.dialog_title_remove_project),
+                            message = msg,
+                            onConfirm = doRemove
+                        )
+                    }
                 }
             }
         }
 
         private fun showAddTechTagDialog(context: Context, onAdd: (String) -> Unit) {
-            val density = context.resources.displayMetrics.density
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                val pad = (20 * density).toInt()
-                setPadding(pad, (12 * density).toInt(), pad, 0)
-            }
-
-            val tilTag = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_tech_tag)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                isErrorEnabled = true
-            }
-            val etTag = TextInputEditText(tilTag.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
-            }
-            tilTag.addView(etTag)
-            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            val container = createDialogContainer(context)
+            val (tilTag, etTag) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_tech_tag),
+                startIconRes = R.drawable.ic_work
+            )
+            etTag.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
             container.addView(tilTag)
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_add_tech_tag))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_add), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_add_tech_tag),
+                customView = container,
+                positiveText = context.getString(R.string.action_add)
+            ) { d ->
                 val text = etTag.text?.toString()?.trim().orEmpty()
                 if (text.isBlank()) {
                     tilTag.error = context.getString(R.string.error_tag_required)
                 } else {
                     tilTag.error = null
                     onAdd(text)
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
+            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            dialog.show()
         }
 
         private fun showEditTechTagDialog(context: Context, initialTag: String, onUpdate: (String) -> Unit) {
-            val density = context.resources.displayMetrics.density
-            val container = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                val pad = (20 * density).toInt()
-                setPadding(pad, (12 * density).toInt(), pad, 0)
-            }
-
-            val tilTag = TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle).apply {
-                hint = context.getString(R.string.hint_tech_tag)
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                isErrorEnabled = true
-            }
-            val etTag = TextInputEditText(tilTag.context).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
-                setText(initialTag)
-                setSelection(initialTag.length)
-            }
-            tilTag.addView(etTag)
-            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            val container = createDialogContainer(context)
+            val (tilTag, etTag) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_tech_tag),
+                startIconRes = R.drawable.ic_work
+            )
+            etTag.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            etTag.setText(initialTag)
+            etTag.setSelection(initialTag.length)
             container.addView(tilTag)
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_edit_tech_tag))
-                .setView(container)
-                .setPositiveButton(context.getString(R.string.action_save), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_edit_tech_tag),
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
                 val text = etTag.text?.toString()?.trim().orEmpty()
                 if (text.isBlank()) {
                     tilTag.error = context.getString(R.string.error_tag_required)
                 } else {
                     tilTag.error = null
                     onUpdate(text)
-                    dialog.dismiss()
+                    d.dismiss()
                 }
             }
+            etTag.addTextChangedListener(SimpleTextWatcher { tilTag.error = null })
+            dialog.show()
         }
     }
 
@@ -1538,24 +1665,33 @@ class StructureSectionsAdapter(
 
         private fun showRenameSectionDialog() {
             val context = binding.root.context
-            val input = EditText(context).apply {
-                setText(binding.tvSectionTitle.text)
-                setSelection(text.length)
-                setPadding(40, 30, 40, 30)
-            }
-            AlertDialog.Builder(context)
-                .setTitle(context.getString(R.string.dialog_title_rename_section))
-                .setView(input)
-                .setPositiveButton(context.getString(R.string.action_save)) { d, _ ->
-                    val newTitle = input.text.toString().trim()
-                    if (newTitle.isNotBlank()) {
-                        currentSkills = currentSkills.copy(sectionTitle = newTitle)
-                        binding.tvSectionTitle.text = newTitle
-                    }
+            val container = createDialogContainer(context)
+            val (til, et) = createDialogTextInputLayout(
+                context,
+                hint = context.getString(R.string.hint_section_title),
+                startIconRes = R.drawable.ic_edit
+            )
+            et.setText(binding.tvSectionTitle.text)
+            et.setSelection(et.text?.length ?: 0)
+            container.addView(til)
+
+            val dialog = createMaterialDialog(
+                context = context,
+                title = context.getString(R.string.dialog_title_rename_section),
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
+                val newTitle = et.text?.toString()?.trim().orEmpty()
+                if (newTitle.isNotBlank()) {
+                    currentSkills = currentSkills.copy(sectionTitle = newTitle)
+                    binding.tvSectionTitle.text = newTitle
                     d.dismiss()
+                } else {
+                    til.error = context.getString(R.string.error_domain_name_required)
                 }
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .show()
+            }
+            et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+            dialog.show()
         }
 
         /**
@@ -1635,7 +1771,15 @@ class StructureSectionsAdapter(
                     rowBinding.btnEditDomain.setOnClickListener { openEdit() }
 
                     rowBinding.btnDeleteDomain.setOnClickListener {
-                        deleteDomain(domainLabel)
+                        val message = formatBoldMessage(context, R.string.dialog_message_remove_skill_domain, domainLabel)
+                        showConfirmationDialog(
+                            context = context,
+                            title = context.getString(R.string.dialog_title_remove_skill_domain),
+                            message = message,
+                            onConfirm = {
+                                deleteDomain(domainLabel)
+                            }
+                        )
                     }
 
                     // Bottom divider between domain rows (hidden on last item)
@@ -1736,16 +1880,12 @@ class StructureSectionsAdapter(
                 context.getString(R.string.dialog_title_add_skills_domain)
             }
 
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(dialogTitle)
-                .setView(dialogBinding.dialogEditSkillsRoot)
-                .setPositiveButton(context.getString(R.string.action_save), null)
-                .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                .create()
-
-            dialog.show()
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val dialog = createMaterialDialog(
+                context = context,
+                title = dialogTitle,
+                customView = dialogBinding.dialogEditSkillsRoot,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
                 val domainName = dialogBinding.etDialogDomainName.text?.toString()?.trim().orEmpty()
                 val rawSkills = dialogBinding.etDialogSkillsComma.text?.toString().orEmpty()
 
@@ -1770,7 +1910,7 @@ class StructureSectionsAdapter(
                     hasError = true
                 }
 
-                if (hasError) return@setOnClickListener
+                if (hasError) return@createMaterialDialog
 
                 if (isCategorizedContext || domainName.isNotBlank()) {
                     val finalDomainName = domainName.ifBlank { existingDomain ?: "General" }
@@ -1782,8 +1922,10 @@ class StructureSectionsAdapter(
                     )
                 }
                 renderSemanticSkillsDomains()
-                dialog.dismiss()
+                d.dismiss()
             }
+
+            dialog.show()
         }
 
         /**
@@ -1961,9 +2103,33 @@ class StructureSectionsAdapter(
             entryBinding.btnRemoveEducation.setOnClickListener {
                 val currentPos = getPos()
                 if (currentPos in currentEducation.indices) {
-                    currentEducation.removeAt(currentPos)
-                    binding.llEducationEntries.removeViewAt(currentPos)
-                    updateEducationEntryHeaders()
+                    val edu = currentEducation[currentPos]
+                    val isBlank = edu.institution.isBlank() && edu.degree.isBlank() && edu.graduationYear.isBlank()
+                    val doRemove = {
+                        val posToRemove = getPos()
+                        if (posToRemove in currentEducation.indices) {
+                            currentEducation.removeAt(posToRemove)
+                            binding.llEducationEntries.removeViewAt(posToRemove)
+                            updateEducationEntryHeaders()
+                        }
+                    }
+                    if (isBlank) {
+                        doRemove()
+                    } else {
+                        val ctx = entryBinding.root.context
+                        val label = edu.degree.ifBlank { edu.institution }.trim()
+                        val msg: CharSequence = if (label.isNotBlank()) {
+                            formatBoldMessage(ctx, R.string.dialog_message_remove_education, label)
+                        } else {
+                            ctx.getString(R.string.dialog_title_remove_education_generic)
+                        }
+                        showConfirmationDialog(
+                            context = ctx,
+                            title = ctx.getString(R.string.dialog_title_remove_education),
+                            message = msg,
+                            onConfirm = doRemove
+                        )
+                    }
                 }
             }
         }
@@ -1990,27 +2156,35 @@ class StructureSectionsAdapter(
                 val context = binding.root.context
                 val currentSec = sectionItem.customSection
                 if (currentSec != null) {
-                    val input = EditText(context).apply {
-                        hint = context.getString(R.string.hint_section_title)
-                        setText(currentSec.sectionTitle)
-                        setSelection(currentSec.sectionTitle.length)
-                        setPadding(40, 36, 40, 36)
-                    }
-                    AlertDialog.Builder(context)
-                        .setTitle(context.getString(R.string.dialog_title_rename_section))
-                        .setView(input)
-                        .setPositiveButton(context.getString(R.string.action_save)) { d, _ ->
-                            val newTitle = input.text.toString().trim()
-                            if (newTitle.isNotBlank()) {
-                                val updatedSec = currentSec.copy(sectionTitle = newTitle)
-                                sectionItem.customSection = updatedSec
-                                binding.tvSectionTitle.text = newTitle
-                                bind(sectionItem)
-                            }
+                    val container = createDialogContainer(context)
+                    val (til, et) = createDialogTextInputLayout(
+                        context,
+                        hint = context.getString(R.string.hint_section_title),
+                        startIconRes = R.drawable.ic_edit
+                    )
+                    et.setText(currentSec.sectionTitle)
+                    et.setSelection(currentSec.sectionTitle.length)
+                    container.addView(til)
+
+                    val dialog = createMaterialDialog(
+                        context = context,
+                        title = context.getString(R.string.dialog_title_rename_section),
+                        customView = container,
+                        positiveText = context.getString(R.string.action_save)
+                    ) { d ->
+                        val newTitle = et.text?.toString()?.trim().orEmpty()
+                        if (newTitle.isNotBlank()) {
+                            val updatedSec = currentSec.copy(sectionTitle = newTitle)
+                            sectionItem.customSection = updatedSec
+                            binding.tvSectionTitle.text = newTitle
+                            bind(sectionItem)
                             d.dismiss()
+                        } else {
+                            til.error = context.getString(R.string.error_domain_name_required)
                         }
-                        .setNegativeButton(context.getString(R.string.action_cancel)) { d, _ -> d.dismiss() }
-                        .show()
+                    }
+                    et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+                    dialog.show()
                 }
             }
 
@@ -2030,11 +2204,24 @@ class StructureSectionsAdapter(
             }
             binding.btnAddCustomItem.text = context.getString(R.string.add_new_item_format, singularType)
 
-            // Circular minus button click removes optional section
+            // Circular minus button click removes optional section with confirmation
             binding.btnRemoveSection.setOnClickListener {
                 val pos = bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    removeCustomSection(pos)
+                    val secTitle = sectionItem.customSection?.sectionTitle ?: binding.tvSectionTitle.text?.toString().orEmpty()
+                    val ctx = binding.root.context
+                    val message = formatBoldMessage(ctx, R.string.dialog_message_remove_section, secTitle)
+                    showConfirmationDialog(
+                        context = ctx,
+                        title = ctx.getString(R.string.dialog_title_remove_section),
+                        message = message,
+                        onConfirm = {
+                            val currentPos = bindingAdapterPosition
+                            if (currentPos != RecyclerView.NO_POSITION) {
+                                removeCustomSection(currentPos)
+                            }
+                        }
+                    )
                 }
             }
 
@@ -2261,12 +2448,38 @@ class StructureSectionsAdapter(
                 val cur = sectionItem.customSection ?: return@setOnClickListener
                 val pos = getPos()
                 if (pos in cur.items.indices) {
-                    val updatedItems = cur.items.toMutableList()
-                    updatedItems.removeAt(pos)
-                    val updatedSec = cur.copy(items = updatedItems)
-                    sectionItem.customSection = updatedSec
-                    binding.llCustomItems.removeViewAt(pos)
-                    updateCustomItemHeaders(resolvedSingularType)
+                    val item = cur.items[pos]
+                    val isBlank = item.title.isBlank() && item.link.isBlank() &&
+                            item.bulletPoints.isEmpty() && item.dateOrPeriod.isBlank()
+                    val doRemove = {
+                        val posToRemove = getPos()
+                        val currentSec = sectionItem.customSection
+                        if (currentSec != null && posToRemove in currentSec.items.indices) {
+                            val updatedItems = currentSec.items.toMutableList()
+                            updatedItems.removeAt(posToRemove)
+                            val updatedSec = currentSec.copy(items = updatedItems)
+                            sectionItem.customSection = updatedSec
+                            binding.llCustomItems.removeViewAt(posToRemove)
+                            updateCustomItemHeaders(resolvedSingularType)
+                        }
+                    }
+                    if (isBlank) {
+                        doRemove()
+                    } else {
+                        val ctx = entryBinding.root.context
+                        val title = item.title.trim()
+                        val msg: CharSequence = if (title.isNotBlank()) {
+                            formatBoldMessage(ctx, R.string.dialog_message_remove_custom_item, title)
+                        } else {
+                            ctx.getString(R.string.dialog_title_remove_custom_item_generic)
+                        }
+                        showConfirmationDialog(
+                            context = ctx,
+                            title = ctx.getString(R.string.dialog_title_remove_custom_item, resolvedSingularType),
+                            message = msg,
+                            onConfirm = doRemove
+                        )
+                    }
                 }
             }
         }

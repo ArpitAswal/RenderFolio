@@ -40,7 +40,7 @@
             android:name=".ui.ResumeVisualiserActivity"
             android:exported="true"
             android:label="Resume Visualiser"
-            android:theme="@style/Theme.MyApplication">
+            android:theme="@style/Theme.ResumeVisualiser">
             <!-- Web Deep Link: https://lightweight-firebase-projects.web.app/r/{id} -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
