@@ -96,11 +96,22 @@
     <string name="error_app_name_required">Application name is required</string>
     <string name="error_app_url_required">Application URL is required</string>
     <string name="cd_remove_client_app">Remove client application</string>
+    <string name="exp_deliverables_title">Client Deliverables</string>
+    <string name="exp_technologies_title">Technologies</string>
 
     <!-- Projects Section -->
     <string name="section_title_featured_projects">Featured Projects</string>
     <string name="action_project_live_demo">Live Demo</string>
     <string name="action_project_code_repo">Code Repository</string>
+    <string name="project_deliverables_title">PROJECT LINK &amp; DELIVERABLES</string>
+    <string name="project_link_github">GitHub Repository</string>
+    <string name="project_link_pub_dev">pub.dev Package</string>
+    <string name="project_link_web">Live Web App</string>
+    <string name="project_link_storage">Cloud Storage</string>
+    <string name="project_link_play_store">Play Store</string>
+    <string name="project_link_app_store">App Store</string>
+    <string name="project_link_generic">Live Demo</string>
+    <string name="custom_link_credential">Verify Credential</string>
     <string name="cd_section_featured_projects">Candidate featured technical projects showcase</string>
     <string name="cd_project_live_demo">Open live demo for %1$s</string>
     <string name="cd_project_code_repo">Open code repository for %1$s</string>

@@ -32,7 +32,7 @@
         </activity>
         <activity
             android:name=".ui.StructureVerificationActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="Structure Verification"
             android:theme="@style/Theme.MyApplication"
             android:windowSoftInputMode="adjustResize" />

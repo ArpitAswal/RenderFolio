@@ -2,14 +2,23 @@ package com.example.ui
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Patterns
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -23,10 +32,13 @@ import com.example.R
 import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.databinding.ActivityResumeVisualiserBinding
+import com.example.databinding.ItemVisualiserBulletRowBinding
 import com.example.databinding.ItemVisualiserCustomEntryBinding
+import com.example.databinding.ItemVisualiserDeliverableChipBinding
 import com.example.databinding.ItemVisualiserEducationEntryBinding
 import com.example.databinding.ItemVisualiserExperienceEntryBinding
 import com.example.databinding.ItemVisualiserProjectEntryBinding
+import com.example.databinding.ItemVisualiserSkillChipBinding
 import com.example.databinding.ItemVisualiserSkillDomainBinding
 import com.example.databinding.LayoutSectionCustomDynamicBinding
 import com.example.model.ContactInfo
@@ -173,7 +185,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         binding.pbVisualiserLoading?.visibility = View.VISIBLE
 
         lifecycleScope.launch {
-            val cloudRepo = ResumeCloudRepository()
+            val cloudRepo = ResumeCloudRepository.getInstance()
             val result = cloudRepo.fetchResume(shareId)
             binding.pbVisualiserLoading?.visibility = View.GONE
 
@@ -468,13 +480,13 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         validExperiences.forEachIndexed { index, item ->
             val entryBinding = ItemVisualiserExperienceEntryBinding.inflate(layoutInflater, container, false)
 
-            // 1. Role Title
-            entryBinding.tvEntryRole.text = item.roleTitle.ifBlank { getString(R.string.exp_default_role) }
-
-            // 2. Company Name
+            // 1. Company Name (Top Headline)
             entryBinding.tvEntryCompany.text = item.companyName.ifBlank { getString(R.string.exp_default_company) }
 
-            // 3. Duration formatted string
+            // 2. Role Title (Sub-header)
+            entryBinding.tvEntryRole.text = item.roleTitle.ifBlank { getString(R.string.exp_default_role) }
+
+            // 3. Duration formatted string (No dot)
             val duration = when {
                 item.startDate.isNotBlank() && item.endDate.isNotBlank() ->
                     getString(R.string.exp_date_range_format, item.startDate, item.endDate)
@@ -482,59 +494,81 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                     getString(R.string.exp_single_date_format, item.startDate)
                 else -> ""
             }
-            entryBinding.tvEntryDuration.text = duration
-
-            // 4. Populate Bullets
-            entryBinding.containerEntryBullets.removeAllViews()
-            item.bulletPoints.forEach { bullet ->
-                val bulletView = TextView(this).apply {
-                    setTextAppearance(R.style.TextAppearance_ResumeVisualiser_Exp_Bullet)
-                    text = getString(R.string.exp_bullet_format, bullet)
-                    setPadding(0, 4, 0, 4)
-                }
-                entryBinding.containerEntryBullets.addView(bulletView)
+            if (duration.isNotBlank()) {
+                entryBinding.tvEntryDuration.text = duration
+                entryBinding.tvEntryDuration.visibility = View.VISIBLE
+            } else {
+                entryBinding.tvEntryDuration.visibility = View.GONE
             }
 
-            // 5. Client Apps & Tech Stack Tags
+            // 4. Populate Bullets using item_visualiser_bullet_row (4dp dot, 14sp Inter #434655)
+            entryBinding.containerEntryBullets.removeAllViews()
+            item.bulletPoints.filter { it.isNotBlank() }.forEach { bullet ->
+                val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, entryBinding.containerEntryBullets, false)
+                bulletBinding.tvBulletText.text = bullet.trim()
+                entryBinding.containerEntryBullets.addView(bulletBinding.root)
+            }
+
+            // 5. Client Apps & Tech Stack Deliverables (Pill Chips with ↗ prefix)
             val hasClientApps = item.clientApps.isNotEmpty()
             val hasTags = item.techStackTags.isNotEmpty()
             if (hasClientApps || hasTags) {
+                entryBinding.layoutEntryDeliverables.visibility = View.VISIBLE
                 entryBinding.chipGroupEntryTags.removeAllViews()
+
+                if (hasClientApps) {
+                    entryBinding.tvDeliverablesLabel.setText(R.string.exp_deliverables_title)
+                } else {
+                    entryBinding.tvDeliverablesLabel.setText(R.string.exp_technologies_title)
+                }
+
                 item.clientApps.forEach { app ->
-                    val appChip = Chip(this).apply {
-                        text = app.name
-                        setChipBackgroundColorResource(R.color.exp_tag_bg)
-                        setTextColor(getColor(R.color.exp_tag_text))
-                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                            .setAllCornerSizes(resources.displayMetrics.density * 8f)
-                            .build()
-                        if (app.url.isNotBlank()) {
-                            setChipIconResource(R.drawable.ic_link_14)
-                            setChipIconTintResource(R.color.app_primary)
-                            isChipIconVisible = true
-                            setOnClickListener {
-                                try {
-                                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(app.url)))
-                                } catch (_: Exception) {}
-                            }
+                    val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, entryBinding.chipGroupEntryTags, false)
+                    val chip = chipBinding.root
+
+                    val spannable = SpannableStringBuilder().apply {
+                        append("↗  ")
+                        setSpan(
+                            ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_arrow)),
+                            0, 1,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            0, 1,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        append(app.name)
+                        setSpan(
+                            ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_text)),
+                            3, length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    chip.text = spannable
+                    if (app.url.isNotBlank()) {
+                        chip.isClickable = true
+                        chip.setOnClickListener {
+                            openProfileUrl(app.url)
                         }
+                    } else {
+                        chip.isClickable = false
                     }
-                    entryBinding.chipGroupEntryTags.addView(appChip)
+                    entryBinding.chipGroupEntryTags.addView(chip)
                 }
-                item.techStackTags.forEach { tag ->
-                    val tagChip = Chip(this).apply {
-                        text = tag
-                        setChipBackgroundColorResource(R.color.exp_tag_bg)
-                        setTextColor(getColor(R.color.exp_tag_text))
-                        shapeAppearanceModel = shapeAppearanceModel.toBuilder()
-                            .setAllCornerSizes(resources.displayMetrics.density * 8f)
-                            .build()
+
+                // If no client apps exist, display tech stack tags as deliverable pill chips
+                if (!hasClientApps) {
+                    item.techStackTags.forEach { tag ->
+                        val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, entryBinding.chipGroupEntryTags, false)
+                        val chip = chipBinding.root
+                        chip.text = tag
+                        chip.isClickable = false
+                        entryBinding.chipGroupEntryTags.addView(chip)
                     }
-                    entryBinding.chipGroupEntryTags.addView(tagChip)
                 }
-                entryBinding.chipGroupEntryTags.visibility = View.VISIBLE
             } else {
-                entryBinding.chipGroupEntryTags.visibility = View.GONE
+                entryBinding.layoutEntryDeliverables.visibility = View.GONE
             }
 
             // Hide divider on the last item
@@ -578,40 +612,10 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         validProjects.forEachIndexed { index, item ->
             val entryBinding = ItemVisualiserProjectEntryBinding.inflate(layoutInflater, container, false)
 
-            // 1. Project Title
+            // 1. Project Title Headline (Single full-width row without redundant inline action button)
             entryBinding.tvEntryProjectTitle.text = item.projectTitle
 
-            // 2. Action Button (Live Demo / Code Repository)
-            val targetUrl = item.demoUrl.ifBlank { item.codeUrl }
-            if (targetUrl.isNotBlank()) {
-                entryBinding.btnEntryProjectAction.visibility = View.VISIBLE
-                val isDemo = item.demoUrl.isNotBlank()
-                entryBinding.btnEntryProjectAction.text = if (isDemo) {
-                    getString(R.string.action_project_live_demo)
-                } else {
-                    getString(R.string.action_project_code_repo)
-                }
-                entryBinding.btnEntryProjectAction.contentDescription = if (isDemo) {
-                    getString(R.string.cd_project_live_demo, item.projectTitle)
-                } else {
-                    getString(R.string.cd_project_code_repo, item.projectTitle)
-                }
-                entryBinding.btnEntryProjectAction.setOnClickListener {
-                    openProfileUrl(targetUrl)
-                }
-            } else {
-                entryBinding.btnEntryProjectAction.visibility = View.GONE
-            }
-
-            // 3. Description
-            if (item.description.isNotBlank()) {
-                entryBinding.tvEntryProjectDescription.visibility = View.VISIBLE
-                entryBinding.tvEntryProjectDescription.text = item.description
-            } else {
-                entryBinding.tvEntryProjectDescription.visibility = View.GONE
-            }
-
-            // 4. Tech Stack Tags
+            // 2. Tech Stack Tags
             if (item.techStackTags.isNotEmpty()) {
                 entryBinding.chipGroupProjectTech.removeAllViews()
                 item.techStackTags.forEach { tag ->
@@ -630,6 +634,80 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 entryBinding.chipGroupProjectTech.visibility = View.GONE
             }
 
+            // 3. Bullet Points (Features & Capabilities matching Professional Experience)
+            entryBinding.containerProjectBullets.removeAllViews()
+            val bullets = parseBulletsFromText(item.description)
+            if (bullets.isNotEmpty()) {
+                bullets.forEach { bullet ->
+                    val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, entryBinding.containerProjectBullets, false)
+                    bulletBinding.tvBulletText.text = bullet
+                    entryBinding.containerProjectBullets.addView(bulletBinding.root)
+                }
+                entryBinding.containerProjectBullets.visibility = View.VISIBLE
+                entryBinding.tvEntryProjectDescription.visibility = View.GONE
+            } else if (item.description.isNotBlank()) {
+                // Fallback for non-bulletized raw description text
+                entryBinding.containerProjectBullets.visibility = View.GONE
+                entryBinding.tvEntryProjectDescription.visibility = View.VISIBLE
+                entryBinding.tvEntryProjectDescription.text = item.description
+            } else {
+                entryBinding.containerProjectBullets.visibility = View.GONE
+                entryBinding.tvEntryProjectDescription.visibility = View.GONE
+            }
+
+            // 4. Single Dynamic Project Link Source in Deliverables Dock (GitHub, Storage, Web Hosting, etc.)
+            val primaryUrl = when {
+                item.codeUrl.isNotBlank() && item.demoUrl.isNotBlank() && item.codeUrl == item.demoUrl -> item.codeUrl
+                item.codeUrl.isNotBlank() && item.demoUrl.isBlank() -> item.codeUrl
+                item.demoUrl.isNotBlank() && item.codeUrl.isBlank() -> item.demoUrl
+                item.demoUrl.isNotBlank() && item.codeUrl.isNotBlank() -> {
+                    if (item.demoUrl.contains("github.com", ignoreCase = true) && !item.codeUrl.contains("github.com", ignoreCase = true)) {
+                        item.codeUrl
+                    } else {
+                        item.demoUrl
+                    }
+                }
+                else -> ""
+            }.trim()
+
+            if (primaryUrl.isNotBlank()) {
+                entryBinding.layoutProjectDeliverables.visibility = View.VISIBLE
+                entryBinding.chipGroupProjectLinks.removeAllViews()
+
+                val linkMeta = resolveProjectLinkMetadata(primaryUrl)
+                val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, entryBinding.chipGroupProjectLinks, false)
+                val chip = chipBinding.root
+
+                chip.chipIcon = ContextCompat.getDrawable(this, linkMeta.iconRes)
+                chip.isChipIconVisible = true
+                chip.chipIconSize = resources.displayMetrics.density * 15f
+                chip.chipIconTint = ColorStateList.valueOf(getColor(R.color.exp_deliverable_chip_text))
+                chip.iconStartPadding = resources.displayMetrics.density * 6f
+                chip.iconEndPadding = resources.displayMetrics.density * 4f
+
+                val labelText = getString(linkMeta.labelRes)
+                val spannable = SpannableStringBuilder().apply {
+                    append(labelText)
+                    append("  ↗")
+                    setSpan(
+                        ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_arrow)),
+                        length - 1, length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        length - 1, length,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                chip.text = spannable
+                chip.isClickable = true
+                chip.setOnClickListener { openProfileUrl(primaryUrl) }
+                entryBinding.chipGroupProjectLinks.addView(chip)
+            } else {
+                entryBinding.layoutProjectDeliverables.visibility = View.GONE
+            }
+
             // Hide divider on the last item
             if (index == validProjects.lastIndex) {
                 entryBinding.dividerProjectEntry.visibility = View.GONE
@@ -646,6 +724,86 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..3)
         projectsLayout.sectionProjectsRoot.doOnPreDraw {
             projectsMotionDriver.playInitialEntrance()
+        }
+    }
+
+    /**
+     * Parses bullet items from multi-line text, splitting on newlines and bullet symbols
+     * (•, \u2022, ·) and stripping bullet prefixes, ensuring clean list representation.
+     */
+    private fun parseBulletsFromText(text: String): List<String> {
+        if (text.isBlank()) return emptyList()
+        val lines = text.lines()
+        val bullets = mutableListOf<String>()
+        for (rawLine in lines) {
+            val line = rawLine.trim()
+            if (line.isBlank()) continue
+            if (line.contains("•") || line.contains("\u2022") || line.contains("·")) {
+                val parts = line.split(Regex("[•\\u2022·]"))
+                for (part in parts) {
+                    val cleaned = cleanBulletLine(part)
+                    if (cleaned.isNotBlank()) {
+                        bullets.add(cleaned)
+                    }
+                }
+            } else {
+                val cleaned = cleanBulletLine(line)
+                if (cleaned.isNotBlank()) {
+                    bullets.add(cleaned)
+                }
+            }
+        }
+        return bullets
+    }
+
+    private fun cleanBulletLine(line: String): String {
+        return line.trim()
+            .replace(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\-*–—\\s]+"), "")
+            .replace(Regex("^[0-9]+[.)\\-]\\s*"), "")
+            .trim()
+    }
+
+    private data class ProjectLinkMetadata(
+        @DrawableRes val iconRes: Int,
+        @StringRes val labelRes: Int
+    )
+
+    /**
+     * Resolves single project link type to an appropriate icon and label:
+     * - GitHub / Git repository: GitHub icon + "GitHub Repository"
+     * - Cloud Storage / Drive / Files: Cloud Storage icon + "Cloud Storage"
+     * - Play Store / App Store: Play Store / Store icon + "Play Store"
+     * - Web Hosting / Live App: Globe icon + "Live Web App"
+     */
+    private fun resolveProjectLinkMetadata(rawUrl: String): ProjectLinkMetadata {
+        val lower = rawUrl.lowercase()
+        return when {
+            lower.contains("github.com") || lower.contains("gitlab.com") || lower.contains("bitbucket.org") -> {
+                ProjectLinkMetadata(R.drawable.ic_github_16, R.string.project_link_github)
+            }
+            lower.contains("pub.dev") -> {
+                ProjectLinkMetadata(R.drawable.ic_code_16, R.string.project_link_pub_dev)
+            }
+            lower.contains("drive.google.com") || lower.contains("docs.google.com") ||
+            lower.contains("firebasestorage.googleapis.com") || lower.contains("dropbox.com") ||
+            lower.contains("onedrive.live.com") || lower.contains("1drv.ms") ||
+            lower.contains("box.com") || lower.contains("storage.googleapis.com") ||
+            lower.endsWith(".apk") || lower.endsWith(".zip") || lower.endsWith(".pdf") -> {
+                ProjectLinkMetadata(R.drawable.ic_cloud_storage_16, R.string.project_link_storage)
+            }
+            lower.contains("play.google.com") -> {
+                ProjectLinkMetadata(R.drawable.ic_play_store_16, R.string.project_link_play_store)
+            }
+            lower.contains("apps.apple.com") -> {
+                ProjectLinkMetadata(R.drawable.ic_globe_16, R.string.project_link_app_store)
+            }
+            lower.contains("credly.com") || lower.contains("coursera.org") || lower.contains("udacity.com") ||
+            lower.contains("credential") || lower.contains("certificate") || lower.contains("badge") -> {
+                ProjectLinkMetadata(R.drawable.ic_star_badge_16, R.string.custom_link_credential)
+            }
+            else -> {
+                ProjectLinkMetadata(R.drawable.ic_globe_16, R.string.project_link_web)
+            }
         }
     }
 
@@ -701,24 +859,24 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         if (categorizedMap.isNotEmpty()) {
-            // CASE 1: Categorized Skills (Domain Label + Inline Skills Stream)
+            // CASE 1: Categorized Skills (Domain Label + Stitch Pill Chips)
             val domainEntries = categorizedMap.entries.toList()
             domainEntries.forEachIndexed { index, (domainLabel, skillsList) ->
                 val rowBinding = ItemVisualiserSkillDomainBinding.inflate(layoutInflater, container, false)
                 rowBinding.tvDomainHeader.visibility = View.VISIBLE
                 rowBinding.tvDomainHeader.text = domainLabel
-                rowBinding.tvDomainSkillsStream.text = skillsList.joinToString(dotSeparator)
 
-                if (index == domainEntries.lastIndex) {
-                    rowBinding.dividerSkillDomain.visibility = View.GONE
-                } else {
-                    rowBinding.dividerSkillDomain.visibility = View.VISIBLE
+                rowBinding.chipGroupDomainSkills.removeAllViews()
+                skillsList.forEach { skill ->
+                    val chipBinding = ItemVisualiserSkillChipBinding.inflate(layoutInflater, rowBinding.chipGroupDomainSkills, false)
+                    chipBinding.root.text = skill
+                    rowBinding.chipGroupDomainSkills.addView(chipBinding.root)
                 }
 
                 container.addView(rowBinding.itemSkillDomainRoot)
             }
         } else {
-            // CASE 2: Uncategorized / Flat List (Bullets, Zero Random Domain Labels)
+            // CASE 2: Uncategorized / Flat List (Stitch Pill Chips)
             val flatSkillsList = when {
                 skills.rawFlatSkills.isNotEmpty() -> skills.rawFlatSkills
                 skills.frameworks.isNotEmpty() -> skills.frameworks
@@ -734,9 +892,14 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             if (flatSkillsList.isNotEmpty()) {
                 val rowBinding = ItemVisualiserSkillDomainBinding.inflate(layoutInflater, container, false)
                 rowBinding.tvDomainHeader.visibility = View.GONE
-                val bulletPrefix = getString(R.string.skills_bullet_prefix)
-                rowBinding.tvDomainSkillsStream.text = flatSkillsList.joinToString("   ") { "$bulletPrefix$it" }
-                rowBinding.dividerSkillDomain.visibility = View.GONE
+
+                rowBinding.chipGroupDomainSkills.removeAllViews()
+                flatSkillsList.forEach { skill ->
+                    val chipBinding = ItemVisualiserSkillChipBinding.inflate(layoutInflater, rowBinding.chipGroupDomainSkills, false)
+                    chipBinding.root.text = skill
+                    rowBinding.chipGroupDomainSkills.addView(chipBinding.root)
+                }
+
                 container.addView(rowBinding.itemSkillDomainRoot)
             }
         }
@@ -750,10 +913,68 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
     }
 
+    private data class FormattedEducation(
+        val cleanDegree: String,
+        val institution: String,
+        val detailsLine: String
+    )
+
+    /**
+     * Parses and separates Degree name, Institution name, and combines CGPA and duration
+     * into the same line separated by a vertical bar (' | ') per design requirements.
+     */
+    private fun formatEducationItem(item: EducationItem): FormattedEducation {
+        var rawDegree = item.degree.trim()
+        var cgpaText = ""
+
+        // Extract CGPA / GPA if embedded in degree string
+        val cgpaRegex = Regex("""(?i)(?:[|,•·\-\(\[\{]\s*)?(CGPA|GPA)[\s:]*([0-9]+(?:\.[0-9]+)?(?:\s*/\s*[0-9]+(?:\.[0-9]+)?)?)\s*[)\]}]?""")
+        val matchDegree = cgpaRegex.find(rawDegree)
+        if (matchDegree != null) {
+            val label = matchDegree.groupValues[1].uppercase()
+            val value = matchDegree.groupValues[2]
+            cgpaText = "$label: $value"
+            rawDegree = rawDegree.replace(matchDegree.value, "").trim()
+                .trimEnd('|', '-', '•', '·', ',', '(')
+                .trimStart('|', '-', '•', '·', ',', ')')
+                .trim()
+        }
+
+        var year = item.graduationYear.trim()
+        if (cgpaText.isBlank()) {
+            val matchYear = cgpaRegex.find(year)
+            if (matchYear != null) {
+                val label = matchYear.groupValues[1].uppercase()
+                val value = matchYear.groupValues[2]
+                cgpaText = "$label: $value"
+                year = year.replace(matchYear.value, "").trim()
+                    .trimEnd('|', '-', '•', '·', ',', '(')
+                    .trimStart('|', '-', '•', '·', ',', ')')
+                    .trim()
+            }
+        }
+
+        val detailsLine = when {
+            cgpaText.isNotBlank() && year.isNotBlank() -> "$cgpaText  |  $year"
+            cgpaText.isNotBlank() -> cgpaText
+            year.isNotBlank() -> year
+            else -> ""
+        }
+
+        return FormattedEducation(
+            cleanDegree = rawDegree.ifBlank { item.degree },
+            institution = item.institution.trim(),
+            detailsLine = detailsLine
+        )
+    }
+
     /**
      * SECTION 6: Education & Academics
-     * Implements Dual-Phase Vertical Lift & Soft Fade (+24dp -> 0dp, alpha 0 -> 1, 350ms) matching Section 2.
-     * Transparent, borderless container directly on canvas (no card background, elevation, or stroke).
+     * Direct clean porcelain typography matching Section 3:
+     * - Line 1: Degree Name (Headline First, 17sp Bold Inter #0F172A)
+     * - Line 2: Institution / University Name (Sub-headline, 14sp Semi-bold/Bold Royal Blue #2563EB)
+     * - Line 3: CGPA & Duration in Same Line (13sp Slate #737686 separated by ' | ')
+     * Transparent, borderless container directly on canvas (no vertical timeline line or milestone node).
      */
     private fun setupSection6(educationList: List<EducationItem>) {
         val eduLayout = binding.includedSectionEducation
@@ -770,10 +991,28 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
         validEdu.forEachIndexed { index, item ->
             val entryBinding = ItemVisualiserEducationEntryBinding.inflate(layoutInflater, container, false)
-            entryBinding.tvEntryDegree.text = item.degree.ifBlank { getString(R.string.hint_degree) }
-            entryBinding.tvEntryInstitution.text = item.institution
-            entryBinding.tvEntryEduYear.text = item.graduationYear
+            val formatted = formatEducationItem(item)
 
+            // 1. Degree Name (Headline First, 17sp Bold #0F172A)
+            entryBinding.tvEntryDegree.text = formatted.cleanDegree.ifBlank { getString(R.string.hint_degree) }
+
+            // 2. Institution / University Name (Sub-headline Second, 14sp Bold Royal Blue #2563EB)
+            if (formatted.institution.isNotBlank()) {
+                entryBinding.tvEntryInstitution.text = formatted.institution
+                entryBinding.tvEntryInstitution.visibility = View.VISIBLE
+            } else {
+                entryBinding.tvEntryInstitution.visibility = View.GONE
+            }
+
+            // 3. CGPA and Duration in Same Line Separated by Vertical Line (13sp Slate #737686)
+            if (formatted.detailsLine.isNotBlank()) {
+                entryBinding.tvEntryEduYear.text = formatted.detailsLine
+                entryBinding.tvEntryEduYear.visibility = View.VISIBLE
+            } else {
+                entryBinding.tvEntryEduYear.visibility = View.GONE
+            }
+
+            // 4. Hairline Divider between entries (hidden on last item)
             if (index == validEdu.lastIndex) {
                 entryBinding.dividerEducationEntry.visibility = View.GONE
             } else {
@@ -832,50 +1071,100 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
             section.items.forEachIndexed { index, item ->
                 val itemBinding = ItemVisualiserCustomEntryBinding.inflate(layoutInflater, itemsContainer, false)
+
+                // 1. Item Title Headline (17sp Bold Inter #0F172A)
                 itemBinding.tvEntryCustomTitle.text = item.title
 
-                if (item.dateOrPeriod.isNotBlank()) {
+                // 2. Date or Period (Remove "Active" status tag per user request; only show genuine date/period)
+                if (item.dateOrPeriod.isNotBlank() && !item.dateOrPeriod.equals("Active", ignoreCase = true)) {
                     itemBinding.tvEntryCustomPeriod.visibility = View.VISIBLE
                     itemBinding.tvEntryCustomPeriod.text = item.dateOrPeriod
                 } else {
                     itemBinding.tvEntryCustomPeriod.visibility = View.GONE
                 }
 
-                if (item.subtitle.isNotBlank() || item.link.isNotBlank()) {
-                    val label = item.subtitle.ifBlank { item.link }
+                // 3. Subtitle / Issuer / Authority (14sp Medium Royal Blue #2563EB)
+                // Remove the "Verified Contributor" tag when a published link is already provided
+                val isVerifiedContributor = item.subtitle.trim().contains("Verified Contributor", ignoreCase = true)
+                val hasPublishedLink = item.link.isNotBlank()
+
+                if (item.subtitle.isNotBlank() && !(isVerifiedContributor && hasPublishedLink)) {
                     itemBinding.tvEntryCustomSubtitle.visibility = View.VISIBLE
-                    itemBinding.tvEntryCustomSubtitle.text = label
-                    if (item.link.isNotBlank()) {
-                        itemBinding.tvEntryCustomSubtitle.setOnClickListener {
-                            openProfileUrl(item.link)
-                        }
-                    }
+                    itemBinding.tvEntryCustomSubtitle.text = item.subtitle
                 } else {
                     itemBinding.tvEntryCustomSubtitle.visibility = View.GONE
                 }
 
-                if (item.description.isNotBlank()) {
+                // 4. Bullet Points vs Description (Prevent text duplication matching Projects & Experience)
+                val bullets = if (item.bulletPoints.isNotEmpty()) {
+                    item.bulletPoints.filter { it.isNotBlank() }
+                } else {
+                    parseBulletsFromText(item.description)
+                }
+
+                if (bullets.isNotEmpty()) {
+                    itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
+                    itemBinding.containerEntryCustomBullets.removeAllViews()
+                    bullets.forEach { bullet ->
+                        val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, itemBinding.containerEntryCustomBullets, false)
+                        bulletBinding.tvBulletText.text = bullet.trim()
+                        itemBinding.containerEntryCustomBullets.addView(bulletBinding.root)
+                    }
+                    // Cleanly hide description when bullet representation is available
+                    itemBinding.tvEntryCustomDescription.visibility = View.GONE
+                } else if (item.description.isNotBlank()) {
+                    itemBinding.containerEntryCustomBullets.visibility = View.GONE
                     itemBinding.tvEntryCustomDescription.visibility = View.VISIBLE
                     itemBinding.tvEntryCustomDescription.text = item.description
                 } else {
+                    itemBinding.containerEntryCustomBullets.visibility = View.GONE
                     itemBinding.tvEntryCustomDescription.visibility = View.GONE
                 }
 
-                if (item.bulletPoints.isNotEmpty()) {
-                    itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
-                    itemBinding.containerEntryCustomBullets.removeAllViews()
-                    item.bulletPoints.forEach { bullet ->
-                        val bulletTv = TextView(this).apply {
-                            setTextAppearance(R.style.TextAppearance_ResumeVisualiser_Exp_Bullet)
-                            text = getString(R.string.custom_bullet_format, bullet)
-                            setPadding(0, 4, 0, 4)
-                        }
-                        itemBinding.containerEntryCustomBullets.addView(bulletTv)
+                // 5. Deliverable / Credential Link Pill Chip (Never repeats subtitle; uses specific source label)
+                if (item.link.isNotBlank()) {
+                    itemBinding.layoutCustomDeliverables.visibility = View.VISIBLE
+                    itemBinding.chipGroupCustomLinks.removeAllViews()
+
+                    val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, itemBinding.chipGroupCustomLinks, false)
+                    val chip = chipBinding.root
+
+                    val linkMeta = resolveProjectLinkMetadata(item.link)
+                    chip.chipIcon = ContextCompat.getDrawable(this, linkMeta.iconRes)
+                    chip.isChipIconVisible = true
+                    chip.chipIconSize = resources.displayMetrics.density * 15f
+                    chip.chipIconTint = ColorStateList.valueOf(getColor(R.color.exp_deliverable_chip_text))
+                    chip.iconStartPadding = resources.displayMetrics.density * 6f
+                    chip.iconEndPadding = resources.displayMetrics.density * 4f
+
+                    var label = getString(linkMeta.labelRes)
+                    if (label.equals(item.subtitle, ignoreCase = true)) {
+                        label = getString(R.string.project_link_web)
                     }
+
+                    val spannable = SpannableStringBuilder().apply {
+                        append(label)
+                        append("  ↗")
+                        setSpan(
+                            ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_arrow)),
+                            length - 1, length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            length - 1, length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    chip.text = spannable
+                    chip.isClickable = true
+                    chip.setOnClickListener { openProfileUrl(item.link) }
+                    itemBinding.chipGroupCustomLinks.addView(chip)
                 } else {
-                    itemBinding.containerEntryCustomBullets.visibility = View.GONE
+                    itemBinding.layoutCustomDeliverables.visibility = View.GONE
                 }
 
+                // 7. Hairline Divider between entries (hidden on last item)
                 if (index == section.items.lastIndex) {
                     itemBinding.dividerCustomEntry.visibility = View.GONE
                 } else {

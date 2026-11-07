@@ -60,8 +60,13 @@
     <color name="exp_role_title">#F3F4F6</color>
     <color name="exp_company_name">#3B82F6</color>
     <color name="exp_duration_text">#9CA3AF</color>
-    <color name="exp_bullet_text">#D1D5DB</color>
+    <color name="exp_bullet_text">#CBD5E1</color>
     <color name="exp_bullet_dot">#3B82F6</color>
+    <color name="exp_deliverables_label">#9CA3AF</color>
+    <color name="exp_deliverable_chip_bg">#1E2530</color>
+    <color name="exp_deliverable_chip_stroke">#333B82F6</color>
+    <color name="exp_deliverable_chip_text">#F1F5F9</color>
+    <color name="exp_deliverable_chip_arrow">#3B82F6</color>
     <color name="exp_divider">#2E3642</color>
     <color name="exp_tag_bg">#1E293B</color>
     <color name="exp_tag_text">#93C5FD</color>
@@ -102,4 +107,9 @@
 
     <!-- Watermark Tokens -->
     <color name="watermark_tint">#3B82F6</color>
+
+    <!-- Glassmorphic Loading Dialog Tokens -->
+    <color name="glass_dialog_bg_start">#E62A3548</color>
+    <color name="glass_dialog_bg_end">#E618202C</color>
+    <color name="glass_dialog_stroke">#803E4D64</color>
 </resources>

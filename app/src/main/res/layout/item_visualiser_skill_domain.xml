@@ -1,34 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Single Semantic Domain Row with Domain Label and Midpoint Skills Stream -->
+<!-- Single Semantic Domain Group with Domain Header and Stitch Pill Chips (No Dividers) -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_skill_domain_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="6dp"
-    android:paddingBottom="10dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="16dp">
 
-    <!-- Domain Title (e.g. MOBILE DEVELOPMENT) -->
+    <!-- Domain Title (e.g. PROGRAMMING LANGUAGES) -->
     <TextView
         android:id="@+id/tv_domain_header"
         style="@style/TextAppearance.ResumeVisualiser.Skill.Domain"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        tools:text="PROGRAMMING LANGUAGES" />
 
-    <!-- Skills Inline Stream with Midpoint Separators (e.g. Flutter · Android · Kotlin) -->
+    <!-- Pill Chips Group for Domain Skills (Stitch interactive pills) -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_domain_skills"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:chipSpacingHorizontal="8dp"
+        app:chipSpacingVertical="8dp"
+        app:singleLine="false" />
+
+    <!-- Fallback Text Stream (Preserved for backward compatibility) -->
     <TextView
         android:id="@+id/tv_domain_skills_stream"
         style="@style/TextAppearance.ResumeVisualiser.Skill.Stream"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp" />
-
-    <!-- Subtle Divider between domain rows (hidden on last row) -->
-    <View
-        android:id="@+id/divider_skill_domain"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/skills_row_divider" />
+        android:layout_marginTop="4dp"
+        android:visibility="gone" />
 
 </LinearLayout>

@@ -1,12 +1,16 @@
 package com.example.ui
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -24,8 +28,12 @@ import com.example.ui.adapter.PaneTarget
 import com.example.ui.adapter.SectionType
 import com.example.ui.adapter.StructureSectionsAdapter
 import com.example.ui.dialog.AddCustomSectionBottomSheet
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import androidx.core.graphics.drawable.toDrawable
 
 class StructureVerificationActivity : AppCompatActivity() {
 
@@ -35,6 +43,9 @@ class StructureVerificationActivity : AppCompatActivity() {
     private lateinit var preferencesRepository: ResumePreferencesRepository
     private var itemTouchHelper: ItemTouchHelper? = null
     private var rightItemTouchHelper: ItemTouchHelper? = null
+    private var compileJob: Job? = null
+    private var btnCompile: Button? = null
+    private var loadingDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +53,17 @@ class StructureVerificationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         preferencesRepository = ResumePreferencesRepository.getInstance(applicationContext)
+
+        onBackPressedDispatcher.addCallback(this) {
+            if (loadingDialog?.isShowing == true) {
+                compileJob?.cancel()
+                hideLoadingDialog()
+                setGenerateLoading(false)
+                return@addCallback
+            }
+            compileJob?.cancel()
+            finish()
+        }
 
         setupToolbar()
         setupKeyboardAndInsetsHandling()
@@ -73,6 +95,8 @@ class StructureVerificationActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
+            compileJob?.cancel()
+            hideLoadingDialog()
             finish()
         }
 
@@ -80,7 +104,7 @@ class StructureVerificationActivity : AppCompatActivity() {
         val menu = binding.toolbar.menu
         val compileItem = menu.findItem(R.id.action_compile)
         val actionView = compileItem?.actionView
-        val btnCompile = actionView?.findViewById<Button>(R.id.btnMenuCompile)
+        btnCompile = actionView?.findViewById(R.id.btnMenuCompile)
 
         btnCompile?.setOnClickListener {
             compileAndSave()
@@ -94,6 +118,12 @@ class StructureVerificationActivity : AppCompatActivity() {
                 false
             }
         }
+    }
+
+    override fun onDestroy() {
+        compileJob?.cancel()
+        hideLoadingDialog()
+        super.onDestroy()
     }
 
     private fun loadProfileAndSetupRecyclerView() {
@@ -424,46 +454,116 @@ class StructureVerificationActivity : AppCompatActivity() {
             }
         }
 
+        if (compileJob?.isActive == true) {
+            return
+        }
+
         val compiledProfile = adapter.compileProfile(rightAdapter)
 
-        lifecycleScope.launch {
-            // Attempt Cloud Sync via ResumeCloudRepository
-            val cloudRepo = ResumeCloudRepository()
-            val uploadResult = cloudRepo.uploadResume(compiledProfile)
+        setGenerateLoading(true)
+        showLoadingDialog()
 
-            val shareUrl = uploadResult.getOrNull() ?: "${ResumeCloudRepository.BASE_DEEP_LINK_URL}/local"
-            val shareId = shareUrl.substringAfterLast("/")
+        compileJob = lifecycleScope.launch {
+            try {
+                // Attempt Cloud Sync via ResumeCloudRepository
+                val cloudRepo = ResumeCloudRepository.getInstance()
+                val uploadResult = cloudRepo.uploadResume(compiledProfile)
 
-            val showcase = com.example.model.SavedShowcase(
-                shareId = shareId,
-                shareUrl = shareUrl,
-                candidateName = compiledProfile.hero.fullName,
-                headline = compiledProfile.hero.headlineTitle.ifBlank { "Professional Resume" },
-                profile = compiledProfile,
-                targetCompany = compiledProfile.hero.targetCompany.trim()
-            )
-            preferencesRepository.saveShowcase(showcase)
-
-            if (uploadResult.isFailure) {
-                Toast.makeText(this@StructureVerificationActivity, R.string.toast_offline_sync_later, Toast.LENGTH_SHORT).show()
-            }
-
-            // Show Post-Compilation Celebration Modal
-            val celebrationSheet = ShowcaseQrBottomSheet.newInstance(
-                shareUrl = shareUrl,
-                candidateName = compiledProfile.hero.fullName,
-                isCelebration = true
-            )
-            celebrationSheet.onViewVisualizer = {
-                val returnIntent = Intent().apply {
-                    putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
+                if (!isActive || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) {
+                    return@launch
                 }
-                setResult(RESULT_OK, returnIntent)
-                finish()
+
+                val shareUrl = uploadResult.getOrNull() ?: "${ResumeCloudRepository.BASE_DEEP_LINK_URL}/local"
+                val shareId = shareUrl.substringAfterLast("/")
+
+                val showcase = com.example.model.SavedShowcase(
+                    shareId = shareId,
+                    shareUrl = shareUrl,
+                    candidateName = compiledProfile.hero.fullName,
+                    headline = compiledProfile.hero.headlineTitle.ifBlank { "Professional Resume" },
+                    profile = compiledProfile,
+                    targetCompany = compiledProfile.hero.targetCompany.trim()
+                )
+                preferencesRepository.saveShowcase(showcase)
+
+                if (uploadResult.isFailure && isActive && !isFinishing && !isDestroyed) {
+                    Toast.makeText(this@StructureVerificationActivity, R.string.toast_offline_sync_later, Toast.LENGTH_SHORT).show()
+                }
+
+                if (!isActive || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) {
+                    return@launch
+                }
+
+                // Dismiss loading indicator and reset button state before presenting bottom sheet
+                hideLoadingDialog()
+                setGenerateLoading(false)
+
+                // Show Post-Compilation Celebration Modal safely
+                val celebrationSheet = ShowcaseQrBottomSheet.newInstance(
+                    shareUrl = shareUrl,
+                    candidateName = compiledProfile.hero.fullName,
+                    isCelebration = true
+                )
+                celebrationSheet.onViewVisualizer = {
+                    val returnIntent = Intent().apply {
+                        putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
+                    }
+                    setResult(RESULT_OK, returnIntent)
+                    finish()
+                }
+                celebrationSheet.isCancelable = true
+                celebrationSheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
+            } catch (_: CancellationException) {
+                // Job was cancelled due to user navigating back. Clean exit.
+            } catch (e: Exception) {
+                if (isActive && !isFinishing && !isDestroyed) {
+                    Toast.makeText(this@StructureVerificationActivity, "Generation failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                hideLoadingDialog()
+                setGenerateLoading(false)
             }
-            celebrationSheet.isCancelable = true
-            celebrationSheet.show(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
         }
+    }
+
+    private fun setGenerateLoading(isLoading: Boolean) {
+        btnCompile?.isEnabled = !isLoading
+        btnCompile?.alpha = if (isLoading) 0.6f else 1.0f
+    }
+
+    private fun showLoadingDialog() {
+        if (isFinishing || isDestroyed) return
+        if (loadingDialog?.isShowing == true) return
+
+        try {
+            loadingDialog = Dialog(this, R.style.Theme_ResumeShowcase_GlassmorphicLoadingDialog).apply {
+                setContentView(R.layout.dialog_glassmorphic_loading)
+                window?.apply {
+                    setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+                    setLayout(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    setGravity(Gravity.CENTER)
+                }
+                setCancelable(true)
+                setCanceledOnTouchOutside(false)
+                setOnCancelListener {
+                    compileJob?.cancel()
+                    setGenerateLoading(false)
+                }
+                show()
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun hideLoadingDialog() {
+        try {
+            if (loadingDialog?.isShowing == true) {
+                loadingDialog?.dismiss()
+            }
+        } catch (_: Exception) {}
+        loadingDialog = null
     }
 
     private fun normalizeUrl(rawUrl: String): String {

@@ -1,85 +1,118 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="180dp"
-    android:height="180dp"
-    android:viewportWidth="120"
-    android:viewportHeight="120">
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
 
-    <!-- Microprocessor Outer Silicon Package -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M40,40 H80 C82.2,40 84,41.8 84,44 V80 C84,82.2 82.2,84 80,84 H40 C37.8,84 36,82.2 36,80 V44 C36,41.8 37.8,40 40,40 Z" />
+    <!-- 3D Isometric Microprocessor & Circuit Flow Matrix: -15 degree rotation around center (105, 95), Matching Summary & Experience opacity -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
 
-    <!-- Inner Core Processor Die -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M48,48 H72 V72 H48 Z" />
+        <!-- Outer Silicon Package Die (Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 72,50 h 66 a 14,14 0 0 1 14,14 v 66 a 14,14 0 0 1 -14,14 h -66 a 14,14 0 0 1 -14,-14 v -66 a 14,14 0 0 1 14,-14 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="55"
+                    android:startY="35"
+                    android:endX="155"
+                    android:endY="155">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.5" android:color="#33FFFFFF" />
+                    <item android:offset="1.0" android:color="#08FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="40"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#E6FFFFFF" />
+                    <item android:offset="0.4" android:color="#99FFFFFF" />
+                    <item android:offset="1.0" android:color="#33FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Central Micro-Architecture Core Nodes -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M54,54 H66 V66 H54 Z" />
+        <!-- Inner Core Processor Die Boundary -->
+        <path
+            android:pathData="M 84,62 h 42 a 8,8 0 0 1 8,8 v 42 a 8,8 0 0 1 -8,8 h -42 a 8,8 0 0 1 -8,-8 v -42 a 8,8 0 0 1 8,-8 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="0.8" />
 
-    <!-- Top Pin Traces -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M44,40 V24 M52,40 V16 M60,40 V10 M68,40 V16 M76,40 V24" />
+        <!-- Central Computing Node Matrix Core -->
+        <path
+            android:pathData="M 97,75 h 16 a 4,4 0 0 1 4,4 v 16 a 4,4 0 0 1 -4,4 h -16 a 4,4 0 0 1 -4,-4 v -16 a 4,4 0 0 1 4,-4 Z"
+            android:fillColor="#332563EB" />
 
-    <!-- Top Terminal Via Pads -->
-    <path android:fillColor="#FFFFFFFF" android:pathData="M44,22 A2.5,2.5 0 1,1 44,22.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M52,14 A2.5,2.5 0 1,1 52,14.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M60,8  A2.5,2.5 0 1,1 60,8.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M68,14 A2.5,2.5 0 1,1 68,14.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M76,22 A2.5,2.5 0 1,1 76,22.01" />
+        <!-- Top Bus Traces -->
+        <path
+            android:pathData="M 80,50 V 30 M 92,50 V 20 M 105,50 V 12 M 118,50 V 20 M 130,50 V 30"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="1.0"
+            android:strokeLineCap="round" />
 
-    <!-- Bottom Pin Traces -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M44,84 V100 M52,84 V108 M60,84 V114 M68,84 V108 M76,84 V100" />
+        <!-- Top Via Terminal Pads -->
+        <path android:fillColor="#332563EB" android:pathData="M 80,28 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 92,18 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 105,10 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 118,18 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 130,28 a 2.5,2.5 0 1 1 0,0.01" />
 
-    <!-- Bottom Terminal Via Pads -->
-    <path android:fillColor="#FFFFFFFF" android:pathData="M44,102 A2.5,2.5 0 1,1 44,102.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M52,110 A2.5,2.5 0 1,1 52,110.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M60,116 A2.5,2.5 0 1,1 60,116.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M68,110 A2.5,2.5 0 1,1 68,110.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M76,102 A2.5,2.5 0 1,1 76,102.01" />
+        <!-- Bottom Bus Traces -->
+        <path
+            android:pathData="M 80,144 V 164 M 92,144 V 174 M 105,144 V 182 M 118,144 V 174 M 130,144 V 164"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="1.0"
+            android:strokeLineCap="round" />
 
-    <!-- Left Pin Traces with 45-degree PCB bends -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M36,46 H24 M36,54 H20 L14,48 M36,62 H14 M36,70 H20 L14,76 M36,78 H24" />
+        <!-- Bottom Via Terminal Pads -->
+        <path android:fillColor="#332563EB" android:pathData="M 80,166 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 92,176 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 105,184 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 118,176 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 130,166 a 2.5,2.5 0 1 1 0,0.01" />
 
-    <!-- Left Via Pads -->
-    <path android:fillColor="#FFFFFFFF" android:pathData="M22,46 A2.5,2.5 0 1,1 22,46.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M12,48 A2.5,2.5 0 1,1 12,48.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M12,62 A2.5,2.5 0 1,1 12,62.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M12,76 A2.5,2.5 0 1,1 12,76.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M22,78 A2.5,2.5 0 1,1 22,78.01" />
+        <!-- Left PCB Traces with 45-degree angle bends -->
+        <path
+            android:pathData="M 58,66 H 42 M 58,78 H 44 L 36,70 M 58,90 H 34 M 58,102 H 44 L 36,110 M 58,114 H 42"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="1.0"
+            android:strokeLineCap="round" />
 
-    <!-- Right Pin Traces with 45-degree PCB bends -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M84,46 H96 M84,54 H100 L106,48 M84,62 H106 M84,70 H100 L106,76 M84,78 H96" />
+        <!-- Left Via Pads -->
+        <path android:fillColor="#332563EB" android:pathData="M 40,66 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 34,70 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 32,90 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 34,110 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 40,114 a 2.5,2.5 0 1 1 0,0.01" />
 
-    <!-- Right Via Pads -->
-    <path android:fillColor="#FFFFFFFF" android:pathData="M98,46  A2.5,2.5 0 1,1 98,46.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M108,48 A2.5,2.5 0 1,1 108,48.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M108,62 A2.5,2.5 0 1,1 108,62.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M108,76 A2.5,2.5 0 1,1 108,76.01" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M98,78  A2.5,2.5 0 1,1 98,78.01" />
+        <!-- Right PCB Traces with 45-degree angle bends -->
+        <path
+            android:pathData="M 152,66 H 168 M 152,78 H 166 L 174,70 M 152,90 H 176 M 152,102 H 166 L 174,110 M 152,114 H 168"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="1.0"
+            android:strokeLineCap="round" />
+
+        <!-- Right Via Pads -->
+        <path android:fillColor="#332563EB" android:pathData="M 170,66 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 176,70 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 178,90 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 176,110 a 2.5,2.5 0 1 1 0,0.01" />
+        <path android:fillColor="#332563EB" android:pathData="M 170,114 a 2.5,2.5 0 1 1 0,0.01" />
+
+    </group>
 
 </vector>
-

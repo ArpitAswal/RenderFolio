@@ -8,19 +8,18 @@
     android:contentDescription="@string/cd_section_technical_skills"
     android:visibility="gone">
 
-    <!-- Faded Thematic Background Watermark Artwork -->
+    <!-- Faded Thematic Background Watermark Artwork (3D Microprocessor & Circuit Matrix from Stitch design) -->
     <ImageView
         android:id="@+id/iv_skills_watermark"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
         android:layout_gravity="top|end"
-        android:layout_marginTop="-6dp"
-        android:layout_marginEnd="-12dp"
-        android:alpha="0.06"
+        android:layout_marginTop="-20dp"
+        android:layout_marginEnd="-28dp"
+        android:alpha="0.75"
         android:importantForAccessibility="no"
         android:scaleType="fitCenter"
-        android:src="@drawable/bg_watermark_skills"
-        app:tint="@color/watermark_tint" />
+        android:src="@drawable/bg_watermark_skills" />
 
     <!-- Content Column -->
     <LinearLayout
@@ -34,15 +33,14 @@
             style="@style/TextAppearance.ResumeVisualiser.Section.Header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="20dp"
             android:gravity="center_vertical"
             android:drawablePadding="8dp"
             app:drawableStartCompat="@drawable/ic_terminal_16"
             app:drawableTint="@color/summary_section_title"
             android:text="@string/section_title_technical_skills" />
 
-        <!-- Container for Dynamically Populated Semantic Domain Rows (No chips) -->
+        <!-- Container for Dynamically Populated Semantic Domain Rows (Stitch Pill Chips) -->
         <LinearLayout
             android:id="@+id/container_skills_domains"
             android:layout_width="match_parent"

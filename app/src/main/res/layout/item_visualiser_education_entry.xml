@@ -1,48 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Education Entry Layout: Direct porcelain styling without vertical timeline elements -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_education_entry_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="6dp"
-    android:paddingBottom="10dp">
+    android:paddingTop="2dp"
+    android:paddingBottom="12dp">
 
-    <!-- Row: Degree Title and Graduation Year -->
-    <LinearLayout
+    <!-- 1. Degree Name (Headline First, 17sp Bold Inter #0F172A) -->
+    <TextView
+        android:id="@+id/tv_entry_degree"
+        style="@style/TextAppearance.ResumeVisualiser.Edu.Degree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        tools:text="Bachelor Of Technology - Computer Science Engineering" />
 
-        <TextView
-            android:id="@+id/tv_entry_degree"
-            style="@style/TextAppearance.ResumeVisualiser.Edu.Degree"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/tv_entry_edu_year"
-            style="@style/TextAppearance.ResumeVisualiser.Exp.Duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
-
-    <!-- Institution / University Name -->
+    <!-- 2. Institution / University Name (Sub-headline Second, 14sp Bold Royal Blue #2563EB) -->
     <TextView
         android:id="@+id/tv_entry_institution"
         style="@style/TextAppearance.ResumeVisualiser.Edu.Institution"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp" />
+        android:layout_marginTop="3dp"
+        tools:text="R.D. Engineering College, A.K.T.U." />
+
+    <!-- 3. CGPA and Duration in Same Line Separated by Vertical Line (13sp Slate #737686) -->
+    <TextView
+        android:id="@+id/tv_entry_edu_year"
+        style="@style/TextAppearance.ResumeVisualiser.Exp.Duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        tools:text="CGPA: 7.6  |  2018 - 2022" />
 
     <!-- Divider between entries (hidden on the last item) -->
     <View
         android:id="@+id/divider_education_entry"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/edu_divider" />
+        android:layout_marginTop="16dp"
+        android:background="@color/exp_divider" />
 
 </LinearLayout>

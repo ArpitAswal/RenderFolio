@@ -79,7 +79,7 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
             onDelete = { item, position, adapterRef ->
                 showDeleteConfirmationDialog(item) {
                     viewLifecycleOwner.lifecycleScope.launch {
-                        val cloudRepo = ResumeCloudRepository()
+                        val cloudRepo = ResumeCloudRepository.getInstance()
                         cloudRepo.deleteResume(item.shareId)
                         repo.deleteShowcase(item.shareId)
                         adapterRef.removeItem(position)

@@ -1,94 +1,138 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="180dp"
-    android:height="180dp"
-    android:viewportWidth="120"
-    android:viewportHeight="120">
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
 
-    <!-- IDE Code Window Outer Shell -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M18,18 H106 C109.3,18 112,20.7 112,24 V96 C112,99.3 109.3,102 106,102 H18 C14.7,102 12,99.3 12,96 V24 C12,20.7 14.7,18 18,18 Z" />
+    <!-- 3D Isometric Frosted Glass Code Window: -15 degree rotation around center (105, 95), Matching Summary & Experience opacity -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
 
-    <!-- Title Bar Divider -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M12,32 H112" />
+        <!-- Outer Code Window Shell (Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 68,24 h 74 a 18,18 0 0 1 18,18 v 110 a 18,18 0 0 1 -18,18 h -74 a 18,18 0 0 1 -18,-18 v -110 a 18,18 0 0 1 18,-18 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="170">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.5" android:color="#33FFFFFF" />
+                    <item android:offset="1.0" android:color="#08FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="55"
+                    android:startY="22"
+                    android:endX="155"
+                    android:endY="165">
+                    <item android:offset="0.0" android:color="#E6FFFFFF" />
+                    <item android:offset="0.4" android:color="#99FFFFFF" />
+                    <item android:offset="1.0" android:color="#33FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Window Control Dots -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M22,25 A2.5,2.5 0 1,1 22,25.01" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M30,25 A2.5,2.5 0 1,1 30,25.01" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M38,25 A2.5,2.5 0 1,1 38,25.01" />
+        <!-- Window Title Bar Hairline Divider -->
+        <path
+            android:pathData="M 50,46 h 110"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="0.8" />
 
-    <!-- Central Code Motifs: Left Angle Bracket '<' -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M40,48 L26,60 L40,72" />
+        <!-- 3 Window Control Dots (Royal Blue Accent Dots) -->
+        <path
+            android:pathData="M 62,35 a 2.5,2.5 0 1 1 0,0.01"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="2.5" />
+        <path
+            android:pathData="M 70,35 a 2.5,2.5 0 1 1 0,0.01"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="2.5" />
+        <path
+            android:pathData="M 78,35 a 2.5,2.5 0 1 1 0,0.01"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="2.5" />
 
-    <!-- Slash '/' -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:pathData="M56,76 L66,44" />
+        <!-- Inner Code Line Traces -->
+        <!-- Code Line 1 -->
+        <path
+            android:pathData="M 64,58 h 36 a 2,2 0 0 1 2,2 a 2,2 0 0 1 -2,2 h -36 a 2,2 0 0 1 -2,-2 a 2,2 0 0 1 2,-2 Z"
+            android:fillColor="#332563EB" />
 
-    <!-- Right Angle Bracket '>' -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M82,48 L96,60 L82,72" />
+        <!-- Code Line 2 (Indented) -->
+        <path
+            android:pathData="M 74,68 h 52 a 1.75,1.75 0 0 1 1.75,1.75 a 1.75,1.75 0 0 1 -1.75,1.75 h -52 a 1.75,1.75 0 0 1 -1.75,-1.75 a 1.75,1.75 0 0 1 1.75,-1.75 Z"
+            android:fillColor="#262563EB" />
 
-    <!-- Git Branch Pipeline Graph along bottom -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M24,90 H98" />
+        <!-- Code Line 3 (Indented) -->
+        <path
+            android:pathData="M 74,77 h 42 a 1.75,1.75 0 0 1 1.75,1.75 a 1.75,1.75 0 0 1 -1.75,1.75 h -42 a 1.75,1.75 0 0 1 -1.75,-1.75 a 1.75,1.75 0 0 1 1.75,-1.75 Z"
+            android:fillColor="#212563EB" />
 
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M40,90 C46,90 50,82 58,82 H84" />
+        <!-- Code Line 4 -->
+        <path
+            android:pathData="M 64,86 h 28 a 1.75,1.75 0 0 1 1.75,1.75 a 1.75,1.75 0 0 1 -1.75,1.75 h -28 a 1.75,1.75 0 0 1 -1.75,-1.75 a 1.75,1.75 0 0 1 1.75,-1.75 Z"
+            android:fillColor="#262563EB" />
 
-    <!-- Git Commit Nodes -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M30,90 A3,3 0 1,1 30,90.01" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M64,90 A3,3 0 1,1 64,90.01" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M72,82 A3,3 0 1,1 72,82.01" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M92,90 A3,3 0 1,1 92,90.01" />
+        <!-- Floating UI Card Mockup Accent (Frosted Plate with Accent Rim) -->
+        <path
+            android:pathData="M 86,104 h 62 a 12,12 0 0 1 12,12 v 34 a 12,12 0 0 1 -12,12 h -62 a 12,12 0 0 1 -12,-12 v -34 a 12,12 0 0 1 12,-12 Z"
+            android:strokeWidth="1.0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="74"
+                    android:startY="104"
+                    android:endX="160"
+                    android:endY="162">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.7" android:color="#33FFFFFF" />
+                    <item android:offset="1.0" android:color="#08FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="80"
+                    android:startY="106"
+                    android:endX="155"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#E6FFFFFF" />
+                    <item android:offset="0.5" android:color="#99FFFFFF" />
+                    <item android:offset="1.0" android:color="#332563EB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Card Avatar Circle Accent -->
+        <path
+            android:pathData="M 91,123 a 5,5 0 1 1 0,0.01"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="5" />
+
+        <!-- Card Text Line 1 -->
+        <path
+            android:pathData="M 103,126 h 40 a 1.75,1.75 0 0 1 1.75,1.75 a 1.75,1.75 0 0 1 -1.75,1.75 h -40 a 1.75,1.75 0 0 1 -1.75,-1.75 a 1.75,1.75 0 0 1 1.75,-1.75 Z"
+            android:fillColor="#332563EB" />
+
+        <!-- Card Text Line 2 -->
+        <path
+            android:pathData="M 103,134 h 26 a 1.5,1.5 0 0 1 1.5,1.5 a 1.5,1.5 0 0 1 -1.5,1.5 h -26 a 1.5,1.5 0 0 1 -1.5,-1.5 a 1.5,1.5 0 0 1 1.5,-1.5 Z"
+            android:fillColor="#212563EB" />
+
+    </group>
 
 </vector>
-

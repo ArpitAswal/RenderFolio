@@ -1,40 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Single Project Item with Title, Action Button, Description, and Tech Stack Pills -->
+<!-- Single Project Item with Title, Action Button, Tech Stack Pills, Bullet Points, and Deliverables -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_project_entry_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingBottom="12dp">
+    android:orientation="vertical">
 
-    <!-- Row 1: Project Title and Live Demo / Code Action Button -->
-    <LinearLayout
+    <!-- Project Title Headline (17sp Bold, #0F172A, line height 24sp) -->
+    <TextView
+        android:id="@+id/tv_entry_project_title"
+        style="@style/TextAppearance.ResumeVisualiser.Project.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        tools:text="ShopWave E-Commerce Suite" />
 
-        <TextView
-            android:id="@+id/tv_entry_project_title"
-            style="@style/TextAppearance.ResumeVisualiser.Project.Title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+    <!-- Row 2: Tech Stack Tags / Platform Metadata Chips -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_project_tech"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:chipSpacingHorizontal="6dp"
+        app:chipSpacingVertical="4dp"
+        app:singleLine="false"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_entry_project_action"
-            style="@style/Widget.ResumeVisualiser.Project.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_project_live_demo"
-            android:visibility="gone" />
+    <!-- Row 3: Bulleted Highlights & Features (Container for ItemVisualiserBulletRowBinding matching Stitch) -->
+    <LinearLayout
+        android:id="@+id/container_project_bullets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical" />
 
-    </LinearLayout>
-
-    <!-- Row 2: Project Description -->
+    <!-- Fallback / Plain Description TextView (Preserved for backward compatibility) -->
     <TextView
         android:id="@+id/tv_entry_project_description"
         style="@style/TextAppearance.ResumeVisualiser.Project.Description"
@@ -43,23 +45,39 @@
         android:layout_marginTop="6dp"
         android:visibility="gone" />
 
-    <!-- Row 3: Tech Stack Pills -->
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chip_group_project_tech"
+    <!-- Row 4: Project Deliverables / Links Dock (Matching Stitch Frosted Deliverable Chips) -->
+    <LinearLayout
+        android:id="@+id/layout_project_deliverables"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:chipSpacingHorizontal="6dp"
-        app:chipSpacingVertical="4dp"
-        app:singleLine="false"
-        android:visibility="gone" />
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <!-- Subtle Divider between projects (hidden on the last item) -->
+        <TextView
+            android:id="@+id/tv_project_deliverables_label"
+            style="@style/TextAppearance.ResumeVisualiser.Exp.DeliverablesHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/project_deliverables_title" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_project_links"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacing="8dp"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="8dp" />
+    </LinearLayout>
+
+    <!-- Hairline Divider between projects (24dp top and bottom margins, hidden on the last item) -->
     <View
         android:id="@+id/divider_project_entry"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="14dp"
-        android:background="@color/project_divider" />
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:background="@color/exp_divider" />
 
 </LinearLayout>

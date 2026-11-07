@@ -5,9 +5,13 @@ import com.example.model.ResumeProfile
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -19,21 +23,56 @@ import kotlin.coroutines.resumeWithException
 class ResumeCloudRepository {
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    private val authMutex = Mutex()
+
     companion object {
         const val BASE_DEEP_LINK_URL = "https://lightweight-firebase-projects.web.app/r"
         private const val COLLECTION_RESUMES = "resumes"
         private const val TTL_DAYS_MILLIS = 7L * 24 * 60 * 60 * 1000 // 7-day TTL
+
+        @Volatile
+        private var INSTANCE: ResumeCloudRepository? = null
+
+        fun getInstance(): ResumeCloudRepository {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: ResumeCloudRepository().also { INSTANCE = it }
+            }
+        }
+
+        /**
+         * Cooperative coroutine execution helper that catches general exceptions into Result.failure,
+         * but cleanly rethrows CancellationException so that coroutine cancellation is never swallowed.
+         */
+        inline fun <T> runCatchingNonCancellation(block: () -> T): Result<T> {
+            return try {
+                Result.success(block())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Resolves the current authenticated anonymous Firebase user, or performs anonymous sign-in
+     * with thread-safe Mutex locking to prevent multiple parallel anonymous account creations.
+     */
+    suspend fun getOrSignInUser(): FirebaseUser {
+        auth.currentUser?.let { return it }
+        return authMutex.withLock {
+            auth.currentUser ?: auth.signInAnonymously().await().user
+                ?: throw IllegalStateException("Failed to establish authenticated session.")
+        }
     }
 
     /**
      * Authenticates anonymously if needed and stores the resume JSON under resumes/{uid}.
      * Returns the full shareable deep link URL.
      */
-    suspend fun uploadResume(profile: ResumeProfile): Result<String> = runCatching {
-        // 1. Ensure authenticated user session (Anonymous Auth)
-        val user = auth.currentUser ?: auth.signInAnonymously().await().user
-            ?: throw IllegalStateException("Failed to establish authenticated session.")
-
+    suspend fun uploadResume(profile: ResumeProfile): Result<String> = runCatchingNonCancellation {
+        // 1. Ensure authenticated user session (Anonymous Auth with mutex deduplication)
+        val user = getOrSignInUser()
         val uid = user.uid
 
         // 2. Generate unique share identifier tailored to this compilation
@@ -56,14 +95,20 @@ class ResumeCloudRepository {
             "expireAt" to Timestamp(expiresAtDate)
         )
 
-        // 4. Remove any older document for this user tailored to the SAME target company
-        // to prevent obsolete duplicate documents for the same application in Firestore
+        // 4. Save document first so user gets an immediate publication response without delay
+        firestore.collection(COLLECTION_RESUMES)
+            .document(shareId)
+            .set(payload)
+            .await()
+
+        // 5. Clean up any older document for the same target company
         try {
             val existing = firestore.collection(COLLECTION_RESUMES)
                 .whereEqualTo("ownerUid", uid)
                 .get()
                 .await()
             for (doc in existing.documents) {
+                if (doc.id == shareId) continue
                 val docCompany = doc.getString("targetCompany")?.trim() ?: ""
                 val docHeadline = doc.getString("headline")?.trim() ?: ""
                 val isMatch = if (targetCompany.isNotBlank()) {
@@ -75,15 +120,11 @@ class ResumeCloudRepository {
                     doc.reference.delete().await()
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.w("ResumeCloudRepository", "Could not cleanup previous duplicate doc: ${e.message}")
         }
-
-        // 5. Save document: independent tailored showcase under resumes/{shareId}
-        firestore.collection(COLLECTION_RESUMES)
-            .document(shareId)
-            .set(payload)
-            .await()
 
         "$BASE_DEEP_LINK_URL/$shareId"
     }.onFailure {
@@ -94,9 +135,8 @@ class ResumeCloudRepository {
      * Queries Cloud Firestore for all active showcases belonging to the authenticated user.
      * Automatically filters out expired showcases (> 7 days) and sorts oldest first (expiring soonest).
      */
-    suspend fun fetchUserShowcases(): Result<List<com.example.model.SavedShowcase>> = runCatching {
-        val user = auth.currentUser ?: auth.signInAnonymously().await().user
-            ?: return@runCatching emptyList()
+    suspend fun fetchUserShowcases(): Result<List<com.example.model.SavedShowcase>> = runCatchingNonCancellation {
+        val user = getOrSignInUser()
 
         val snapshot = firestore.collection(COLLECTION_RESUMES)
             .whereEqualTo("ownerUid", user.uid)
@@ -144,11 +184,9 @@ class ResumeCloudRepository {
     /**
      * Deletes a specific resume document from Cloud Firestore.
      */
-    suspend fun deleteResume(shareId: String): Result<Unit> = runCatching {
-        if (shareId.isBlank()) return@runCatching
-        if (auth.currentUser == null) {
-            auth.signInAnonymously().await()
-        }
+    suspend fun deleteResume(shareId: String): Result<Unit> = runCatchingNonCancellation {
+        if (shareId.isBlank()) return@runCatchingNonCancellation
+        getOrSignInUser()
         firestore.collection(COLLECTION_RESUMES)
             .document(shareId)
             .delete()
@@ -161,15 +199,13 @@ class ResumeCloudRepository {
     /**
      * Retrieves the resume document from Cloud Firestore and parses the profile.
      */
-    suspend fun fetchResume(shareId: String): Result<ResumeProfile> = runCatching {
+    suspend fun fetchResume(shareId: String): Result<ResumeProfile> = runCatchingNonCancellation {
         if (shareId.isBlank()) {
             throw IllegalArgumentException("Invalid showcase identifier.")
         }
 
         // Ensure anonymous session for Firestore rules requiring auth
-        if (auth.currentUser == null) {
-            auth.signInAnonymously().await()
-        }
+        getOrSignInUser()
 
         val snapshot = firestore.collection(COLLECTION_RESUMES)
             .document(shareId)
@@ -198,10 +234,8 @@ class ResumeCloudRepository {
      * Queries and deletes all resumes older than 7 days (expireAt < now) from Cloud Firestore.
      * Keeps the database clean without requiring a Google Cloud billing account.
      */
-    suspend fun purgeExpiredResumes(): Result<Int> = runCatching {
-        if (auth.currentUser == null) {
-            auth.signInAnonymously().await()
-        }
+    suspend fun purgeExpiredResumes(): Result<Int> = runCatchingNonCancellation {
+        getOrSignInUser()
 
         val now = Timestamp.now()
         val snapshot = firestore.collection(COLLECTION_RESUMES)
@@ -210,7 +244,7 @@ class ResumeCloudRepository {
             .await()
 
         if (snapshot.isEmpty) {
-            return@runCatching 0
+            return@runCatchingNonCancellation 0
         }
 
         val batch = firestore.batch()

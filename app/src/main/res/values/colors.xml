@@ -51,18 +51,23 @@
     <color name="summary_section_title">#2563EB</color>
     <color name="summary_card_bg">#FFFFFF</color>
     <color name="summary_card_stroke">#1E000000</color>
-    <color name="summary_body_text">#4B5563</color>
+    <color name="summary_body_text">#434655</color>
 
     <!-- Section 3 Work Experience Tokens (Light Theme) -->
     <color name="exp_section_title">#2563EB</color>
     <color name="exp_card_bg">#FFFFFF</color>
     <color name="exp_card_stroke">#1E000000</color>
-    <color name="exp_role_title">#111827</color>
+    <color name="exp_role_title">#0F172A</color>
     <color name="exp_company_name">#2563EB</color>
-    <color name="exp_duration_text">#6B7280</color>
-    <color name="exp_bullet_text">#374151</color>
+    <color name="exp_duration_text">#737686</color>
+    <color name="exp_bullet_text">#434655</color>
     <color name="exp_bullet_dot">#2563EB</color>
-    <color name="exp_divider">#E5E7EB</color>
+    <color name="exp_deliverables_label">#737686</color>
+    <color name="exp_deliverable_chip_bg">#FFFFFF</color>
+    <color name="exp_deliverable_chip_stroke">#332563EB</color>
+    <color name="exp_deliverable_chip_text">#0F172A</color>
+    <color name="exp_deliverable_chip_arrow">#2563EB</color>
+    <color name="exp_divider">#10000000</color>
     <color name="exp_tag_bg">#EFF6FF</color>
     <color name="exp_tag_text">#1D4ED8</color>
 
@@ -102,5 +107,10 @@
 
     <!-- Watermark Tokens -->
     <color name="watermark_tint">#2563EB</color>
+
+    <!-- Glassmorphic Loading Dialog Tokens -->
+    <color name="glass_dialog_bg_start">#E6F0F4FC</color>
+    <color name="glass_dialog_bg_end">#E6DCE6F8</color>
+    <color name="glass_dialog_stroke">#FFFFFFFF</color>
 
 </resources>

@@ -258,8 +258,8 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <include
                     android:id="@+id/included_section_summary"
@@ -272,8 +272,8 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <include
                     android:id="@+id/included_section_experience"
@@ -286,8 +286,8 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <include
                     android:id="@+id/included_section_projects"
@@ -300,8 +300,8 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <include
                     android:id="@+id/included_section_skills"
@@ -315,8 +315,8 @@
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <include
                     android:id="@+id/included_section_education"
@@ -331,8 +331,8 @@
                 android:orientation="vertical"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

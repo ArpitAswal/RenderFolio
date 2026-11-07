@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_custom_entry_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="6dp"
-    android:paddingBottom="10dp">
+    android:paddingTop="2dp"
+    android:paddingBottom="12dp">
 
-    <!-- Row: Title and Date/Period -->
+    <!-- Row: Title (No active status tag) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:gravity="top"
         android:orientation="horizontal">
 
         <TextView
@@ -19,49 +21,73 @@
             style="@style/TextAppearance.ResumeVisualiser.Custom.Title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:text="Google Associate Android Developer (AAD)" />
 
         <TextView
             android:id="@+id/tv_entry_custom_period"
             style="@style/TextAppearance.ResumeVisualiser.Exp.Duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Subtitle / Issuer / Clickable Link -->
+    <!-- Subtitle / Issuer / Authority -->
     <TextView
         android:id="@+id/tv_entry_custom_subtitle"
         style="@style/TextAppearance.ResumeVisualiser.Custom.Subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:text="Google Developers Certification"
+        tools:visibility="visible" />
 
-    <!-- Description -->
+    <!-- Narrative Description -->
     <TextView
         android:id="@+id/tv_entry_custom_description"
         style="@style/TextAppearance.ResumeVisualiser.Custom.Description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:visibility="gone" />
+        android:layout_marginTop="6dp"
+        android:visibility="gone"
+        tools:text="Demonstrated comprehensive proficiency in Android architecture, asynchronous processing, and UI development."
+        tools:visibility="visible" />
 
-    <!-- Bullets Container -->
+    <!-- Bullets Container (Inflating ItemVisualiserBulletRowBinding) -->
     <LinearLayout
         android:id="@+id/container_entry_custom_bullets"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:orientation="vertical"
         android:visibility="gone" />
+
+    <!-- Deliverable / Credential Link Chips Dock -->
+    <LinearLayout
+        android:id="@+id/layout_custom_deliverables"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_custom_links"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="6dp" />
+    </LinearLayout>
 
     <!-- Divider between items (hidden on the last item) -->
     <View
         android:id="@+id/divider_custom_entry"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/custom_item_divider" />
+        android:layout_marginTop="20dp"
+        android:background="@color/exp_divider" />
 
 </LinearLayout>

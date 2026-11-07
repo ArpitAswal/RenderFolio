@@ -1,86 +1,113 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="180dp"
-    android:height="180dp"
-    android:viewportWidth="120"
-    android:viewportHeight="120">
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
 
-    <!-- Briefcase Silhouette in Background -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M16,52 L36,52 C37.1,52 38,52.9 38,54 L38,78 C38,79.1 37.1,80 36,80 L16,80 C14.9,80 14,79.1 14,78 L14,54 C14,52.9 14.9,52 16,52 Z" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M21,52 V46 C21,44.9 21.9,44 23,44 H29 C30.1,44 31,44.9 31,46 V52" />
+    <!-- 3D Isometric Frosted Glass Stack / Layers: -15 degree rotation around center (107.5, 82.5), Completely transparent background (No blue glow) -->
+    <group
+        android:pivotX="107.5"
+        android:pivotY="82.5"
+        android:rotation="-15">
 
-    <!-- Laptop Display Screen Outer Frame -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M32,24 L96,24 C99.3,24 102,26.7 102,30 L102,70 C102,73.3 99.3,76 96,76 L32,76 C28.7,76 26,73.3 26,70 L26,30 C26,26.7 28.7,24 32,24 Z" />
+        <!-- Layer 1: Bottom Frosted Glass Plate (Pure White Glass, No Blue Tint) -->
+        <path
+            android:pathData="M 50,115 L 120,75 L 165,100 L 95,140 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#66FFFFFF" />
+                    <item android:offset="0.7" android:color="#26FFFFFF" />
+                    <item android:offset="1.0" android:color="#00FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#B3FFFFFF" />
+                    <item android:offset="0.5" android:color="#66FFFFFF" />
+                    <item android:offset="1.0" android:color="#26FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Inner Screen Cutout -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:pathData="M33,31 H95 V69 H33 Z" />
+        <!-- Layer 2: Middle Frosted Glass Plate -->
+        <path
+            android:pathData="M 50,90 L 120,50 L 165,75 L 95,115 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.7" android:color="#33FFFFFF" />
+                    <item android:offset="1.0" android:color="#08FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#CCFFFFFF" />
+                    <item android:offset="0.5" android:color="#80FFFFFF" />
+                    <item android:offset="1.0" android:color="#33FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Growth Metrics Chart Inside Display -->
-    <!-- Bar 1 -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M40,64 H46 V54 H40 Z" />
-    <!-- Bar 2 -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M52,64 H58 V46 H52 Z" />
-    <!-- Bar 3 -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M64,64 H70 V40 H64 Z" />
-    <!-- Bar 4 -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M76,64 H82 V34 H76 Z" />
-    <!-- Bar 5 -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M88,64 H94 V28 H88 Z" />
+        <!-- Layer 3: Top Frosted Glass Plate -->
+        <path
+            android:pathData="M 50,65 L 120,25 L 165,50 L 95,90 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#99FFFFFF" />
+                    <item android:offset="0.7" android:color="#4DFFFFFF" />
+                    <item android:offset="1.0" android:color="#14FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#E6FFFFFF" />
+                    <item android:offset="0.5" android:color="#99FFFFFF" />
+                    <item android:offset="1.0" android:color="#4DFFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
 
-    <!-- Trend Arrow / Trajectory Line -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M43,50 L55,42 L67,36 L79,30 L91,24" />
+        <!-- Core Royal Blue Hairline Accent on Top Plate -->
+        <path
+            android:pathData="M 68,62 L 120,32 L 148,48 L 96,78 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#592563EB"
+            android:strokeWidth="1.0" />
 
-    <!-- Laptop Base / Keyboard Deck -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M18,78 H110 C112.2,78 114,79.8 112.5,82 L106,88 C105,89.2 103.5,90 102,90 H26 C24.5,90 23,89.2 22,88 L15.5,82 C14,79.8 15.8,78 18,78 Z" />
-
-    <!-- Trackpad Notch -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round"
-        android:pathData="M56,80 H72" />
-
-    <!-- Coffee Mug on Desk Beside Laptop -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M102,76 C102,72 105,68 109,68 H111 C115,68 118,72 118,76 V84 H102 Z" />
-    <!-- Mug Handle -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="1.8"
-        android:pathData="M118,72 C120.5,72 122,74 122,76.5 C122,79 120.5,81 118,81" />
+    </group>
 
 </vector>
-

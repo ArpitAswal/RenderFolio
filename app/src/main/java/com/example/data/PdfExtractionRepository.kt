@@ -1315,7 +1315,7 @@ class PdfExtractionRepository(private val context: Context) {
         val list = mutableListOf<DynamicSection>()
 
         val openSourceRegex = Regex(
-            "(?:OPEN[- ]SOURCE CONTRIBUTIONS|OPEN[- ]SOURCE)[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:TECHNICAL SKILLS|SKILLS|EDUCATION|ACADEMICS|PROJECTS|$))\\b)",
+            "(?:OPEN[- ]SOURCE CONTRIBUTIONS|OPEN[- ]SOURCE)[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:TECHNICAL SKILLS|SKILLS|EDUCATION|ACADEMICS|PROJECTS)\\b)|$)",
             RegexOption.IGNORE_CASE
         )
         val openSourceText = openSourceRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim()

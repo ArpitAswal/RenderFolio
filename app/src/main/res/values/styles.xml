@@ -37,81 +37,116 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <!-- Section Header Label (13sp Medium Uppercase Accent) -->
+    <!-- Section Header Label (15sp Bold Uppercase Accent) -->
     <style name="TextAppearance.ResumeVisualiser.Section.Header" parent="TextAppearance.Material3.LabelLarge">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">15sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/summary_section_title</item>
-        <item name="android:letterSpacing">0.05</item>
+        <item name="android:letterSpacing">0.04</item>
         <item name="android:textAllCaps">true</item>
     </style>
 
-    <!-- Summary Body Narrative (14sp with 20sp line height for effortless readability) -->
+    <!-- Summary Body Narrative (15sp Inter/sans-serif with 24sp line height) -->
     <style name="TextAppearance.ResumeVisualiser.Summary.Body" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">15sp</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/summary_body_text</item>
         <item name="android:lineSpacingExtra">6sp</item>
     </style>
 
-    <!-- Role / Position Title (16sp Semi-Bold) -->
+    <!-- Role / Position Title (17sp Bold Inter/sans-serif) -->
     <style name="TextAppearance.ResumeVisualiser.Exp.Role" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">16sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/exp_role_title</item>
-        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:letterSpacing">-0.015</item>
+        <item name="android:lineSpacingExtra">3sp</item>
     </style>
 
-    <!-- Company Name (14sp Medium Primary Accent) -->
+    <!-- Experience Role Sub-Header (14sp Semi-bold/Bold Primary Accent) -->
     <style name="TextAppearance.ResumeVisualiser.Exp.Company" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/exp_company_name</item>
     </style>
 
-    <!-- Duration (12sp Regular Muted) -->
+    <!-- Duration / Tenure (13sp Medium Slate) -->
     <style name="TextAppearance.ResumeVisualiser.Exp.Duration" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">12sp</item>
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">@color/exp_duration_text</item>
     </style>
 
-    <!-- Bullet Item Text (13sp Regular with 18sp line height for effortless scanning) -->
+    <!-- Bullet Item Text (14sp Regular Inter/sans-serif with 22sp line height) -->
     <style name="TextAppearance.ResumeVisualiser.Exp.Bullet" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/exp_bullet_text</item>
         <item name="android:lineSpacingExtra">4sp</item>
     </style>
 
-    <!-- Project Title (16sp Bold) -->
+    <!-- Client Deliverables Sub-Header (11sp Bold Uppercase Slate) -->
+    <style name="TextAppearance.ResumeVisualiser.Exp.DeliverablesHeader" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/exp_deliverables_label</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <!-- Deliverable Chip Style (28dp height, 14dp radius, white bg, 1dp 20% blue stroke) -->
+    <style name="Widget.ResumeVisualiser.DeliverableChip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipMinHeight">28dp</item>
+        <item name="chipCornerRadius">14dp</item>
+        <item name="chipBackgroundColor">@color/exp_deliverable_chip_bg</item>
+        <item name="chipStrokeColor">@color/exp_deliverable_chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStartPadding">10dp</item>
+        <item name="chipEndPadding">12dp</item>
+        <item name="textStartPadding">2dp</item>
+        <item name="textEndPadding">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/exp_deliverable_chip_text</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="rippleColor">@color/hero_social_ripple</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <!-- Project Title (17sp Bold matching Stitch and Experience) -->
     <style name="TextAppearance.ResumeVisualiser.Project.Title" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">17sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/project_title_text</item>
         <item name="android:letterSpacing">-0.01</item>
     </style>
 
-    <!-- Project Description (13sp Regular with 1.35 Line Spacing Multiplier) -->
+    <!-- Project Description (14sp Regular with 1.35 Line Spacing Multiplier) -->
     <style name="TextAppearance.ResumeVisualiser.Project.Description" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/project_desc_text</item>
         <item name="android:lineSpacingMultiplier">1.35</item>
     </style>
 
-    <!-- Outlined Project Action Button (Live Demo / Code) -->
+    <!-- Outlined / Pill Project Action Button (Live Demo / Code matching Stitch) -->
     <style name="Widget.ResumeVisualiser.Project.Button" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:textSize">11sp</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">@color/project_action_text</item>
         <item name="strokeColor">@color/project_action_stroke</item>
         <item name="strokeWidth">1dp</item>
-        <item name="cornerRadius">8dp</item>
-        <item name="android:minHeight">36dp</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="android:minHeight">30dp</item>
         <item name="android:paddingLeft">12dp</item>
         <item name="android:paddingRight">12dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
     </style>
@@ -126,6 +161,25 @@
         <item name="android:letterSpacing">0.04</item>
     </style>
 
+    <!-- Stitch Technical Skill Pill Chip (28dp height, 14dp radius, white/frosted bg, 1dp 20% blue border) -->
+    <style name="Widget.ResumeVisualiser.SkillChip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipMinHeight">28dp</item>
+        <item name="chipCornerRadius">14dp</item>
+        <item name="chipBackgroundColor">@color/exp_deliverable_chip_bg</item>
+        <item name="chipStrokeColor">@color/exp_deliverable_chip_stroke</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStartPadding">12dp</item>
+        <item name="chipEndPadding">12dp</item>
+        <item name="textStartPadding">0dp</item>
+        <item name="textEndPadding">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/exp_deliverable_chip_text</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="rippleColor">@color/hero_social_ripple</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
     <!-- Skills Stream Inline Text (13sp Regular with 20sp Line Height) -->
     <style name="TextAppearance.ResumeVisualiser.Skill.Stream" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:textSize">13sp</item>
@@ -135,44 +189,60 @@
     </style>
 
 
-    <!-- Education Degree Title (15sp Bold) -->
+    <!-- Education Degree Title (Top Headline First, 17sp Bold Inter/sans-serif matching Stitch) -->
     <style name="TextAppearance.ResumeVisualiser.Edu.Degree" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">15sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/edu_degree_title</item>
-        <item name="android:letterSpacing">-0.01</item>
-    </style>
-
-    <!-- Education Institution (13sp Medium Accent) -->
-    <style name="TextAppearance.ResumeVisualiser.Edu.Institution" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">13sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/edu_institution_text</item>
-    </style>
-
-    <!-- Custom Item Title (15sp Bold) -->
-    <style name="TextAppearance.ResumeVisualiser.Custom.Title" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textSize">15sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/custom_item_title</item>
-        <item name="android:letterSpacing">-0.01</item>
-    </style>
-
-    <!-- Custom Item Subtitle / Issuer / Link (13sp Medium Accent) -->
-    <style name="TextAppearance.ResumeVisualiser.Custom.Subtitle" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textSize">13sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/custom_item_subtitle</item>
-    </style>
-
-    <!-- Custom Item Narrative Description (13sp Regular with 1.35 Line Spacing) -->
-    <style name="TextAppearance.ResumeVisualiser.Custom.Description" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">17sp</item>
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:textColor">@color/custom_item_desc</item>
-        <item name="android:lineSpacingMultiplier">1.35</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/exp_role_title</item>
+        <item name="android:letterSpacing">-0.015</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+    </style>
+
+    <!-- Education Institution (Sub-Headline Second, 14sp Semi-bold/Bold Royal Blue #2563EB matching Stitch) -->
+    <style name="TextAppearance.ResumeVisualiser.Edu.Institution" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/exp_company_name</item>
+    </style>
+
+    <!-- Custom Item Title (17sp Bold matching Stitch and Experience) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">17sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/exp_role_title</item>
+        <item name="android:letterSpacing">-0.015</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+    </style>
+
+    <!-- Custom Item Subtitle / Issuer / Link (14sp Semi-bold/Bold Primary Accent) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Subtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/exp_company_name</item>
+    </style>
+
+    <!-- Custom Item Narrative Description (14sp Regular Inter/sans-serif with 4sp extra line spacing) -->
+    <style name="TextAppearance.ResumeVisualiser.Custom.Description" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/exp_bullet_text</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+    </style>
+
+    <!-- Glassmorphic Centered Loading Dialog Theme -->
+    <style name="Theme.ResumeShowcase.GlassmorphicLoadingDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.32</item>
+        <item name="android:windowElevation">0dp</item>
     </style>
 </resources>
 

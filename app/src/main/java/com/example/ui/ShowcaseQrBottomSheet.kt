@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.fragment.app.FragmentManager
 import com.example.R
 import com.example.util.QrCodeGenerator
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -141,6 +143,23 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_qr_chooser_title)))
         } catch (e: Exception) {
             Toast.makeText(requireContext(), "Could not share QR image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Shows this bottom sheet safely checking whether FragmentManager state is already saved
+     * or destroyed, preventing IllegalStateException after onSaveInstanceState.
+     */
+    fun showSafely(manager: FragmentManager, tag: String? = TAG) {
+        if (manager.isStateSaved || manager.isDestroyed) {
+            return
+        }
+        try {
+            val transaction = manager.beginTransaction()
+            transaction.add(this, tag)
+            transaction.commitAllowingStateLoss()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to show bottom sheet safely: ${e.message}")
         }
     }
 

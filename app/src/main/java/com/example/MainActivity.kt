@@ -33,6 +33,7 @@ import com.example.ui.TailoredShowcaseSelectorBottomSheet
 import com.example.ui.theme.ResumeShowcaseTheme
 import com.example.viewmodel.ResumeViewModel
 import com.example.viewmodel.UiState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -42,7 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: ResumeViewModel by viewModels()
     private lateinit var preferencesRepository: ResumePreferencesRepository
-    private val cloudRepository by lazy { ResumeCloudRepository() }
+    private val cloudRepository = ResumeCloudRepository.getInstance()
+    private var cloudSyncJob: Job? = null
 
     private lateinit var coldStartContainer: View
     private lateinit var composeView: ComposeView
@@ -115,11 +117,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun syncShowcasesWithCloud() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            cloudRepository.purgeExpiredResumes()
-            val cloudShowcases = cloudRepository.fetchUserShowcases().getOrNull()
-            if (!cloudShowcases.isNullOrEmpty()) {
-                preferencesRepository.syncFromCloud(cloudShowcases)
+        if (cloudSyncJob?.isActive == true) return
+        cloudSyncJob = lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                cloudRepository.purgeExpiredResumes()
+                val cloudShowcases = cloudRepository.fetchUserShowcases().getOrNull()
+                if (!cloudShowcases.isNullOrEmpty()) {
+                    preferencesRepository.syncFromCloud(cloudShowcases)
+                }
+            } catch (_: Exception) {
             }
         }
     }
@@ -208,7 +214,7 @@ class MainActivity : AppCompatActivity() {
                     sheet.onViewVisualizer = {
                         startActivity(ResumeVisualiserActivity.createIntent(this, item.profile))
                     }
-                    sheet.show(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
+                    sheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
                 }
                 else -> {
                     // Multiple tailored resumes: open selector bottom sheet first
@@ -222,7 +228,7 @@ class MainActivity : AppCompatActivity() {
                         sheet.onViewVisualizer = {
                             startActivity(ResumeVisualiserActivity.createIntent(this@MainActivity, selectedShowcase.profile))
                         }
-                        sheet.show(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
+                        sheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
                     }
                     selector.show(supportFragmentManager, TailoredShowcaseSelectorBottomSheet.TAG)
                 }

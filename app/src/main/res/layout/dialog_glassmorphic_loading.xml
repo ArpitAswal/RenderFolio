@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="20dp">
+
+    <FrameLayout
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_glassmorphic_loading_dialog"
+        android:clipToOutline="true"
+        android:elevation="12dp">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/cpiDialogProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            app:indicatorColor="@color/app_primary"
+            app:indicatorSize="44dp"
+            app:trackColor="@color/app_primary_container"
+            app:trackCornerRadius="4dp"
+            app:trackThickness="4dp" />
+
+    </FrameLayout>
+</FrameLayout>
