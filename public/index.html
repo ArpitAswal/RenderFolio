@@ -4,25 +4,161 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Showcase</title>
-  <meta name="description" content="Interactive digital resume showcase.">
+  <meta name="description" content="Interactive digital resume showcase with Material 3 and Stitch design fidelity.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* Exact 1:1 Design Tokens matching ResumeVisualiserActivity XML */
+    /* -------------------------------------------------------------
+       1:1 Design Tokens matching Android ResumeVisualiserActivity
+       Supports Light and Dark (Obsidian) Themes
+       ------------------------------------------------------------- */
     :root {
-      --app-background: #F4F5F7;
-      --app-surface: #FFFFFF;
-      --app-primary: #2563EB;
-      --app-primary-hover: #1D4ED8;
-      --app-primary-light: #EFF6FF;
-      --app-text-primary: #111827;
-      --app-text-secondary: #4B5563;
-      --app-text-muted: #6B7280;
-      --chip-stroke: #E2E8F0;
-      --chip-text: #1E293B;
-      --bullet-text: #374151;
-      --divider: #E5E7EB;
+      --bg-canvas: #F8FAFC;
+      --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #F1F5F9 100%);
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --brand-primary: #2563EB;
+      --brand-primary-hover: #1D4ED8;
+      --brand-primary-light: #EFF6FF;
+      --brand-accent-arrow: #2563EB;
+      
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: #E2E8F0;
+      
+      --avatar-bg: #FFFFFF;
+      --avatar-border: #E2E8F0;
+      --avatar-text: #0F172A;
+      --avatar-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+      --verified-badge-bg: #2563EB; /* Blue in light theme */
+      
+      --location-pill-bg: rgba(255, 255, 255, 0.85);
+      --location-pill-border: #E2E8F0;
+      --location-pill-text: #475569;
+      
+      --social-dock-bg: #FFFFFF;
+      --social-dock-border: #E2E8F0;
+      --social-dock-hover: #F1F5F9;
+      --social-dock-icon: #0F172A;
+      
+      --chip-skill-bg: #FFFFFF;
+      --chip-skill-border: #E2E8F0;
+      --chip-skill-text: #1E293B;
+      
+      --deliverable-chip-bg: #EFF6FF;
+      --deliverable-chip-text: #1D4ED8;
+      --deliverable-chip-arrow: #2563EB;
+      
+      --bullet-dot: #2563EB;
+      --bullet-text: #334155;
+      
+      --divider: #E2E8F0;
+      --top-banner-bg: rgba(248, 250, 252, 0.88);
+      --top-banner-border: rgba(226, 232, 240, 0.8);
+      --section-header-color: #2563EB;
+      --section-watermark-opacity: 0.12;
+      --section-watermark-invert: 0;
+    }
+
+    /* Dark Theme Tokens (Obsidian Canvas matching Android values-night) */
+    [data-theme="dark"],
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg-canvas: #0B0F19;
+        --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #151D2F 0%, #0B0F19 100%);
+        --text-primary: #F8FAFC;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+        --brand-primary: #3B82F6;
+        --brand-primary-hover: #60A5FA;
+        --brand-primary-light: rgba(59, 130, 246, 0.15);
+        --brand-accent-arrow: #60A5FA;
+        
+        --card-bg: rgba(22, 30, 49, 0.6);
+        --card-border: rgba(255, 255, 255, 0.08);
+        
+        --avatar-bg: #161F33;
+        --avatar-border: rgba(255, 255, 255, 0.12);
+        --avatar-text: #F8FAFC;
+        --avatar-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.5);
+        --verified-badge-bg: #10B981; /* Green in dark theme per spec */
+        
+        --location-pill-bg: rgba(22, 30, 49, 0.85);
+        --location-pill-border: rgba(255, 255, 255, 0.1);
+        --location-pill-text: #94A3B8;
+        
+        --social-dock-bg: #161F33;
+        --social-dock-border: rgba(255, 255, 255, 0.08);
+        --social-dock-hover: #1E293B;
+        --social-dock-icon: #F8FAFC;
+        
+        --chip-skill-bg: rgba(255, 255, 255, 0.05);
+        --chip-skill-border: rgba(255, 255, 255, 0.1);
+        --chip-skill-text: #E2E8F0;
+        
+        --deliverable-chip-bg: rgba(59, 130, 246, 0.15);
+        --deliverable-chip-text: #93C5FD;
+        --deliverable-chip-arrow: #60A5FA;
+        
+        --bullet-dot: #3B82F6;
+        --bullet-text: #CBD5E1;
+        
+        --divider: rgba(255, 255, 255, 0.08);
+        --top-banner-bg: rgba(11, 15, 25, 0.88);
+        --top-banner-border: rgba(255, 255, 255, 0.06);
+        --section-header-color: #60A5FA;
+        --section-watermark-opacity: 0.18;
+        --section-watermark-invert: 1;
+      }
+    }
+
+    [data-theme="dark"] {
+      --bg-canvas: #0B0F19;
+      --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #151D2F 0%, #0B0F19 100%);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --brand-primary: #3B82F6;
+      --brand-primary-hover: #60A5FA;
+      --brand-primary-light: rgba(59, 130, 246, 0.15);
+      --brand-accent-arrow: #60A5FA;
+      
+      --card-bg: rgba(22, 30, 49, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      
+      --avatar-bg: #161F33;
+      --avatar-border: rgba(255, 255, 255, 0.12);
+      --avatar-text: #F8FAFC;
+      --avatar-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.5);
+      --verified-badge-bg: #10B981; /* Green in dark theme per spec */
+      
+      --location-pill-bg: rgba(22, 30, 49, 0.85);
+      --location-pill-border: rgba(255, 255, 255, 0.1);
+      --location-pill-text: #94A3B8;
+      
+      --social-dock-bg: #161F33;
+      --social-dock-border: rgba(255, 255, 255, 0.08);
+      --social-dock-hover: #1E293B;
+      --social-dock-icon: #F8FAFC;
+      
+      --chip-skill-bg: rgba(255, 255, 255, 0.05);
+      --chip-skill-border: rgba(255, 255, 255, 0.1);
+      --chip-skill-text: #E2E8F0;
+      
+      --deliverable-chip-bg: rgba(59, 130, 246, 0.15);
+      --deliverable-chip-text: #93C5FD;
+      --deliverable-chip-arrow: #60A5FA;
+      
+      --bullet-dot: #3B82F6;
+      --bullet-text: #CBD5E1;
+      
+      --divider: rgba(255, 255, 255, 0.08);
+      --top-banner-bg: rgba(11, 15, 25, 0.88);
+      --top-banner-border: rgba(255, 255, 255, 0.06);
+      --section-header-color: #60A5FA;
+      --section-watermark-opacity: 0.18;
+      --section-watermark-invert: 1;
     }
 
     * {
@@ -33,40 +169,80 @@
 
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--app-background);
-      color: var(--app-text-primary);
+      background: var(--bg-canvas);
+      background-image: var(--bg-canvas-gradient);
+      background-attachment: fixed;
+      color: var(--text-primary);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      transition: background 0.25s ease, color 0.25s ease;
+      min-height: 100vh;
     }
 
-    /* Top Floating Glass Header */
+    /* -------------------------------------------------------------
+       Top Floating Navigation Bar with Theme Toggle
+       ------------------------------------------------------------- */
     .top-banner {
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(244, 245, 247, 0.94);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      padding: 12px 20px;
+      background: var(--top-banner-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--top-banner-border);
+      padding: 12px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: all 0.25s ease;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-weight: 700;
-      color: var(--app-primary);
-      font-size: 1rem;
+      gap: 10px;
+      font-weight: 800;
+      color: var(--brand-primary);
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
       text-decoration: none;
     }
 
     .brand svg {
-      width: 20px;
-      height: 20px;
-      fill: var(--app-primary);
+      width: 22px;
+      height: 22px;
+      fill: var(--brand-primary);
+    }
+
+    .banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-theme-toggle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--social-dock-bg);
+      border: 1px solid var(--social-dock-border);
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-theme-toggle:hover {
+      background: var(--social-dock-hover);
+      transform: scale(1.05);
+    }
+
+    .btn-theme-toggle svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-primary);
     }
 
     .btn-open-app {
@@ -78,353 +254,528 @@
       font-size: 0.85rem;
       font-weight: 700;
       color: #FFFFFF;
-      background: var(--app-primary);
+      background: var(--brand-primary);
       border: none;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s;
+      text-decoration: none;
     }
 
     .btn-open-app:hover {
-      background: var(--app-primary-hover);
+      background: var(--brand-primary-hover);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
     }
 
     .btn-open-app:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
     }
 
-    /* Visualiser Outer Canvas (Matching maxWidth="680dp") */
+    /* -------------------------------------------------------------
+       Visualiser Outer Canvas (Matching Android maxWidth="680dp")
+       ------------------------------------------------------------- */
     .visualiser-canvas {
       max-width: 680px;
       margin: 0 auto;
-      padding: 36px 20px 80px;
+      padding: 40px 20px 96px;
     }
 
-    /* SECTION 1: HERO CONTAINER (Center Symmetrical) */
+    /* -------------------------------------------------------------
+       SECTION 1: HERO CONTAINER (Alex Morgan & Arpit Aswal Spec)
+       ------------------------------------------------------------- */
     .hero-container {
       text-align: center;
-      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    /* Floating Glass Avatar Unit with Rosette Verified Badge */
+    .hero-avatar-wrapper {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--avatar-bg);
+      border: 1.5px solid var(--avatar-border);
+      box-shadow: var(--avatar-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      transition: all 0.25s ease;
+    }
+
+    .hero-initials {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--avatar-text);
+      letter-spacing: -0.02em;
+      user-select: none;
+    }
+
+    /* Verified Rosette Checkmark Badge (Bottom Right of Avatar) */
+    .hero-verified-badge {
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--verified-badge-bg);
+      border: 2px solid var(--bg-canvas);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: background 0.25s ease;
+    }
+
+    .hero-verified-badge svg {
+      width: 14px;
+      height: 14px;
+      fill: #FFFFFF;
     }
 
     .hero-name {
-      font-size: 1.85rem;
+      font-size: 2rem;
       font-weight: 800;
-      color: var(--app-text-primary);
-      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
       line-height: 1.25;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .hero-headline {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      color: var(--app-primary);
-      margin-bottom: 6px;
-      line-height: 1.4;
-    }
-
-    .hero-location {
-      font-size: 0.825rem;
-      color: var(--app-text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin-bottom: 18px;
-    }
-
-    .hero-location svg {
-      width: 14px;
-      height: 14px;
-      fill: var(--app-text-muted);
-    }
-
-    /* Multi-line Wrapping Flow for Contact Chips */
-    .flow-contact-chips {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .contact-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--app-surface);
-      border: 1px solid var(--chip-stroke);
-      padding: 7px 14px;
-      border-radius: 9999px;
-      font-size: 0.825rem;
-      font-weight: 500;
-      color: var(--chip-text);
-      text-decoration: none;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      transition: all 0.2s;
-    }
-
-    .contact-chip svg {
-      width: 14px;
-      height: 14px;
-      fill: var(--app-primary);
-    }
-
-    .contact-chip:hover {
-      background: var(--app-primary-light);
-      border-color: var(--app-primary);
-      color: var(--app-primary);
-    }
-
-    /* Section Blocks & Headers (Matching XML Flat Style) */
-    .section-block {
-      margin-top: 28px;
-    }
-
-    .section-header {
-      font-size: 0.825rem;
-      font-weight: 800;
-      color: var(--app-primary);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      color: var(--brand-primary);
+      line-height: 1.45;
+      max-width: 520px;
       margin-bottom: 12px;
     }
 
-    /* SECTION 2: PROFESSIONAL SUMMARY (Editorial Accent Bar - NO CARD) */
-    .summary-editorial {
-      display: flex;
-      align-items: stretch;
+    /* Adaptive Location Pill (No Fixed Height Clipping) */
+    .hero-location-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background: var(--location-pill-bg);
+      border: 1px solid var(--location-pill-border);
+      color: var(--location-pill-text);
+      font-size: 0.825rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      max-width: 100%;
+      word-break: break-word;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
-    .summary-accent-bar {
-      width: 2.5px;
-      background: var(--app-primary);
-      border-radius: 2px;
+    .hero-location-pill svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--location-pill-text);
       flex-shrink: 0;
     }
 
-    .summary-body {
-      padding-left: 16px;
-      color: var(--app-text-secondary);
+    /* Primary Direct Outreach CTA Button ("Email {FirstName}") */
+    .btn-action-email {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 360px;
+      height: 50px;
+      border-radius: 14px;
+      background: var(--brand-primary);
+      color: #FFFFFF;
       font-size: 0.95rem;
-      line-height: 1.65;
-    }
-
-    /* SECTION 3: WORK EXPERIENCE (Flat Entries with 1dp Divider - NO CARD) */
-    .experience-entry {
-      padding: 8px 0;
-    }
-
-    .entry-role {
-      font-size: 1.05rem;
       font-weight: 700;
-      color: var(--app-text-primary);
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 14px;
     }
 
-    .entry-meta-row {
+    .btn-action-email:hover {
+      background: var(--brand-primary-hover);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-action-email svg {
+      width: 18px;
+      height: 18px;
+      fill: #FFFFFF;
+    }
+
+    /* Secondary Quick-Contact Dock (4 Frosted Squircle Tiles) */
+    .social-dock {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .social-dock-btn {
+      flex: 1;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--social-dock-bg);
+      border: 1px solid var(--social-dock-border);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--social-dock-icon);
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .social-dock-btn:hover {
+      background: var(--social-dock-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+      border-color: var(--brand-primary);
+    }
+
+    .social-dock-btn:active {
+      transform: scale(0.95);
+    }
+
+    .social-dock-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* -------------------------------------------------------------
+       Section Blocks, Titles, & Editorial Watermarks
+       ------------------------------------------------------------- */
+    .section-block {
+      margin-top: 36px;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--section-header-color);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .section-header svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* SECTION 2: PROFESSIONAL SUMMARY */
+    .summary-editorial-body {
+      color: var(--text-secondary);
+      font-size: 0.975rem;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    /* SECTION 3: WORK EXPERIENCE */
+    .experience-entry {
+      padding: 10px 0;
+    }
+
+    .exp-company-headline {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .exp-role-row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      gap: 10px;
+      align-items: flex-start;
+      gap: 12px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+
+    .exp-role-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--brand-primary);
+    }
+
+    .exp-duration {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      flex-shrink: 0;
       margin-top: 2px;
+    }
+
+    /* Clean Bullet Rows with Circular Dot */
+    .bullet-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 8px;
+    }
+
+    .bullet-item {
+      position: relative;
+      padding-left: 18px;
+      font-size: 0.915rem;
+      color: var(--bullet-text);
+      line-height: 1.65;
       margin-bottom: 8px;
     }
 
-    .entry-company {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--app-primary);
-    }
-
-    .entry-duration {
-      font-size: 0.825rem;
-      color: var(--app-text-muted);
-      font-family: 'JetBrains Mono', monospace;
-      flex-shrink: 0;
-    }
-
-    .entry-bullets {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 6px;
-    }
-
-    .entry-bullets li {
-      position: relative;
-      padding-left: 16px;
-      font-size: 0.9rem;
-      color: var(--bullet-text);
-      line-height: 1.6;
-      margin-bottom: 6px;
-    }
-
-    .entry-bullets li::before {
+    .bullet-item::before {
       content: "";
       position: absolute;
       left: 2px;
-      top: 9px;
+      top: 10px;
       width: 5px;
       height: 5px;
       border-radius: 50%;
-      background: var(--app-primary);
+      background: var(--bullet-dot);
+    }
+
+    /* Client Deliverables & Technologies Pill Chips */
+    .deliverables-group {
+      margin-top: 14px;
+    }
+
+    .deliverables-label {
+      font-size: 0.775rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .deliverables-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .deliverable-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--deliverable-chip-bg);
+      color: var(--deliverable-chip-text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      text-decoration: none;
+      border: 1px solid rgba(37, 99, 235, 0.15);
+      transition: all 0.2s;
+    }
+
+    .deliverable-chip:hover {
+      border-color: var(--brand-primary);
+      transform: translateY(-1px);
+    }
+
+    .deliverable-arrow {
+      color: var(--deliverable-chip-arrow);
+      font-weight: 800;
+      font-size: 0.85rem;
     }
 
     .entry-divider {
       height: 1px;
       background: var(--divider);
-      margin: 16px 0;
+      margin: 22px 0;
     }
 
-    /* Tech Stack Pills (Matching Android ChipGroup exp_tag_bg / exp_tag_text) */
-    .tag-pills-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .tag-pill {
-      display: inline-flex;
-      align-items: center;
-      background-color: var(--app-primary-light);
-      color: #1D4ED8;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 8px;
-    }
-
-    /* SECTION 4: FEATURED PROJECTS (Borderless Canvas) */
+    /* SECTION 4: FEATURED PROJECTS */
     .project-entry {
-      padding: 8px 0;
+      padding: 10px 0;
     }
 
     .project-header-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
+      margin-bottom: 8px;
     }
 
     .project-title {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      color: var(--app-text-primary);
+      color: var(--text-primary);
     }
 
-    .project-btn {
+    .project-link-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 5px 14px;
+      gap: 6px;
+      padding: 5px 13px;
       border-radius: 9999px;
-      border: 1px solid var(--app-primary);
-      color: var(--app-primary);
+      background: var(--deliverable-chip-bg);
+      color: var(--deliverable-chip-text);
       font-size: 0.8rem;
       font-weight: 600;
       text-decoration: none;
+      border: 1px solid rgba(37, 99, 235, 0.2);
       flex-shrink: 0;
       transition: all 0.2s;
     }
 
-    .project-btn:hover {
-      background: var(--app-primary-light);
+    .project-link-badge:hover {
+      border-color: var(--brand-primary);
+      transform: translateY(-1px);
     }
 
-    .project-desc {
-      font-size: 0.9rem;
-      color: var(--app-text-secondary);
-      margin-top: 6px;
-      line-height: 1.6;
-      white-space: pre-line;
+    .project-link-badge svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
     }
 
-    /* SECTION 5: TECHNICAL SKILLS (Semantic Domain Matrix) */
-    .skills-matrix-row {
-      padding: 8px 0;
+    /* SECTION 5: TECHNICAL SKILLS (Stitch Pill Chips Matrix) */
+    .skills-domain-block {
+      margin-bottom: 18px;
     }
 
-    .skills-domain-label {
-      font-size: 0.925rem;
+    .skills-domain-title {
+      font-size: 0.825rem;
       font-weight: 700;
-      color: var(--app-primary);
-      margin-bottom: 2px;
+      color: var(--brand-primary);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
 
-    .skills-stream {
-      font-size: 0.925rem;
-      color: #1F2937;
-      line-height: 1.6;
+    .skills-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .skills-dot {
-      color: #9CA3AF;
-      margin: 0 6px;
-      font-weight: 700;
+    .skill-chip {
+      display: inline-flex;
+      align-items: center;
+      background: var(--chip-skill-bg);
+      border: 1px solid var(--chip-skill-border);
+      color: var(--chip-skill-text);
+      font-size: 0.825rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .skill-chip:hover {
+      border-color: var(--brand-primary);
+      transform: translateY(-1px);
     }
 
     /* SECTION 6: EDUCATION & ACADEMICS */
     .education-entry {
-      padding: 8px 0;
+      padding: 10px 0;
     }
 
-    .degree-title {
-      font-size: 1rem;
+    .edu-degree {
+      font-size: 1.1rem;
       font-weight: 700;
-      color: var(--app-text-primary);
+      color: var(--text-primary);
     }
 
-    .institution-name {
-      font-size: 0.925rem;
+    .edu-institution {
+      font-size: 0.95rem;
       font-weight: 600;
-      color: var(--app-primary);
-      margin-top: 2px;
+      color: var(--brand-primary);
+      margin-top: 3px;
     }
 
-    /* SECTION 7: CUSTOM DYNAMIC SECTIONS */
-    .custom-entry {
-      padding: 8px 0;
+    .edu-details-line {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+      font-weight: 500;
     }
 
-    .custom-title {
-      font-size: 1rem;
+    /* SECTION 7: DYNAMIC CUSTOM SECTIONS */
+    .custom-section-block {
+      margin-top: 36px;
+    }
+
+    .custom-item-entry {
+      padding: 10px 0;
+    }
+
+    .custom-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .custom-item-title {
+      font-size: 1.1rem;
       font-weight: 700;
-      color: var(--app-text-primary);
+      color: var(--text-primary);
     }
 
-    .custom-subtitle {
-      font-size: 0.925rem;
+    .custom-item-subtitle {
+      font-size: 0.95rem;
       font-weight: 600;
-      color: var(--app-primary);
-      margin-top: 2px;
+      color: var(--brand-primary);
+      margin-top: 3px;
     }
 
-    .custom-subtitle a {
-      color: var(--app-primary);
+    .custom-item-subtitle a {
+      color: var(--brand-primary);
       text-decoration: underline;
     }
 
-    /* States (Loading / Expired) */
+    /* States & Notifications */
     .state-container {
       text-align: center;
-      padding: 90px 20px;
+      padding: 100px 20px;
     }
 
     .loading-pulse {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      background: var(--app-primary-light);
-      border: 3px solid var(--app-primary);
-      border-top-color: transparent;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
+      background: transparent;
+      border: 3.5px solid var(--brand-primary-light);
+      border-top-color: var(--brand-primary);
+      animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+      margin: 0 auto 18px;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    /* In-Page Toast / Notification Banner */
+    /* In-Page Toast Notification */
     .toast-banner {
       position: fixed;
       bottom: 24px;
@@ -432,15 +783,15 @@
       transform: translateX(-50%) translateY(100px);
       background: #1E293B;
       color: #FFFFFF;
-      padding: 12px 20px;
-      border-radius: 12px;
+      padding: 12px 22px;
+      border-radius: 14px;
       font-size: 0.875rem;
       font-weight: 500;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
       z-index: 100;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       max-width: 90%;
       width: 440px;
       opacity: 0;
@@ -463,82 +814,122 @@
       <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
       ResumeShowcase
     </a>
-    <button id="btnOpenApp" class="btn-open-app" onclick="openNativeApp()">
-      📱 Open in App
-    </button>
+    <div class="banner-actions">
+      <!-- Light / Dark Theme Switcher Button -->
+      <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
+        <svg id="themeIconSun" viewBox="0 0 24 24" style="display: none;"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+        <svg id="themeIconMoon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 4.97 4.02 9 9 9 3.82 0 7.07-2.39 8.35-5.78-.37.05-.75.08-1.14.08-4.97 0-9-4.03-9-9 0-1.89.58-3.64 1.57-5.09C12.55 3.08 12.28 3 12 3z"/></svg>
+      </button>
+
+      <!-- Open in Native App CTA -->
+      <button id="btnOpenApp" class="btn-open-app" onclick="openNativeApp()">
+        📱 Open in App
+      </button>
+    </div>
   </header>
 
-  <!-- Visualiser Canvas Container -->
+  <!-- Visualiser Outer Canvas Container -->
   <main class="visualiser-canvas">
     <!-- Loading State -->
     <div id="loadingView" class="state-container">
       <div class="loading-pulse"></div>
-      <p style="color: var(--app-text-muted); font-size: 0.95rem; font-weight: 500;">Loading digital showcase...</p>
+      <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">Loading interactive showcase...</p>
     </div>
 
     <!-- Error / Expired State -->
     <div id="errorView" class="state-container" style="display: none;">
-      <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 8px;">Showcase Not Available</h2>
-      <p style="color: var(--app-text-muted); max-width: 440px; margin: 0 auto 24px; font-size: 0.9rem;">
-        This resume showcase has expired (7-day link limit) or is no longer available.
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Showcase Not Available</h2>
+      <p style="color: var(--text-muted); max-width: 440px; margin: 0 auto 24px; font-size: 0.925rem;">
+        This resume showcase has expired (7-day link limit) or is no longer available in Cloud Firestore.
       </p>
       <a href="/" class="btn-open-app" style="text-decoration: none; display: inline-flex;">Create Your Own Showcase</a>
     </div>
 
-    <!-- Interactive Resume Visualiser Content (Cardless & Flat) -->
+    <!-- Interactive Resume Visualiser Content -->
     <div id="visualiserContent" style="display: none;">
-      <!-- SECTION 1: HERO CONTAINER -->
-      <section class="hero-container">
-        <h1 id="heroName" class="hero-name"></h1>
-        <div id="heroHeadline" class="hero-headline"></div>
-        <div id="heroLocation" class="hero-location"></div>
-        <div id="flowContactChips" class="flow-contact-chips"></div>
-      </section>
+      
+      <!-- Container for dynamically ordered sections -->
+      <div id="sectionsContainer">
+        <!-- SECTION 1: HERO CONTAINER (Alex Morgan / Arpit Aswal Spec) -->
+        <section id="section_personal_info" class="hero-container">
+          <!-- Glassmorphism Monogram Syllable Disc with Verified Badge -->
+          <div class="hero-avatar-wrapper">
+            <span id="heroInitials" class="hero-initials">AA</span>
+            <div id="heroVerifiedBadge" class="hero-verified-badge" title="Verified Showcase">
+              <svg viewBox="0 0 24 24"><path d="M12 2l2.4 3.7 4.4-.3 1.2 4.2 3.9 2-1.6 4.1 2.2 3.8-3.8 2.2-1.6 4.1-4.2-1.2-2.5 3.7-2.5-3.7-4.2 1.2-1.6-4.1-3.8-2.2 2.2-3.8-1.6-4.1 3.9-2 1.2-4.2 4.4.3L12 2zm-1.8 13.6l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>
+            </div>
+          </div>
 
-      <!-- SECTION 2: PROFESSIONAL SUMMARY -->
-      <section id="sectionSummaryWrap" class="section-block" style="display: none;">
-        <div class="section-header">Professional Summary</div>
-        <div class="summary-editorial">
-          <div class="summary-accent-bar"></div>
-          <p id="summaryText" class="summary-body"></p>
-        </div>
-      </section>
+          <h1 id="heroName" class="hero-name">Candidate Name</h1>
+          <div id="heroHeadline" class="hero-headline">Professional Headline</div>
+          <div id="heroLocationPill" class="hero-location-pill" style="display: none;"></div>
 
-      <!-- SECTION 3: WORK EXPERIENCE -->
-      <section id="sectionExperienceWrap" class="section-block" style="display: none;">
-        <div class="section-header">Work Experience</div>
-        <div id="experienceList"></div>
-      </section>
+          <!-- Primary Direct Outreach CTA ("Email {FirstName}") -->
+          <a id="btnHeroEmail" href="#" class="btn-action-email" style="display: none;">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <span id="btnHeroEmailText">Email Candidate</span>
+          </a>
 
-      <!-- SECTION 4: FEATURED PROJECTS -->
-      <section id="sectionProjectsWrap" class="section-block" style="display: none;">
-        <div class="section-header">Featured Projects</div>
-        <div id="projectsList"></div>
-      </section>
+          <!-- Secondary Quick-Contact Dock (Call, GitHub, LinkedIn, Portfolio) -->
+          <div id="layoutSocialDock" class="social-dock" style="display: none;"></div>
+        </section>
 
-      <!-- SECTION 5: TECHNICAL SKILLS -->
-      <section id="sectionSkillsWrap" class="section-block" style="display: none;">
-        <div class="section-header">Technical Skills</div>
-        <div id="skillsMatrixContainer"></div>
-      </section>
+        <!-- SECTION 2: PROFESSIONAL SUMMARY -->
+        <section id="section_about_summary" class="section-block" style="display: none;">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            <span>Professional Summary</span>
+          </div>
+          <p id="summaryBody" class="summary-editorial-body"></p>
+        </section>
 
-      <!-- SECTION 6: EDUCATION & ACADEMICS -->
-      <section id="sectionEducationWrap" class="section-block" style="display: none;">
-        <div class="section-header">Education & Academics</div>
-        <div id="educationList"></div>
-      </section>
+        <!-- SECTION 3: WORK EXPERIENCE -->
+        <section id="section_work_experience" class="section-block" style="display: none;">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+            <span>Work Experience</span>
+          </div>
+          <div id="experienceList"></div>
+        </section>
 
-      <!-- SECTION 7: CUSTOM SECTIONS (All dynamic sections from PDF) -->
-      <div id="sectionCustomWrap" style="display: none;">
-        <div id="customSectionsContainer"></div>
+        <!-- SECTION 4: FEATURED PROJECTS -->
+        <section id="section_featured_projects" class="section-block" style="display: none;">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>Featured Projects</span>
+          </div>
+          <div id="projectsList"></div>
+        </section>
+
+        <!-- SECTION 5: TECHNICAL SKILLS (Semantic Domain Matrix) -->
+        <section id="section_technical_skills" class="section-block" style="display: none;">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+            <span id="skillsSectionTitle">Technical Skills</span>
+          </div>
+          <div id="skillsDomainsContainer"></div>
+        </section>
+
+        <!-- SECTION 6: EDUCATION & ACADEMICS -->
+        <section id="section_education_academics" class="section-block" style="display: none;">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+            <span>Education & Academics</span>
+          </div>
+          <div id="educationList"></div>
+        </section>
+
+        <!-- SECTION 7: DYNAMIC CUSTOM SECTIONS CONTAINER -->
+        <div id="customSectionsDynamicWrapper"></div>
       </div>
+
     </div>
   </main>
 
   <!-- In-Page Toast for App Not Installed Notification -->
   <div id="toastBanner" class="toast-banner">
     <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #60A5FA; flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-    <span id="toastMessage">ResumeShowcase app is not installed. You can enjoy viewing the complete interactive resume right here in your browser!</span>
+    <span id="toastMessage">ResumeShowcase app is not installed. Enjoying full interactive showcase right here in your browser!</span>
   </div>
 
   <!-- Firebase Modular JS SDK -->
@@ -560,7 +951,40 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Extract shareId from URL path /r/{shareId}
+    // -----------------------------------------------------------------
+    // Theme Management (Light / Dark Toggle + System Preference Synced)
+    // -----------------------------------------------------------------
+    function initTheme() {
+      const savedTheme = localStorage.getItem("resumeshowcase_theme");
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = savedTheme || (prefersDark ? "dark" : "light");
+      applyTheme(theme);
+    }
+
+    window.toggleTheme = function() {
+      const current = document.documentElement.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const target = current === "dark" ? "light" : "dark";
+      applyTheme(target);
+      localStorage.setItem("resumeshowcase_theme", target);
+    };
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      const sun = document.getElementById("themeIconSun");
+      const moon = document.getElementById("themeIconMoon");
+      if (theme === "dark") {
+        sun.style.display = "block";
+        moon.style.display = "none";
+      } else {
+        sun.style.display = "none";
+        moon.style.display = "block";
+      }
+    }
+    initTheme();
+
+    // -----------------------------------------------------------------
+    // Deep Link & App Launch Handler
+    // -----------------------------------------------------------------
     const pathParts = window.location.pathname.split("/").filter(Boolean);
     let shareId = null;
     const rIndex = pathParts.indexOf("r");
@@ -568,18 +992,12 @@
       shareId = pathParts[rIndex + 1];
     }
 
-    // Handles "Open in App" with smart app-installed detection & fallback notification
     window.openNativeApp = function() {
       if (!shareId) return;
-
-      // Use custom URI scheme without package= parameter so Android Chrome NEVER redirects to Google Play Store
       const appUrl = "resumeshowcase://r/" + shareId;
       const startTime = Date.now();
-
-      // Trigger custom scheme
       window.location.href = appUrl;
 
-      // If the browser remains visible (app is not installed), show the in-page status toast
       setTimeout(() => {
         if (!document.hidden && (Date.now() - startTime < 3500)) {
           showToast("ResumeShowcase app is not installed on this device. You can enjoy the full interactive resume right here!");
@@ -595,6 +1013,83 @@
       setTimeout(() => banner.classList.remove("show"), 4500);
     }
 
+    // -----------------------------------------------------------------
+    // Helper: Dynamic Monogram Initials Extractor
+    // -----------------------------------------------------------------
+    function extractInitials(fullName) {
+      if (!fullName || !fullName.trim()) return "AA";
+      // Sanitize spaced characters e.g. "K A R E N  P H I L I P S" -> "KAREN PHILIPS"
+      const cleaned = fullName.replace(/\b(?:[A-Z]\s+){2,}[A-Z]\b/g, m => m.replace(/\s+/g, ''));
+      const words = cleaned.trim().split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '')).filter(Boolean);
+      if (words.length === 0) return "AA";
+      if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+      return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    }
+
+    // -----------------------------------------------------------------
+    // Helper: Resolve Social / Portfolio Icon SVG
+    // -----------------------------------------------------------------
+    function resolvePortfolioIconSvg(rawUrl) {
+      const lower = (rawUrl || "").toLowerCase().trim();
+      if (lower.includes("play.google.com")) {
+        return `<svg viewBox="0 0 24 24"><path d="M3.61 2.22c-.37.4-.59 1-.59 1.76v16.04c0 .76.22 1.36.59 1.76l.09.09 9.02-9.02v-.21L4.69 3.61l-.08.08zM16.12 15.34l-2.4-2.4v-.22l2.4-2.4 3.01 1.71c.86.49.86 1.28 0 1.77l-3.01 1.54zM13.72 12.72L4.69 21.75c.29.31.78.35 1.35.03l10.08-5.74-2.4-3.32zM13.72 11.28l2.4-3.32L6.04 2.22c-.57-.32-1.06-.28-1.35.03l9.03 9.03z"/></svg>`;
+      }
+      if (lower.includes("pub.dev") || lower.includes("leetcode.com") || lower.includes("hackerrank.com") || lower.includes("codeforces.com") || lower.includes("codepen.io")) {
+        return `<svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`;
+      }
+      if (lower.includes("x.com") || lower.includes("twitter.com")) {
+        return `<svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+      }
+      // Standard Global Web / Portfolio Icon
+      return `<svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 0 1 5.08 16zm2.95-8H5.08a7.987 7.987 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>`;
+    }
+
+    // -----------------------------------------------------------------
+    // Helper: Resolve Primary Project Link Metadata
+    // -----------------------------------------------------------------
+    function resolveProjectLinkMetadata(rawUrl) {
+      const lower = (rawUrl || "").toLowerCase().trim();
+      if (lower.includes("github.com") || lower.includes("gitlab.com") || lower.includes("bitbucket.org")) {
+        return { label: "GitHub Repository", icon: `<svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>` };
+      }
+      if (lower.includes("pub.dev")) {
+        return { label: "pub.dev Package", icon: `<svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>` };
+      }
+      if (lower.includes("play.google.com")) {
+        return { label: "Play Store", icon: `<svg viewBox="0 0 24 24"><path d="M3.61 2.22c-.37.4-.59 1-.59 1.76v16.04c0 .76.22 1.36.59 1.76l.09.09 9.02-9.02v-.21L4.69 3.61l-.08.08zM16.12 15.34l-2.4-2.4v-.22l2.4-2.4 3.01 1.71c.86.49.86 1.28 0 1.77l-3.01 1.54zM13.72 12.72L4.69 21.75c.29.31.78.35 1.35.03l10.08-5.74-2.4-3.32zM13.72 11.28l2.4-3.32L6.04 2.22c-.57-.32-1.06-.28-1.35.03l9.03 9.03z"/></svg>` };
+      }
+      if (lower.includes("drive.google.com") || lower.includes("firebasestorage.googleapis.com") || lower.includes("dropbox.com") || lower.endsWith(".apk") || lower.endsWith(".pdf")) {
+        return { label: "Cloud Storage", icon: `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>` };
+      }
+      return { label: "Live Web App", icon: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>` };
+    }
+
+    // -----------------------------------------------------------------
+    // Helper: Parse Bullets from String
+    // -----------------------------------------------------------------
+    function parseBullets(text) {
+      if (!text || !text.trim()) return [];
+      const lines = text.split("\n");
+      const bullets = [];
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) continue;
+        if (line.includes("•") || line.includes("·") || line.startsWith("-") || line.startsWith("*")) {
+          const parts = line.split(/[•·]/);
+          for (const p of parts) {
+            const cleaned = p.replace(/^[.•\-\*–—\s]+/, '').replace(/^[0-9]+[.)\-]\s*/, '').trim();
+            if (cleaned) bullets.push(cleaned);
+          }
+        } else {
+          bullets.push(line);
+        }
+      }
+      return bullets;
+    }
+
+    // -----------------------------------------------------------------
+    // Core Showcase Loader from Cloud Firestore
+    // -----------------------------------------------------------------
     async function loadShowcase() {
       if (!shareId) {
         document.getElementById("loadingView").style.display = "none";
@@ -639,192 +1134,362 @@
       }
     }
 
+    // -----------------------------------------------------------------
+    // 1:1 Parity Visualiser Screen Renderer
+    // -----------------------------------------------------------------
     function renderVisualiser(p) {
       const hero = p.hero || {};
+      const core = p.coreSections || {};
+      const customSections = p.dynamicSections || p.customSections || [];
+
+      // 1. Browser Title
       document.title = (hero.fullName || "Candidate") + " · Resume Showcase";
-      document.getElementById("heroName").textContent = hero.fullName || "";
+
+      // 2. HERO: Monogram & Verified Badge
+      document.getElementById("heroInitials").textContent = extractInitials(hero.fullName);
+      document.getElementById("heroName").textContent = hero.fullName || "Candidate";
       document.getElementById("heroHeadline").textContent = hero.headlineTitle || "";
 
-      if (hero.location) {
-        document.getElementById("heroLocation").innerHTML = `
+      // 3. Location Capsule (Adaptive height)
+      const locPill = document.getElementById("heroLocationPill");
+      if (hero.location && hero.location.trim()) {
+        locPill.innerHTML = `
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           <span>${hero.location}</span>
         `;
+        locPill.style.display = "inline-flex";
+      } else {
+        locPill.style.display = "none";
       }
 
-      // Contact Chips Flow
-      const contacts = document.getElementById("flowContactChips");
-      const c = hero.contactInfo || {};
-      let chipsHtml = "";
-      if (c.phone) {
-        chipsHtml += `<a href="tel:${c.phone}" class="contact-chip">
+      // 4. Primary Direct Outreach CTA ("Email {FirstName}")
+      const contact = hero.contactInfo || {};
+      const btnEmail = document.getElementById("btnHeroEmail");
+      if (contact.email && contact.email.trim()) {
+        btnEmail.href = `mailto:${contact.email.trim()}`;
+        const firstName = (hero.fullName || "").trim().split(/\s+/)[0] || "";
+        document.getElementById("btnHeroEmailText").textContent = firstName ? `Email ${firstName}` : "Email Candidate";
+        btnEmail.style.display = "inline-flex";
+      } else {
+        btnEmail.style.display = "none";
+      }
+
+      // 5. Secondary Quick-Contact Dock (Call, GitHub, LinkedIn, Portfolio Website)
+      const dock = document.getElementById("layoutSocialDock");
+      let dockButtons = "";
+      if (contact.phone && contact.phone.trim()) {
+        dockButtons += `<a href="tel:${contact.phone.trim()}" class="social-dock-btn" title="Call ${contact.phone}">
           <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-          ${c.phone}
         </a>`;
       }
-      if (c.email) {
-        chipsHtml += `<a href="mailto:${c.email}" class="contact-chip">
-          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-          ${c.email}
-        </a>`;
-      }
-      if (c.linkedinUrl) {
-        chipsHtml += `<a href="${c.linkedinUrl}" target="_blank" class="contact-chip">
-          <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.77v8.37H6.46v-8.37M7.85 6.4a1.63 1.63 0 1 0 0 3.26 1.63 1.63 0 0 0 0-3.26z"/></svg>
-          LinkedIn
-        </a>`;
-      }
-      if (c.githubUrl) {
-        chipsHtml += `<a href="${c.githubUrl}" target="_blank" class="contact-chip">
+      if (contact.githubUrl && contact.githubUrl.trim()) {
+        dockButtons += `<a href="${contact.githubUrl.trim()}" target="_blank" class="social-dock-btn" title="GitHub Profile">
           <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
-          GitHub
         </a>`;
       }
-      contacts.innerHTML = chipsHtml;
-
-      // Section 2: Summary (Editorial Block)
-      const summary = p.coreSections?.profileSummary;
-      if (summary) {
-        document.getElementById("summaryText").textContent = summary;
-        document.getElementById("sectionSummaryWrap").style.display = "block";
+      if (contact.linkedinUrl && contact.linkedinUrl.trim()) {
+        dockButtons += `<a href="${contact.linkedinUrl.trim()}" target="_blank" class="social-dock-btn" title="LinkedIn Profile">
+          <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.77v8.37H6.46v-8.37M7.85 6.4a1.63 1.63 0 1 0 0 3.26 1.63 1.63 0 0 0 0-3.26z"/></svg>
+        </a>`;
+      }
+      if (contact.websiteUrl && contact.websiteUrl.trim()) {
+        dockButtons += `<a href="${contact.websiteUrl.trim()}" target="_blank" class="social-dock-btn" title="Portfolio / Website">
+          ${resolvePortfolioIconSvg(contact.websiteUrl)}
+        </a>`;
+      }
+      if (dockButtons) {
+        dock.innerHTML = dockButtons;
+        dock.style.display = "flex";
+      } else {
+        dock.style.display = "none";
       }
 
-      // Section 3: Work Experience (Flat / Cardless)
-      const experiences = p.coreSections?.workExperience || [];
+      // 6. SECTION 2: Professional Summary
+      const summaryWrap = document.getElementById("section_about_summary");
+      if (core.profileSummary && core.profileSummary.trim()) {
+        document.getElementById("summaryBody").textContent = core.profileSummary.trim();
+        summaryWrap.style.display = "block";
+      } else {
+        summaryWrap.style.display = "none";
+      }
+
+      // 7. SECTION 3: Work Experience (Company Headline First, Role Subhead Second, Deliverables Pills)
+      const expWrap = document.getElementById("section_work_experience");
+      const experiences = core.workExperience || [];
       if (experiences.length > 0) {
         const expList = document.getElementById("experienceList");
-        expList.innerHTML = experiences.map((exp, idx) => `
-          <div class="experience-entry">
-            <div class="entry-role">${exp.roleTitle || ""}</div>
-            <div class="entry-meta-row">
-              <span class="entry-company">${exp.companyName || ""}</span>
-              <span class="entry-duration">${exp.startDate || ""} - ${exp.endDate || ""}</span>
-            </div>
-            ${exp.bulletPoints?.length ? `
-              <ul class="entry-bullets">
-                ${exp.bulletPoints.map(b => `<li>${b}</li>`).join("")}
-              </ul>
-            ` : ""}
-            ${exp.techStackTags?.length ? `
-              <div class="tag-pills-row">
-                ${exp.techStackTags.map(t => `<span class="tag-pill">${t}</span>`).join("")}
+        expList.innerHTML = experiences.map((exp, idx) => {
+          const hasClientApps = exp.clientApps && exp.clientApps.length > 0;
+          const hasTags = exp.techStackTags && exp.techStackTags.length > 0;
+          const bullets = exp.bulletPoints || [];
+
+          return `
+            <div class="experience-entry">
+              <!-- Company Headline First (1:1 with Android XML) -->
+              <div class="exp-company-headline">${exp.companyName || "Organization"}</div>
+              
+              <!-- Role Subhead with Duration -->
+              <div class="exp-role-row">
+                <span class="exp-role-title">${exp.roleTitle || "Role Title"}</span>
+                <span class="exp-duration">${exp.startDate ? (exp.endDate ? `${exp.startDate} — ${exp.endDate}` : exp.startDate) : ""}</span>
               </div>
-            ` : ""}
-            ${idx < experiences.length - 1 ? `<div class="entry-divider"></div>` : ""}
-          </div>
-        `).join("");
-        document.getElementById("sectionExperienceWrap").style.display = "block";
+
+              <!-- Bullet Points -->
+              ${bullets.length ? `
+                <ul class="bullet-list">
+                  ${bullets.map(b => `<li class="bullet-item">${b}</li>`).join("")}
+                </ul>
+              ` : ""}
+
+              <!-- Client Apps & Deliverables / Technologies -->
+              ${hasClientApps || hasTags ? `
+                <div class="deliverables-group">
+                  <div class="deliverables-label">${hasClientApps ? "Client Applications" : "Technologies"}</div>
+                  <div class="deliverables-chips-row">
+                    ${hasClientApps ? exp.clientApps.map(app => `
+                      <a ${app.url ? `href="${app.url}" target="_blank"` : ""} class="deliverable-chip">
+                        <span class="deliverable-arrow">↗</span>
+                        <span>${app.name}</span>
+                      </a>
+                    `).join("") : exp.techStackTags.map(tag => `
+                      <span class="deliverable-chip">${tag}</span>
+                    `).join("")}
+                  </div>
+                </div>
+              ` : ""}
+
+              ${idx < experiences.length - 1 ? `<div class="entry-divider"></div>` : ""}
+            </div>
+          `;
+        }).join("");
+        expWrap.style.display = "block";
+      } else {
+        expWrap.style.display = "none";
       }
 
-      // Section 4: Featured Projects (Borderless Canvas)
-      const projects = p.coreSections?.projects || [];
+      // 8. SECTION 4: Featured Projects
+      const projWrap = document.getElementById("section_featured_projects");
+      const projects = core.projects || [];
       if (projects.length > 0) {
         const projList = document.getElementById("projectsList");
-        projList.innerHTML = projects.map((proj, idx) => `
-          <div class="project-entry">
-            <div class="project-header-row">
-              <span class="project-title">${proj.projectTitle || ""}</span>
-              ${proj.demoUrl || proj.codeUrl ? `
-                <a href="${proj.demoUrl || proj.codeUrl}" target="_blank" class="project-btn">
-                  View Link ↗
-                </a>
-              ` : ""}
-            </div>
-            <p class="project-desc">${proj.description || ""}</p>
-            ${proj.techStackTags?.length ? `
-              <div class="tag-pills-row">
-                ${proj.techStackTags.map(t => `<span class="tag-pill">${t}</span>`).join("")}
+        projList.innerHTML = projects.map((proj, idx) => {
+          const primaryUrl = proj.demoUrl || proj.codeUrl || "";
+          const linkMeta = primaryUrl ? resolveProjectLinkMetadata(primaryUrl) : null;
+          const bullets = parseBullets(proj.description || "");
+
+          return `
+            <div class="project-entry">
+              <div class="project-header-row">
+                <span class="project-title">${proj.projectTitle || "Project"}</span>
+                ${linkMeta ? `
+                  <a href="${primaryUrl}" target="_blank" class="project-link-badge">
+                    ${linkMeta.icon}
+                    <span>${linkMeta.label} ↗</span>
+                  </a>
+                ` : ""}
               </div>
-            ` : ""}
-            ${idx < projects.length - 1 ? `<div class="entry-divider"></div>` : ""}
-          </div>
-        `).join("");
-        document.getElementById("sectionProjectsWrap").style.display = "block";
+
+              ${proj.techStackTags && proj.techStackTags.length ? `
+                <div class="deliverables-chips-row" style="margin-bottom: 8px;">
+                  ${proj.techStackTags.map(t => `<span class="deliverable-chip" style="font-size: 0.75rem;">${t}</span>`).join("")}
+                </div>
+              ` : ""}
+
+              ${bullets.length > 1 ? `
+                <ul class="bullet-list">
+                  ${bullets.map(b => `<li class="bullet-item">${b}</li>`).join("")}
+                </ul>
+              ` : (proj.description ? `<p class="summary-editorial-body">${proj.description}</p>` : "")}
+
+              ${idx < projects.length - 1 ? `<div class="entry-divider"></div>` : ""}
+            </div>
+          `;
+        }).join("");
+        projWrap.style.display = "block";
+      } else {
+        projWrap.style.display = "none";
       }
 
-      // Section 5: Technical Skills (Semantic Domain Matrix with Midpoint Dots)
-      const skills = p.coreSections?.skills;
-      if (skills) {
-        const matrixContainer = document.getElementById("skillsMatrixContainer");
-        const domains = skills.categorizedDomains || {};
-        let matrixHtml = "";
-        const domainEntries = Object.entries(domains);
-        domainEntries.forEach(([domain, list], idx) => {
-          if (list && list.length > 0) {
-            matrixHtml += `
-              <div class="skills-matrix-row">
-                <div class="skills-domain-label">${domain}:</div>
-                <div class="skills-stream">${list.join('<span class="skills-dot"> · </span>')}</div>
-                ${idx < domainEntries.length - 1 ? `<div class="entry-divider" style="margin: 12px 0;"></div>` : ""}
+      // 9. SECTION 5: Technical Skills (Stitch Pill Chips Matrix)
+      const skillsWrap = document.getElementById("section_technical_skills");
+      const skills = core.skills;
+      if (skills && (skills.totalCount > 0 || (skills.categorizedDomains && Object.keys(skills.categorizedDomains).length > 0) || (skills.languages && skills.languages.length))) {
+        document.getElementById("skillsSectionTitle").textContent = skills.sectionTitle || "Technical Skills";
+        const container = document.getElementById("skillsDomainsContainer");
+        let html = "";
+
+        // Check categorized domains
+        const catMap = skills.categorizedDomains || {};
+        const entries = Object.entries(catMap);
+        if (entries.length > 0) {
+          entries.forEach(([domain, list]) => {
+            if (list && list.length > 0) {
+              html += `
+                <div class="skills-domain-block">
+                  <div class="skills-domain-title">${domain}</div>
+                  <div class="skills-chip-group">
+                    ${list.map(s => `<span class="skill-chip">${s}</span>`).join("")}
+                  </div>
+                </div>
+              `;
+            }
+          });
+        } else {
+          // Flat fallback
+          const flat = [...(skills.languages || []), ...(skills.frameworks || []), ...(skills.cloudDevOps || []), ...(skills.toolsMethodologies || [])];
+          if (flat.length > 0) {
+            html += `
+              <div class="skills-chip-group">
+                ${flat.map(s => `<span class="skill-chip">${s}</span>`).join("")}
               </div>
             `;
           }
-        });
-        if (matrixHtml) {
-          matrixContainer.innerHTML = matrixHtml;
-          document.getElementById("sectionSkillsWrap").style.display = "block";
         }
+
+        if (html) {
+          container.innerHTML = html;
+          skillsWrap.style.display = "block";
+        } else {
+          skillsWrap.style.display = "none";
+        }
+      } else {
+        skillsWrap.style.display = "none";
       }
 
-      // Section 6: Education & Academics
-      const education = p.coreSections?.education || [];
+      // 10. SECTION 6: Education & Academics (Degree First, Institution Second, CGPA | Year Third)
+      const eduWrap = document.getElementById("section_education_academics");
+      const education = core.education || [];
       if (education.length > 0) {
         const eduList = document.getElementById("educationList");
-        eduList.innerHTML = education.map((edu, idx) => `
-          <div class="education-entry">
-            <div class="entry-meta-row">
-              <span class="degree-title">${edu.degree || ""}</span>
-              <span class="entry-duration">${edu.graduationYear || ""}</span>
+        eduList.innerHTML = education.map((edu, idx) => {
+          let cgpaText = "";
+          let rawDegree = (edu.degree || "").trim();
+          let year = (edu.graduationYear || "").trim();
+
+          const cgpaRegex = /(?:[|,•·\-\(\[\{]\s*)?(CGPA|GPA)[\s:]*([0-9]+(?:\.[0-9]+)?(?:\s*\/\s*[0-9]+(?:\.[0-9]+)?)?)\s*[)\]}]?/i;
+          const matchDegree = rawDegree.match(cgpaRegex);
+          if (matchDegree) {
+            cgpaText = `${matchDegree[1].toUpperCase()}: ${matchDegree[2]}`;
+            rawDegree = rawDegree.replace(matchDegree[0], "").trim().replace(/[|\-•·,]$/, "").trim();
+          }
+
+          const detailsLine = cgpaText && year ? `${cgpaText}  |  ${year}` : (cgpaText || year);
+
+          return `
+            <div class="education-entry">
+              <div class="edu-degree">${rawDegree || "Degree"}</div>
+              ${edu.institution ? `<div class="edu-institution">${edu.institution}</div>` : ""}
+              ${detailsLine ? `<div class="edu-details-line">${detailsLine}</div>` : ""}
+              ${idx < education.length - 1 ? `<div class="entry-divider"></div>` : ""}
             </div>
-            <div class="institution-name">${edu.institution || ""}</div>
-            ${idx < education.length - 1 ? `<div class="entry-divider"></div>` : ""}
-          </div>
-        `).join("");
-        document.getElementById("sectionEducationWrap").style.display = "block";
+          `;
+        }).join("");
+        eduWrap.style.display = "block";
+      } else {
+        eduWrap.style.display = "none";
       }
 
-      // Section 7: Custom Dynamic Sections (Handles all dynamicSections attached to resume)
-      const customSections = p.dynamicSections || p.customSections || [];
+      // 11. SECTION 7: Dynamic Custom Sections (N-section support with Credential badge styling)
+      const dynamicWrapper = document.getElementById("customSectionsDynamicWrapper");
+      dynamicWrapper.innerHTML = "";
       if (customSections.length > 0) {
-        const customContainer = document.getElementById("customSectionsContainer");
-        let customHtml = "";
-        customSections.forEach(sec => {
+        let dynamicHtml = "";
+        customSections.forEach((sec, sIdx) => {
           const items = sec.items || [];
           if (items.length > 0) {
-            customHtml += `
-              <section class="section-block">
-                <div class="section-header">${sec.sectionTitle || "Custom Section"}</div>
-                ${items.map((item, idx) => `
-                  <div class="custom-entry">
-                    <div class="entry-meta-row">
-                      <span class="custom-title">${item.title || ""}</span>
-                      ${item.dateOrPeriod ? `<span class="entry-duration">${item.dateOrPeriod}</span>` : ""}
-                    </div>
-                    ${item.subtitle || item.link ? `
-                      <div class="custom-subtitle">
-                        ${item.link ? `<a href="${item.link}" target="_blank">${item.subtitle || item.link}</a>` : (item.subtitle || "")}
+            dynamicHtml += `
+              <section id="custom_${sec.sectionTitle || sIdx}" class="custom-section-block">
+                <div class="section-header">
+                  <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                  <span>${sec.sectionTitle || "Custom Section"}</span>
+                </div>
+                <div>
+                  ${items.map((item, idx) => `
+                    <div class="custom-item-entry">
+                      <div class="custom-item-row">
+                        <span class="custom-item-title">${item.title || "Item Title"}</span>
+                        ${item.dateOrPeriod && item.dateOrPeriod.toLowerCase() !== "active" ? `<span class="exp-duration">${item.dateOrPeriod}</span>` : ""}
                       </div>
-                    ` : ""}
-                    ${item.description ? `<p class="project-desc">${item.description}</p>` : ""}
-                    ${item.bulletPoints && item.bulletPoints.length ? `
-                      <ul class="entry-bullets">
-                        ${item.bulletPoints.map(b => `<li>${b}</li>`).join("")}
-                      </ul>
-                    ` : ""}
-                    ${idx < items.length - 1 ? `<div class="entry-divider"></div>` : ""}
-                  </div>
-                `).join("")}
+                      ${item.subtitle || item.link ? `
+                        <div class="custom-item-subtitle">
+                          ${item.link ? `<a href="${item.link}" target="_blank">${item.subtitle || item.link} ↗</a>` : (item.subtitle || "")}
+                        </div>
+                      ` : ""}
+                      ${item.description ? `<p class="summary-editorial-body" style="margin-top: 6px;">${item.description}</p>` : ""}
+                      ${item.bulletPoints && item.bulletPoints.length ? `
+                        <ul class="bullet-list">
+                          ${item.bulletPoints.map(b => `<li class="bullet-item">${b}</li>`).join("")}
+                        </ul>
+                      ` : ""}
+                      ${idx < items.length - 1 ? `<div class="entry-divider"></div>` : ""}
+                    </div>
+                  `).join("")}
+                </div>
               </section>
             `;
           }
         });
-        if (customHtml) {
-          customContainer.innerHTML = customHtml;
-          document.getElementById("sectionCustomWrap").style.display = "block";
+        dynamicWrapper.innerHTML = dynamicHtml;
+      }
+
+      // 12. Dynamic Section Reordering (1:1 with Android applySectionOrder)
+      applyDynamicSectionOrder(p.sectionOrder, customSections);
+    }
+
+    function applyDynamicSectionOrder(order, customSections) {
+      const container = document.getElementById("sectionsContainer");
+      if (!container) return;
+
+      const defaultCore = [
+        "section_personal_info",
+        "section_about_summary",
+        "section_work_experience",
+        "section_featured_projects",
+        "section_technical_skills",
+        "section_education_academics"
+      ];
+
+      const effectiveOrder = (order && order.length > 0) ? order : defaultCore;
+      const elementsMap = {
+        "section_personal_info": document.getElementById("section_personal_info"),
+        "section_about_summary": document.getElementById("section_about_summary"),
+        "section_work_experience": document.getElementById("section_work_experience"),
+        "section_featured_projects": document.getElementById("section_featured_projects"),
+        "section_technical_skills": document.getElementById("section_technical_skills"),
+        "section_education_academics": document.getElementById("section_education_academics"),
+      };
+
+      const customWrapper = document.getElementById("customSectionsDynamicWrapper");
+
+      // Detach and re-append in exact order
+      effectiveOrder.forEach(secId => {
+        if (elementsMap[secId]) {
+          container.appendChild(elementsMap[secId]);
+        } else if (secId.startsWith("custom_")) {
+          // If custom section matches ID
+          const customEl = document.getElementById(secId);
+          if (customEl) {
+            container.appendChild(customEl);
+          } else if (customWrapper && customWrapper.parentElement !== container) {
+            container.appendChild(customWrapper);
+          }
         }
+      });
+
+      // Append remaining core sections if not listed
+      Object.values(elementsMap).forEach(el => {
+        if (el && el.parentElement !== container) {
+          container.appendChild(el);
+        }
+      });
+
+      // Ensure custom wrapper is appended
+      if (customWrapper && customWrapper.parentElement !== container) {
+        container.appendChild(customWrapper);
       }
     }
 
+    // Start loading
     loadShowcase();
   </script>
 </body>
