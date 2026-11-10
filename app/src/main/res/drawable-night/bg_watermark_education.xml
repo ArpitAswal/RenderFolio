@@ -1,0 +1,219 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Mortarboard & Academic Scroll (Night Mode): -15 degree rotation around center (105, 95), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Outer Mortarboard Rhombus Cap Top (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 105,38 L 164,65 L 105,92 L 46,65 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46"
+                    android:startY="38"
+                    android:endX="164"
+                    android:endY="92">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.5" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46"
+                    android:startY="38"
+                    android:endX="164"
+                    android:endY="92">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.5" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- 3D Bevel Edge / Under-Lip of Mortarboard Diamond -->
+        <path
+            android:pathData="M 46,65 L 46,69 L 105,96 L 164,69 L 164,65 L 105,92 Z"
+            android:fillColor="#262A3548"
+            android:strokeColor="#663B82F6"
+            android:strokeWidth="0.8" />
+
+        <!-- Inset Facet Ridge Lines for 3D Crystallographic Glass Refraction -->
+        <path
+            android:pathData="M 105,48 L 150,68 L 105,88 L 60,68 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.8" />
+
+        <path
+            android:pathData="M 46,65 L 164,65"
+            android:fillColor="#00000000"
+            android:strokeColor="#4D3B82F6"
+            android:strokeWidth="0.6" />
+
+        <path
+            android:pathData="M 105,38 L 105,92"
+            android:fillColor="#00000000"
+            android:strokeColor="#66FFFFFF"
+            android:strokeWidth="0.8" />
+
+        <!-- Cap Headband / Cylindrical Base under Cap -->
+        <path
+            android:pathData="M 78,80 C 78,102 90,114 105,114 C 120,114 132,102 132,80 C 122,86 114,88 105,88 C 96,88 88,86 78,80 Z"
+            android:strokeWidth="1.0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="78"
+                    android:startY="80"
+                    android:endX="132"
+                    android:endY="114">
+                    <item android:offset="0.0" android:color="#662A3548" />
+                    <item android:offset="0.6" android:color="#2618202C" />
+                    <item android:offset="1.0" android:color="#0D3B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="78"
+                    android:startY="80"
+                    android:endX="132"
+                    android:endY="114">
+                    <item android:offset="0.0" android:color="#66FFFFFF" />
+                    <item android:offset="1.0" android:color="#593B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <path
+            android:pathData="M 78,80 C 88,86 96,88 105,88 C 114,88 122,86 132,80"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.0" />
+
+        <!-- Mortarboard Center Button -->
+        <path
+            android:pathData="M 102,65 a 3,3 0 1 1 6,0 a 3,3 0 1 1 -6,0"
+            android:fillColor="#803B82F6" />
+
+        <!-- Draped Academic Tassel Ribbon -->
+        <path
+            android:pathData="M 105,65 C 92,61 68,66 56,76 C 48,84 44,96 44,112 L 44,128"
+            android:fillColor="#00000000"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="2.0"
+            android:strokeLineCap="round" />
+
+        <!-- Tassel Band & Brush Bell -->
+        <path
+            android:pathData="M 41,128 H 47 V 131 H 41 Z"
+            android:fillColor="#733B82F6" />
+
+        <path
+            android:pathData="M 40,132 L 38,148 H 50 L 48,132 Z"
+            android:fillColor="#3318202C"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.0" />
+
+        <path
+            android:pathData="M 42,133 V 147 M 44,133 V 148 M 46,133 V 147"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.8" />
+
+        <!-- 3D Rolled Diploma Scroll (Dark Frosted Glass Cylinder) -->
+        <path
+            android:pathData="M 62,138 H 148 a 7,7 0 0 1 0,14 H 62 a 7,7 0 0 1 0,-14 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="62"
+                    android:startY="138"
+                    android:endX="148"
+                    android:endY="152">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.5" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="62"
+                    android:startY="138"
+                    android:endX="148"
+                    android:endY="152">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="1.0" android:color="#663B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Left Scroll Curl -->
+        <path
+            android:pathData="M 62,138 a 7,7 0 1 0 0,14 a 7,7 0 1 0 0,-14"
+            android:fillColor="#00000000"
+            android:strokeColor="#66FFFFFF"
+            android:strokeWidth="1.0" />
+
+        <path
+            android:pathData="M 62,142 a 3,3 0 1 0 0,6"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.8" />
+
+        <!-- Diploma Center Blue Tie Band -->
+        <path
+            android:pathData="M 101,138 H 109 V 152 H 101 Z"
+            android:fillColor="#733B82F6" />
+
+        <!-- Ribbon Tails Hanging from Scroll -->
+        <path
+            android:pathData="M 103,152 L 97,170 L 105,165 L 113,170 L 107,152 Z"
+            android:fillColor="#733B82F6" />
+
+        <!-- Academic Laurel Foliage Accents -->
+        <path
+            android:pathData="M 72,156 C 64,158 58,154 56,150"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.0" />
+
+        <path
+            android:pathData="M 68,154 C 62,150 63,144 67,146 C 70,148 70,152 68,154 Z"
+            android:fillColor="#333B82F6" />
+
+        <path
+            android:pathData="M 60,158 C 54,156 54,150 58,152 C 61,154 61,157 60,158 Z"
+            android:fillColor="#333B82F6" />
+
+        <path
+            android:pathData="M 138,156 C 146,158 152,154 154,150"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.0" />
+
+        <path
+            android:pathData="M 142,154 C 148,150 147,144 143,146 C 140,148 140,152 142,154 Z"
+            android:fillColor="#333B82F6" />
+
+        <path
+            android:pathData="M 150,158 C 156,156 156,150 152,152 C 149,154 149,157 150,158 Z"
+            android:fillColor="#333B82F6" />
+
+    </group>
+
+</vector>
+

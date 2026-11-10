@@ -504,7 +504,7 @@ class StructureVerificationActivity : AppCompatActivity() {
                     candidateName = compiledProfile.hero.fullName,
                     isCelebration = true
                 )
-                celebrationSheet.onViewVisualizer = {
+                celebrationSheet.onViewVisualiser = {
                     val returnIntent = Intent().apply {
                         putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
                     }

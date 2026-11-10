@@ -124,15 +124,68 @@ class StructureSectionsAdapter(
         sections.clear()
         when (paneTarget) {
             PaneTarget.ALL -> {
-                sections.add(SectionItem(SectionType.PERSONAL_INFO))
-                sections.add(SectionItem(SectionType.ABOUT_SUMMARY))
-                sections.add(SectionItem(SectionType.WORK_EXPERIENCE))
-                sections.add(SectionItem(SectionType.PROJECTS))
-                sections.add(SectionItem(SectionType.TECHNICAL_SKILLS))
-                sections.add(SectionItem(SectionType.EDUCATION))
-                profile.dynamicSections.forEach { dynamic ->
-                    sections.add(SectionItem(SectionType.CUSTOM, dynamic.copy()))
+                val order = if (profile.sectionOrder.isNotEmpty()) {
+                    profile.sectionOrder
+                } else {
+                    ResumeSectionConstants.DEFAULT_CORE_ORDER + profile.dynamicSections.map { "custom_${it.sectionTitle}" }
                 }
+
+                val addedCoreTypes = mutableSetOf<SectionType>()
+                val addedCustomTitles = mutableSetOf<String>()
+
+                for (secId in order) {
+                    when (secId) {
+                        ResumeSectionConstants.SECTION_PERSONAL -> {
+                            sections.add(SectionItem(SectionType.PERSONAL_INFO))
+                            addedCoreTypes.add(SectionType.PERSONAL_INFO)
+                        }
+                        ResumeSectionConstants.SECTION_SUMMARY -> {
+                            sections.add(SectionItem(SectionType.ABOUT_SUMMARY))
+                            addedCoreTypes.add(SectionType.ABOUT_SUMMARY)
+                        }
+                        ResumeSectionConstants.SECTION_EXPERIENCE -> {
+                            sections.add(SectionItem(SectionType.WORK_EXPERIENCE))
+                            addedCoreTypes.add(SectionType.WORK_EXPERIENCE)
+                        }
+                        ResumeSectionConstants.SECTION_PROJECTS -> {
+                            sections.add(SectionItem(SectionType.PROJECTS))
+                            addedCoreTypes.add(SectionType.PROJECTS)
+                        }
+                        ResumeSectionConstants.SECTION_SKILLS -> {
+                            sections.add(SectionItem(SectionType.TECHNICAL_SKILLS))
+                            addedCoreTypes.add(SectionType.TECHNICAL_SKILLS)
+                        }
+                        ResumeSectionConstants.SECTION_EDUCATION -> {
+                            sections.add(SectionItem(SectionType.EDUCATION))
+                            addedCoreTypes.add(SectionType.EDUCATION)
+                        }
+                        else -> {
+                            if (secId.startsWith("custom_")) {
+                                val title = secId.removePrefix("custom_")
+                                val match = profile.dynamicSections.firstOrNull { it.sectionTitle.equals(title, ignoreCase = true) }
+                                    ?: DynamicSection(sectionTitle = title)
+                                sections.add(SectionItem(SectionType.CUSTOM, match.copy()))
+                                addedCustomTitles.add(match.sectionTitle.lowercase())
+                            }
+                        }
+                    }
+                }
+
+                // If any core section wasn't in order, append it to guarantee all 6 core sections exist
+                if (!addedCoreTypes.contains(SectionType.PERSONAL_INFO)) sections.add(0, SectionItem(SectionType.PERSONAL_INFO))
+                if (!addedCoreTypes.contains(SectionType.ABOUT_SUMMARY)) sections.add(SectionItem(SectionType.ABOUT_SUMMARY))
+                if (!addedCoreTypes.contains(SectionType.WORK_EXPERIENCE)) sections.add(SectionItem(SectionType.WORK_EXPERIENCE))
+                if (!addedCoreTypes.contains(SectionType.PROJECTS)) sections.add(SectionItem(SectionType.PROJECTS))
+                if (!addedCoreTypes.contains(SectionType.TECHNICAL_SKILLS)) sections.add(SectionItem(SectionType.TECHNICAL_SKILLS))
+                if (!addedCoreTypes.contains(SectionType.EDUCATION)) sections.add(SectionItem(SectionType.EDUCATION))
+
+                // If any dynamic sections weren't in order, append them
+                profile.dynamicSections.forEach { dynamic ->
+                    if (!addedCustomTitles.contains(dynamic.sectionTitle.lowercase())) {
+                        sections.add(SectionItem(SectionType.CUSTOM, dynamic.copy()))
+                    }
+                }
+
                 sections.add(SectionItem(SectionType.FOOTER))
             }
             PaneTarget.LEFT -> {
@@ -1767,7 +1820,6 @@ class StructureSectionsAdapter(
                     val openEdit = {
                         showAddOrEditDomainDialog(domainLabel, skillsList)
                     }
-                    rowBinding.itemSkillsDomainRoot.setOnClickListener { openEdit() }
                     rowBinding.btnEditDomain.setOnClickListener { openEdit() }
 
                     rowBinding.btnDeleteDomain.setOnClickListener {
@@ -1828,7 +1880,6 @@ class StructureSectionsAdapter(
                 val openEdit = {
                     showAddOrEditDomainDialog(null, flatSkillsList)
                 }
-                rowBinding.itemSkillsDomainRoot.setOnClickListener { openEdit() }
                 rowBinding.btnEditDomain.setOnClickListener { openEdit() }
 
                 rowBinding.btnDeleteDomain.setOnClickListener {
@@ -2565,6 +2616,25 @@ class StructureSectionsAdapter(
                 )
             }
 
+        val allSectionsForOrder = if (rightAdapter != null && rightAdapter !== this) {
+            sections.filter { it.type != SectionType.FOOTER } + rightAdapter.sections.filter { it.type != SectionType.FOOTER }
+        } else {
+            sections.filter { it.type != SectionType.FOOTER }
+        }
+
+        val compiledOrder = allSectionsForOrder.mapNotNull { item ->
+            when (item.type) {
+                SectionType.PERSONAL_INFO -> ResumeSectionConstants.SECTION_PERSONAL
+                SectionType.ABOUT_SUMMARY -> ResumeSectionConstants.SECTION_SUMMARY
+                SectionType.WORK_EXPERIENCE -> ResumeSectionConstants.SECTION_EXPERIENCE
+                SectionType.PROJECTS -> ResumeSectionConstants.SECTION_PROJECTS
+                SectionType.TECHNICAL_SKILLS -> ResumeSectionConstants.SECTION_SKILLS
+                SectionType.EDUCATION -> ResumeSectionConstants.SECTION_EDUCATION
+                SectionType.CUSTOM -> item.customSection?.let { "custom_${it.sectionTitle}" }
+                else -> null
+            }
+        }
+
         return ResumeProfile(
             hero = finalHero,
             coreSections = CoreSections(
@@ -2574,7 +2644,8 @@ class StructureSectionsAdapter(
                 skills = targetLeft.currentSkills,
                 education = targetLeft.currentEducation.filter { it.institution.isNotBlank() }
             ),
-            dynamicSections = finalDynamicSections
+            dynamicSections = finalDynamicSections,
+            sectionOrder = compiledOrder
         )
     }
 }

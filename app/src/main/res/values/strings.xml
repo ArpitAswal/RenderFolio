@@ -232,7 +232,7 @@
     <string name="skills_bullet_prefix"><![CDATA[•  ]]></string>
 
     <!-- Cloud Sync & QR Showcase Strings -->
-    <string name="btn_view_visualizer">View Visualizer</string>
+    <string name="btn_view_visualiser">View Visualiser</string>
     <string name="btn_show_qr_code">Show QR Code</string>
     <string name="title_showcase_ready">Your Showcase is Ready!</string>
     <string name="subtitle_showcase_ready">Scan to experience your interactive mobile portfolio.</string>
@@ -252,7 +252,7 @@
     <string name="helper_target_company">e.g. Spotify, Google</string>
     <string name="error_target_company_required">Please enter Target Company (e.g. Spotify, Google).</string>
     <string name="dialog_delete_showcase_title">Delete Tailored Showcase?</string>
-    <string name="dialog_delete_showcase_message">Are you sure you want to delete this tailored resume? This will remove its cloud link, QR code, and visualization.</string>
+    <string name="dialog_delete_showcase_message">Are you sure you want to delete this tailored resume? This will remove its cloud link, QR code, and visualisation.</string>
     <string name="toast_showcase_deleted">Tailored showcase deleted.</string>
 
     <!-- Destructive Removal Warning Dialog Strings -->

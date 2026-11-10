@@ -6,22 +6,21 @@ import android.view.animation.DecelerateInterpolator
 
 /**
  * Manages the lateral entrance and exit motion lifecycle for Section 3 (Work Experience):
- * - Enters completely from beyond the left edge of the screen to its resting position with a smooth fade-in.
- * - When scrolled past (reaches its end / exits), animates back beyond the left edge with a fade-out.
- * - In reading zone (between top 20% and bottom 80% of screen): locked cleanly at translationX = 0dp, alpha = 1.0f.
- * - Duration: 1100ms (synchronized with Section 1 and Section 2).
- * - Initial launch delay: 350ms (synchronized with activity window transition).
+ * - Enters completely from beyond the left edge of the screen (-offScreenOffsetPx -> 0dp) with a smooth fade-in.
+ * - In reading zone: locked cleanly at translationX = 0dp, alpha = 1.0f.
+ * - When scrolled past (last 20% remaining when scrolling downside), animates back beyond the left edge with a fade-out.
+ * - Duration: responsive entrance (600ms), exit (400ms).
  */
 class WorkExperienceMotionDriver(
-    private val sectionContainer: View
+    private val sectionContainer: View,
+    private val scrollView: View? = null
 ) {
     companion object {
-        const val ENTRANCE_START_DELAY_MS: Long =
-            350L     // Post-launch delay ensuring activity window transition finishes
-        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 550L // Harmonized responsive entrance (550ms)
-        const val EXIT_TRANSLATION_DURATION_MS: Long = 350L // Snappy slide-out and fade-out duration (350ms)
+        const val ENTRANCE_START_DELAY_MS: Long = 350L
+        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 600L
+        const val EXIT_TRANSLATION_DURATION_MS: Long = 400L
 
-        // Viewport threshold ratio (20% margin on both top and bottom)
+        // Viewport threshold ratio (last 20% of section view)
         const val VIEWPORT_THRESHOLD_RATIO: Float = 0.20f
     }
 
@@ -43,7 +42,6 @@ class WorkExperienceMotionDriver(
         }
 
     init {
-        // Initial resting state: completely off the left edge of the screen and fully transparent
         val screenWidth = sectionContainer.resources.displayMetrics.widthPixels.toFloat()
         sectionContainer.translationX = -screenWidth
         sectionContainer.alpha = 0f
@@ -51,11 +49,6 @@ class WorkExperienceMotionDriver(
         sectionContainer.scaleY = 1.0f
     }
 
-    /**
-     * Executes initial entrance on screen view:
-     * Glides completely from beyond the left edge of the screen into place (translationX: -offset -> 0),
-     * while smoothly fading in (alpha: 0 -> 1) over 1100ms.
-     */
     fun playInitialEntrance(onComplete: (() -> Unit)? = null) {
         if (hasPlayedInitialEntrance) return
 
@@ -67,35 +60,57 @@ class WorkExperienceMotionDriver(
         }
 
         hasPlayedInitialEntrance = true
-        isInitialAnimationRunning = true
-        currentState = MotionState.ENTERED_VISIBLE
 
-        val startX = -offScreenOffsetPx
-        sectionContainer.translationX = startX
-        sectionContainer.alpha = 0f
+        val scrollLoc = IntArray(2)
+        scrollView?.getLocationOnScreen(scrollLoc)
+        val viewLoc = IntArray(2)
+        sectionContainer.getLocationOnScreen(viewLoc)
 
-        sectionContainer.animate()
-            .translationX(0f)
-            .alpha(1f)
-            .setStartDelay(ENTRANCE_START_DELAY_MS)
-            .setDuration(ENTRANCE_TRANSLATION_DURATION_MS)
-            .setInterpolator(DecelerateInterpolator(2.0f))
-            .withEndAction {
-                isInitialAnimationRunning = false
-                sectionContainer.translationX = 0f
-                sectionContainer.alpha = 1f
-                onComplete?.invoke()
-            }
-            .start()
+        val relativeTop = viewLoc[1] - scrollLoc[1]
+        val viewportHeight = if (scrollView != null && scrollView.height > 0) {
+            scrollView.height
+        } else {
+            sectionContainer.resources.displayMetrics.heightPixels
+        }
+
+        if (relativeTop < viewportHeight) {
+            currentState = MotionState.ENTERED_VISIBLE
+            isInitialAnimationRunning = true
+
+            val startX = -offScreenOffsetPx
+            sectionContainer.translationX = startX
+            sectionContainer.alpha = 0f
+
+            sectionContainer.animate()
+                .translationX(0f)
+                .alpha(1f)
+                .setStartDelay(ENTRANCE_START_DELAY_MS)
+                .setDuration(ENTRANCE_TRANSLATION_DURATION_MS)
+                .setInterpolator(DecelerateInterpolator(2.0f))
+                .withEndAction {
+                    isInitialAnimationRunning = false
+                    sectionContainer.translationX = 0f
+                    sectionContainer.alpha = 1f
+                    onComplete?.invoke()
+                }
+                .start()
+        } else {
+            currentState = MotionState.OFF_BOTTOM
+            sectionContainer.translationX = -offScreenOffsetPx
+            sectionContainer.alpha = 0f
+            onComplete?.invoke()
+        }
     }
 
-    /**
-     * Viewport Threshold State Tracker on scroll:
-     * - Immediate responsiveness: Cancels initial animation if user begins scrolling right away.
-     * - In reading zone: Slides in from beyond the left edge with fade-in.
-     * - Exited top/bottom: Slides out beyond the left edge with fade-out.
-     */
+    fun onScrollChanged(scrollViewRef: View) {
+        onScrollChangedInternal(scrollViewRef, scrollViewRef.height)
+    }
+
     fun onScrollChanged(viewportHeight: Int) {
+        onScrollChangedInternal(scrollView, viewportHeight)
+    }
+
+    private fun onScrollChangedInternal(targetScrollView: View?, viewportHeightParam: Int) {
         if (isInitialAnimationRunning) {
             sectionContainer.animate().cancel()
             isInitialAnimationRunning = false
@@ -106,52 +121,69 @@ class WorkExperienceMotionDriver(
 
         hasPlayedInitialEntrance = true
 
-        val actualViewportHeight = if (viewportHeight > 0) {
-            viewportHeight
+        val viewHeight = sectionContainer.height
+        if (viewHeight <= 0) return
+
+        val scrollLoc = IntArray(2)
+        val activeScrollView = targetScrollView ?: scrollView
+        activeScrollView?.getLocationOnScreen(scrollLoc)
+
+        val viewLoc = IntArray(2)
+        sectionContainer.getLocationOnScreen(viewLoc)
+
+        val relativeTop = viewLoc[1] - scrollLoc[1]
+        val relativeBottom = relativeTop + viewHeight
+
+        val viewportHeight = if (activeScrollView != null && activeScrollView.height > 0) {
+            activeScrollView.height
+        } else if (viewportHeightParam > 0) {
+            viewportHeightParam
         } else {
             sectionContainer.resources.displayMetrics.heightPixels
         }
 
-        val locationOnScreen = IntArray(2)
-        sectionContainer.getLocationOnScreen(locationOnScreen)
-        val viewTop = locationOnScreen[1]
-        val viewHeight = sectionContainer.height
-        val viewBottom = viewTop + viewHeight
+        val density = sectionContainer.resources.displayMetrics.density
 
-        if (viewHeight <= 0) return
+        // Hide threshold at the top: when scrolling downside, as soon as the last 20% of section view
+        // remains visible before exiting the top of the viewport, animate to hide.
+        val topHideThreshold = minOf(viewHeight * VIEWPORT_THRESHOLD_RATIO, viewportHeight * VIEWPORT_THRESHOLD_RATIO).coerceAtLeast(40f)
 
-        val topThreshold = actualViewportHeight * VIEWPORT_THRESHOLD_RATIO
-        val bottomThreshold = actualViewportHeight * (1.0f - VIEWPORT_THRESHOLD_RATIO)
-
-        // Reading / Active Viewport Zone:
-        // Section is in view (top has entered into bottom 80% and bottom has not scrolled past top 20%)
-        val inReadingZone = (viewTop < bottomThreshold) && (viewBottom > topThreshold)
-
-        if (inReadingZone) {
-            if (currentState != MotionState.ENTERED_VISIBLE) {
-                currentState = MotionState.ENTERED_VISIBLE
-                animateEntrance()
+        // 1. Exited past top of viewport (bottom has passed above the last 20% threshold)
+        if (relativeBottom <= topHideThreshold) {
+            if (currentState == MotionState.ENTERED_VISIBLE) {
+                currentState = MotionState.OFF_TOP
+                animateExit()
             }
             return
         }
 
-        // Exited past the top of the viewport (bottom has passed above top 20% threshold)
-        if (viewBottom <= topThreshold && currentState == MotionState.ENTERED_VISIBLE) {
-            currentState = MotionState.OFF_TOP
-            animateExit()
+        // 2. Exited below bottom of viewport (top has fallen below viewport bottom)
+        if (relativeTop >= viewportHeight) {
+            if (currentState != MotionState.OFF_BOTTOM) {
+                currentState = MotionState.OFF_BOTTOM
+                sectionContainer.animate().cancel()
+                sectionContainer.translationX = -offScreenOffsetPx
+                sectionContainer.alpha = 0f
+            }
             return
         }
 
-        // Exited below the bottom of the viewport (top has fallen below bottom 80% threshold)
-        if (viewTop >= bottomThreshold && currentState == MotionState.ENTERED_VISIBLE) {
-            currentState = MotionState.OFF_BOTTOM
-            animateExit()
-            return
+        // 3. In Reading Zone / Entering viewport:
+        // Trigger entrance as soon as the section top enters into the viewport area
+        val entranceTriggerBottom = viewportHeight - (60f * density)
+        if (relativeTop <= entranceTriggerBottom) {
+            if (currentState != MotionState.ENTERED_VISIBLE) {
+                currentState = MotionState.ENTERED_VISIBLE
+                animateEntrance()
+            }
         }
     }
 
     private fun animateEntrance() {
         sectionContainer.animate().cancel()
+        if (sectionContainer.translationX == 0f && sectionContainer.alpha == 0f) {
+            sectionContainer.translationX = -offScreenOffsetPx
+        }
         sectionContainer.animate()
             .translationX(0f)
             .alpha(1f)

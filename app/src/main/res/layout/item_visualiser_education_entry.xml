@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="2dp"
-    android:paddingBottom="12dp">
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp">
 
     <!-- 1. Degree Name (Headline First, 17sp Bold Inter #0F172A) -->
     <TextView
@@ -40,7 +40,8 @@
         android:id="@+id/divider_education_entry"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:background="@color/exp_divider" />
 
 </LinearLayout>

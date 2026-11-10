@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Core Brand & Canvas -->
+    <!-- Core Brand & Canvas (Dark Theme Obsidian / Midnight Blue from Stitch) -->
     <color name="white">#FFFFFF</color>
-    <color name="app_background">#121418</color>
+    <color name="app_background">#0D111A</color>
     <color name="ambient_canvas_start">#0D111A</color>
     <color name="ambient_canvas_mid">#10141F</color>
     <color name="ambient_canvas_end">#121724</color>
     <color name="app_surface">#1C2026</color>
     <color name="app_primary">#3B82F6</color>
     <color name="app_primary_container">#263B82F6</color>
-    <color name="app_border">#24FFFFFF</color>
+    <color name="app_border">#2E3642</color>
 
     <!-- Typography Tokens -->
     <color name="app_text_primary">#F3F4F6</color>
@@ -37,8 +37,8 @@
     <color name="hero_avatar_glass_start">#2A3548</color>
     <color name="hero_avatar_glass_end">#18202C</color>
     <color name="hero_avatar_glass_stroke">#3E4D64</color>
-    <color name="hero_verified_badge_bg">#2563EB</color>
-    <color name="hero_verified_badge_ring">#0F131C</color>
+    <color name="hero_verified_badge_bg">#10B981</color>
+    <color name="hero_verified_badge_ring">#0D111A</color>
     <color name="hero_location_pill_bg">#1E2530</color>
     <color name="hero_location_pill_stroke">#2E3642</color>
     <color name="hero_location_pill_text">#CBD5E1</color>
@@ -50,13 +50,13 @@
     <!-- Section 2 Summary Tokens (Dark Theme) -->
     <color name="summary_section_title">#3B82F6</color>
     <color name="summary_card_bg">#1C2026</color>
-    <color name="summary_card_stroke">#24FFFFFF</color>
+    <color name="summary_card_stroke">#2E3642</color>
     <color name="summary_body_text">#CBD5E1</color>
 
     <!-- Section 3 Work Experience Tokens (Dark Theme) -->
     <color name="exp_section_title">#3B82F6</color>
     <color name="exp_card_bg">#1C2026</color>
-    <color name="exp_card_stroke">#24FFFFFF</color>
+    <color name="exp_card_stroke">#2E3642</color>
     <color name="exp_role_title">#F3F4F6</color>
     <color name="exp_company_name">#3B82F6</color>
     <color name="exp_duration_text">#9CA3AF</color>
@@ -64,7 +64,7 @@
     <color name="exp_bullet_dot">#3B82F6</color>
     <color name="exp_deliverables_label">#9CA3AF</color>
     <color name="exp_deliverable_chip_bg">#1E2530</color>
-    <color name="exp_deliverable_chip_stroke">#333B82F6</color>
+    <color name="exp_deliverable_chip_stroke">#4D3B82F6</color>
     <color name="exp_deliverable_chip_text">#F1F5F9</color>
     <color name="exp_deliverable_chip_arrow">#3B82F6</color>
     <color name="exp_divider">#2E3642</color>
@@ -84,7 +84,7 @@
 
     <!-- Section 5 Technical Skills Tokens (Dark Theme) -->
     <color name="skills_section_title">#3B82F6</color>
-    <color name="skills_domain_label">#3B82F6</color>
+    <color name="skills_domain_label">#9CA3AF</color>
     <color name="skills_stream_text">#F3F4F6</color>
     <color name="skills_stream_dot">#6B7280</color>
     <color name="skills_row_divider">#2E3642</color>
@@ -102,7 +102,7 @@
     <color name="custom_item_subtitle">#3B82F6</color>
     <color name="custom_item_period">#9CA3AF</color>
     <color name="custom_item_desc">#CBD5E1</color>
-    <color name="custom_item_bullet">#D1D5DB</color>
+    <color name="custom_item_bullet">#CBD5E1</color>
     <color name="custom_item_divider">#2E3642</color>
 
     <!-- Watermark Tokens -->

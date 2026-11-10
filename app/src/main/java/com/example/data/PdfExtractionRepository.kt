@@ -121,7 +121,7 @@ class PdfExtractionRepository(private val context: Context) {
             onProgress(detectedSections.last(), 1.0f, detectedSections.lastIndex, detectedSections)
             kotlinx.coroutines.delay(350)
 
-            val parsedProfile = parseRawTextToProfile(finalRawText, extractedLinks)
+            val parsedProfile = parseRawTextToProfile(finalRawText, extractedLinks, detectedSections)
             ExtractionResult(parsedProfile, finalRawText, tierUsed)
         } finally {
             if (tempFile.exists()) {
@@ -404,7 +404,11 @@ class PdfExtractionRepository(private val context: Context) {
             .joinToString("\n")
     }
 
-    fun parseRawTextToProfile(rawText: String, annotationLinks: List<String> = emptyList()): ResumeProfile {
+    fun parseRawTextToProfile(
+        rawText: String,
+        annotationLinks: List<String> = emptyList(),
+        detectedHeadings: List<String> = emptyList()
+    ): ResumeProfile {
         if (rawText.isBlank() || rawText.lines().count { it.isNotBlank() } < 3) {
             throw IllegalArgumentException("The attached PDF contains no readable text or is corrupted. Please ensure you attach a valid PDF document.")
         }
@@ -601,6 +605,81 @@ class PdfExtractionRepository(private val context: Context) {
         // Dynamic Additional Sections (e.g. Open Source Contributions, Certifications, Awards, etc.)
         val dynamicList = parseDynamicSections(rawText, annotationLinks)
 
+        // Build the initial section order strictly reflecting the PDF structure:
+        // 1. Core sections present in the PDF appear first in their detected PDF order.
+        // 2. Any core section missing from the PDF is appended to complete the 6 core sections.
+        // 3. Dynamic / Custom sections follow.
+        val headingsToEvaluate = if (detectedHeadings.isNotEmpty()) detectedHeadings else detectResumeSectionHeadings(rawText)
+        val detectedCoreOrder = mutableListOf<String>()
+        val detectedCustomOrder = mutableListOf<String>()
+
+        // Personal Info & Contact is always the first core section
+        detectedCoreOrder.add(ResumeSectionConstants.SECTION_PERSONAL)
+
+        for (heading in headingsToEvaluate) {
+            val lower = heading.lowercase()
+            when {
+                lower.contains("personal") || lower.contains("contact") -> {
+                    // Already added as first item
+                }
+                lower.contains("summary") || lower.contains("profile") || lower.contains("objective") || lower.contains("about") -> {
+                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_SUMMARY)) {
+                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_SUMMARY)
+                    }
+                }
+                lower.contains("experience") || lower.contains("employment") || lower.contains("work history") || lower.contains("career") -> {
+                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_EXPERIENCE)) {
+                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_EXPERIENCE)
+                    }
+                }
+                lower.contains("project") -> {
+                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_PROJECTS)) {
+                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_PROJECTS)
+                    }
+                }
+                lower.contains("skill") || lower.contains("technolog") || lower.contains("competenc") -> {
+                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_SKILLS)) {
+                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_SKILLS)
+                    }
+                }
+                lower.contains("education") || lower.contains("academic") || lower.contains("qualification") -> {
+                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_EDUCATION)) {
+                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_EDUCATION)
+                    }
+                }
+                lower.contains("open source") || lower.contains("contribution") -> {
+                    val key = "custom_Open Source Contributions"
+                    if (!detectedCustomOrder.contains(key)) {
+                        detectedCustomOrder.add(key)
+                    }
+                }
+            }
+        }
+
+        // Guarantee all 6 core sections are present: append any missing core section at the end of the core sections
+        val allCoreCandidates = listOf(
+            ResumeSectionConstants.SECTION_SUMMARY,
+            ResumeSectionConstants.SECTION_EXPERIENCE,
+            ResumeSectionConstants.SECTION_PROJECTS,
+            ResumeSectionConstants.SECTION_SKILLS,
+            ResumeSectionConstants.SECTION_EDUCATION
+        )
+        for (coreKey in allCoreCandidates) {
+            if (!detectedCoreOrder.contains(coreKey)) {
+                detectedCoreOrder.add(coreKey)
+            }
+        }
+
+        // Add any remaining dynamic sections
+        dynamicList.forEach { dynamic ->
+            val key = "custom_${dynamic.sectionTitle}"
+            if (!detectedCustomOrder.contains(key)) {
+                detectedCustomOrder.add(key)
+            }
+        }
+
+        val initialSectionOrder = detectedCoreOrder + detectedCustomOrder
+
         return ResumeProfile(
             hero = ProfileHero(
                 fullName = toTitleCase(candidateName),
@@ -615,7 +694,8 @@ class PdfExtractionRepository(private val context: Context) {
                 skills = parsedSkills,
                 education = parsedEducation
             ),
-            dynamicSections = dynamicList
+            dynamicSections = dynamicList,
+            sectionOrder = initialSectionOrder
         )
     }
 

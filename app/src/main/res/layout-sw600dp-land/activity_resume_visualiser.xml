@@ -238,10 +238,11 @@
                         android:clickable="true"
                         android:focusable="true">
                         <ImageView
+                            android:id="@+id/iv_social_portfolio_icon"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_link_20"
+                            android:src="@drawable/ic_globe_20"
                             app:tint="@color/hero_name_text"
                             android:contentDescription="@string/cd_hero_profile_link" />
                     </FrameLayout>

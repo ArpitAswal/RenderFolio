@@ -93,8 +93,8 @@
       transform: scale(0.98);
     }
 
-    /* Visualizer Outer Canvas (Matching maxWidth="680dp") */
-    .visualizer-canvas {
+    /* Visualiser Outer Canvas (Matching maxWidth="680dp") */
+    .visualiser-canvas {
       max-width: 680px;
       margin: 0 auto;
       padding: 36px 20px 80px;
@@ -468,8 +468,8 @@
     </button>
   </header>
 
-  <!-- Visualizer Canvas Container -->
-  <main class="visualizer-canvas">
+  <!-- Visualiser Canvas Container -->
+  <main class="visualiser-canvas">
     <!-- Loading State -->
     <div id="loadingView" class="state-container">
       <div class="loading-pulse"></div>
@@ -485,8 +485,8 @@
       <a href="/" class="btn-open-app" style="text-decoration: none; display: inline-flex;">Create Your Own Showcase</a>
     </div>
 
-    <!-- Interactive Resume Visualizer Content (Cardless & Flat) -->
-    <div id="visualizerContent" style="display: none;">
+    <!-- Interactive Resume Visualiser Content (Cardless & Flat) -->
+    <div id="visualiserContent" style="display: none;">
       <!-- SECTION 1: HERO CONTAINER -->
       <section class="hero-container">
         <h1 id="heroName" class="hero-name"></h1>
@@ -628,10 +628,10 @@
 
         // Support both serialized JSON string and direct map formats
         const profile = typeof data.profileJson === "string" ? JSON.parse(data.profileJson) : (data.profileJson || data);
-        renderVisualizer(profile);
+        renderVisualiser(profile);
 
         document.getElementById("loadingView").style.display = "none";
-        document.getElementById("visualizerContent").style.display = "block";
+        document.getElementById("visualiserContent").style.display = "block";
       } catch (err) {
         console.error("Failed to load showcase:", err);
         document.getElementById("loadingView").style.display = "none";
@@ -639,7 +639,7 @@
       }
     }
 
-    function renderVisualizer(p) {
+    function renderVisualiser(p) {
       const hero = p.hero || {};
       document.title = (hero.fullName || "Candidate") + " · Resume Showcase";
       document.getElementById("heroName").textContent = hero.fullName || "";

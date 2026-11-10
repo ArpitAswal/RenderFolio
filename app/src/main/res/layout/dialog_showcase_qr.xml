@@ -109,9 +109,9 @@
             android:scaleType="fitCenter" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Primary Action: View Visualizer Button (Visible only during celebration post-compile) -->
+    <!-- Primary Action: View Visualiser Button (Visible only during celebration post-compile) -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_qr_view_visualizer"
+        android:id="@+id/btn_qr_view_visualiser"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="8dp"
@@ -121,8 +121,9 @@
         app:icon="@drawable/ic_arrow_forward"
         app:iconGravity="textEnd"
         app:iconPadding="8dp"
+        app:iconTint="@android:color/white"
         android:fontFamily="sans-serif-medium"
-        android:text="@string/btn_view_visualizer"
+        android:text="@string/btn_view_visualiser"
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
         android:textSize="15sp"

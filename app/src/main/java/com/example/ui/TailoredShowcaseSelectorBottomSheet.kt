@@ -100,7 +100,7 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
         val targetName = if (item.targetCompany.isNotBlank()) item.targetCompany else item.headline
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.dialog_delete_showcase_title)
-            .setMessage("Are you sure you want to delete this tailored resume for $targetName? This will remove its cloud link, QR code, and visualization.")
+            .setMessage("Are you sure you want to delete this tailored resume for $targetName? This will remove its cloud link, QR code, and visualisation.")
             .setPositiveButton(R.string.action_delete) { _, _ -> onConfirm() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

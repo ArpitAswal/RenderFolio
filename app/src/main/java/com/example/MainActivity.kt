@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupColdStart() {
         val btnSelectPdf = findViewById<Button>(R.id.btn_upload_pdf)
         val btnDemoPdf = findViewById<Button>(R.id.btn_load_demo)
-        val btnViewActive = findViewById<View>(R.id.btn_view_active_visualizer)
+        val btnViewActive = findViewById<View>(R.id.btn_view_active_visualiser)
         val btnShowQr = findViewById<View>(R.id.btn_show_active_qr)
 
         // Only the dedicated Upload Resume button launches the file picker, guarded by runtime permissions
@@ -169,12 +169,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnDemoPdf?.setOnClickListener {
-            // Directly launch the Visualizer with pre-defined demo showcase for first-time exploration
+            // Directly launch the Visualiser with pre-defined demo showcase for first-time exploration
             val sample = ResumeProfile.sampleProfile()
             startActivity(ResumeVisualiserActivity.createIntent(this, sample))
         }
 
-        // Visualizer Launch: Direct if 1 resume, dynamic selector sheet if multiple tailored resumes
+        // Visualiser Launch: Direct if 1 resume, dynamic selector sheet if multiple tailored resumes
         btnViewActive?.setOnClickListener {
             val showcases = preferencesRepository.getShowcases()
             when {
@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
                         candidateName = item.candidateName,
                         isCelebration = false
                     )
-                    sheet.onViewVisualizer = {
+                    sheet.onViewVisualiser = {
                         startActivity(ResumeVisualiserActivity.createIntent(this, item.profile))
                     }
                     sheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                             candidateName = selectedShowcase.candidateName,
                             isCelebration = false
                         )
-                        sheet.onViewVisualizer = {
+                        sheet.onViewVisualiser = {
                             startActivity(ResumeVisualiserActivity.createIntent(this@MainActivity, selectedShowcase.profile))
                         }
                         sheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)

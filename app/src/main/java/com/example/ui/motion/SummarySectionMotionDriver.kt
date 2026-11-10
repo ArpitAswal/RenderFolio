@@ -7,23 +7,24 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 
 /**
- * Manages the dual-phase motion lifecycle for Section 2 (Professional Overview & Summary):
- * 1. Phase 1 (Launch Entrance): Synchronized with Personal Info's smooth speed and timing
- *    (350ms delay to clear window transition, 1100ms fade-in, 1200ms scale-up, 1100ms translation lift).
- * 2. Phase 2 (On-Scroll Reactivity):
- *    - Real-time upward parallax glide (-20% scroll velocity) giving physical depth.
- *    - Dynamic perspective fade & subtle scale compression as section scrolls toward the top edge.
+ * Manages the continuous motion lifecycle for Section 2 (Professional Overview & Summary):
+ * 1. Initial Launch Entrance: Synchronized with Personal Info (350ms delay, fade-in, scale-up, translation lift).
+ * 2. Continuous On-Scroll Physics:
+ *    - Real-time upward parallax glide (-12% velocity) for physical depth.
+ *    - Subtle perspective scale compression as section scrolls toward the top edge.
+ *    - Full reading opacity (alpha = 1.0f) while on screen for crisp, high-contrast legibility.
+ *    - 20% Viewport Exit: smooth fade-out as the last 20% of the section reaches the top of the viewport.
  *    - Rubber-band elastic over-scroll scaling (up to 1.08f) on pull-down past the top.
  */
 class SummarySectionMotionDriver(
-    private val sectionContainer: View
+    private val sectionContainer: View,
+    private val scrollView: View? = null
 ) {
     companion object {
-        // --- DURATION AND TIMING CONSTANTS (SYNCHRONIZED WITH PERSONAL INFO) ---
-        const val ENTRANCE_START_DELAY_MS: Long = 350L     // Post-launch delay ensuring activity window transition finishes
-        const val ENTRANCE_ALPHA_DURATION_MS: Long = 1100L  // Fade-in duration (0f -> 1f)
-        const val ENTRANCE_SCALE_DURATION_MS: Long = 1200L  // Scale-up duration (0.80f -> 1.0f)
-        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 1100L // Translation duration (50dp -> 0dp)
+        const val ENTRANCE_START_DELAY_MS: Long = 350L
+        const val ENTRANCE_ALPHA_DURATION_MS: Long = 1100L
+        const val ENTRANCE_SCALE_DURATION_MS: Long = 1200L
+        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 1100L
 
         const val INITIAL_SCALE: Float = 0.80f
         const val INITIAL_TRANSLATION_DP: Float = 50f
@@ -36,7 +37,6 @@ class SummarySectionMotionDriver(
     private var currentScrollY: Int = 0
 
     init {
-        // Pre-configure initial state for synchronized entrance
         val density = sectionContainer.resources.displayMetrics.density
         sectionContainer.alpha = 0f
         sectionContainer.scaleX = INITIAL_SCALE
@@ -44,13 +44,9 @@ class SummarySectionMotionDriver(
         sectionContainer.translationY = INITIAL_TRANSLATION_DP * density
     }
 
-    /**
-     * Phase 1: Executes initial entrance animation at the exact same speed and timing as Personal Info.
-     */
     fun playInitialEntrance(onComplete: (() -> Unit)? = null) {
         if (hasPlayedInitialEntrance) return
 
-        // Ensure the container has completed layout so center pivot is precise
         if (sectionContainer.width == 0 || sectionContainer.height == 0) {
             sectionContainer.post {
                 playInitialEntrance(onComplete)
@@ -102,16 +98,10 @@ class SummarySectionMotionDriver(
         animatorSet.start()
     }
 
-    /**
-     * Phase 2: Coordinates reactive on-scroll motion with the scroll container:
-     * - Immediate scroll response: cancels running entrance animator if user scrolls right away.
-     * - Downward scrolling: Smooth upward parallax glide (-20% scroll velocity) + perspective fade/scale exit.
-     * - Pull-down past top (over-scroll): Elastic rubber-band scaling up to 1.08f.
-     */
     fun onScrollChanged(scrollY: Int, viewportHeight: Int = 0) {
         currentScrollY = scrollY
 
-        // If user touches and scrolls while entrance animation is running, cancel it so scroll motion is immediate
+        // If user touches and scrolls while entrance animation is running, cancel and snap to scroll physics
         if (isEntranceAnimationRunning) {
             entranceAnimator?.cancel()
             isEntranceAnimationRunning = false
@@ -122,6 +112,8 @@ class SummarySectionMotionDriver(
         val density = sectionContainer.resources.displayMetrics.density
         val actualViewportHeight = if (viewportHeight > 0) {
             viewportHeight
+        } else if (scrollView != null && scrollView.height > 0) {
+            scrollView.height
         } else {
             sectionContainer.resources.displayMetrics.heightPixels
         }
@@ -138,36 +130,40 @@ class SummarySectionMotionDriver(
             sectionContainer.alpha = 1.0f
         } else {
             // DOWNWARD SCROLLING (scrollY >= 0)
-            // 1. Upward Parallax Glide: section floats with subtle lag (-20% velocity)
-            sectionContainer.translationY = -scrollY * 0.20f
+            // 1. Maintain locked layout alignment so gap to Experience section remains exactly 32dp
+            sectionContainer.translationY = 0f
 
-            // 2. Scroll-driven Perspective Fade & Subtle Compression
-            // Fades gracefully as it scrolls up into the header exit zone
-            val fadeStartPx = 140f * density
-            val fadeEndPx = 480f * density
+            val scrollLoc = IntArray(2)
+            scrollView?.getLocationOnScreen(scrollLoc)
+            val viewLoc = IntArray(2)
+            sectionContainer.getLocationOnScreen(viewLoc)
 
-            if (scrollY <= fadeStartPx) {
+            val relativeTop = viewLoc[1] - scrollLoc[1]
+            val viewHeight = sectionContainer.height.toFloat().coerceAtLeast(100f)
+            val relativeBottom = relativeTop + viewHeight
+
+            // 2. Early, Graceful Top Exit Fade (Synchronized with Profile Info):
+            // - In Reading Zone: alpha = 1.0f (crisp, 100% legibility).
+            // - Early Exit Fade: As the section scrolls past the top, once the upper portion
+            //   begins crossing above the viewport top (relativeBottom <= fadeThreshold),
+            //   it immediately begins a smooth, early fade and subtle scale compression.
+            //   The entire remaining content (Email/cards/body lines) visibly animates and
+            //   fades smoothly from 1.0f down to 0.0f across the upper screen,
+            //   exactly matching Profile Info's early, visible exit animation!
+            val fadeThreshold = viewHeight * 0.92f
+            if (relativeBottom >= fadeThreshold) {
                 sectionContainer.alpha = 1.0f
                 sectionContainer.scaleX = 1.0f
                 sectionContainer.scaleY = 1.0f
-            } else {
-                val progress = ((scrollY - fadeStartPx) / (fadeEndPx - fadeStartPx)).coerceIn(0f, 1f)
-                // Smooth linear fade
-                sectionContainer.alpha = 1.0f - (progress * 0.90f) // down to 0.10f or 0.0f
-                // Slight perspective compression
-                val scale = 1.0f - (progress * 0.05f)
+            } else if (relativeBottom > 0f) {
+                val progress = (relativeBottom / fadeThreshold).coerceIn(0f, 1f)
+                sectionContainer.alpha = progress
+                val scale = 0.95f + (progress * 0.05f)
                 sectionContainer.scaleX = scale
                 sectionContainer.scaleY = scale
                 sectionContainer.pivotX = sectionContainer.width / 2f
-                sectionContainer.pivotY = sectionContainer.height * 0.5f
-            }
-
-            // 3. Viewport 20% Threshold Guard: if bottom of view has crossed above top 20% of screen
-            val topThreshold = actualViewportHeight * VIEWPORT_THRESHOLD_RATIO
-            val locationOnScreen = IntArray(2)
-            sectionContainer.getLocationOnScreen(locationOnScreen)
-            val viewBottom = locationOnScreen[1] + sectionContainer.height
-            if (viewBottom <= topThreshold) {
+                sectionContainer.pivotY = 0f
+            } else {
                 sectionContainer.alpha = 0f
             }
         }

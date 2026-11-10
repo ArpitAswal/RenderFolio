@@ -12,6 +12,8 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.util.Patterns
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -23,6 +25,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -47,6 +50,7 @@ import com.example.model.EducationItem
 import com.example.model.ProfileHero
 import com.example.model.ProjectItem
 import com.example.model.ResumeProfile
+import com.example.model.ResumeSectionConstants
 import com.example.model.SkillCategories
 import com.example.model.WorkExperienceItem
 import com.example.ui.motion.CustomSectionMotionDriver
@@ -63,7 +67,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 /**
- * Screen 4: Resume Visualizer (ResumeVisualiserActivity)
+ * Screen 4: Resume Visualiser (ResumeVisualiserActivity)
  *
  * Implements Section 1 (Profile Info & Contact) adhering to section_1_plan.md:
  * - 100% Pure XML (Zero Hybrid Rule - CoordinatorLayout, ConstraintLayout, Flow, NestedScrollView).
@@ -102,7 +106,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         setupWindowInsets()
 
         // Initialize motion driver targeting the whole hero container
-        motionDriver = HeroSectionMotionDriver(binding.heroContainer)
+        motionDriver = HeroSectionMotionDriver(binding.heroContainer, binding.scrollView)
 
         // Setup scroll-driven unified motion
         binding.scrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
@@ -111,19 +115,19 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 summaryMotionDriver.onScrollChanged(scrollY, binding.scrollView.height)
             }
             if (::experienceMotionDriver.isInitialized) {
-                experienceMotionDriver.onScrollChanged(binding.scrollView.height)
+                experienceMotionDriver.onScrollChanged(binding.scrollView)
             }
             if (::projectsMotionDriver.isInitialized) {
-                projectsMotionDriver.onScrollChanged(binding.scrollView.height)
+                projectsMotionDriver.onScrollChanged(binding.scrollView)
             }
             if (::skillsMotionDriver.isInitialized) {
-                skillsMotionDriver.onScrollChanged(binding.scrollView.height)
+                skillsMotionDriver.onScrollChanged(binding.scrollView)
             }
             if (::educationMotionDriver.isInitialized) {
-                educationMotionDriver.onScrollChanged(binding.scrollView.height)
+                educationMotionDriver.onScrollChanged(binding.scrollView)
             }
             customSectionMotionDrivers.forEach { driver ->
-                driver.onScrollChanged(binding.scrollView.height)
+                driver.onScrollChanged(binding.scrollView)
             }
         }
 
@@ -159,7 +163,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         if (!rawJson.isNullOrBlank()) {
             runCatching {
                 val profile = ResumeProfile.fromJson(rawJson)
-                bindProfileToVisualizer(profile)
+                bindProfileToVisualiser(profile)
             }.onFailure {
                 loadFromPreferencesOrSample()
             }
@@ -190,7 +194,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             binding.pbVisualiserLoading?.visibility = View.GONE
 
             result.onSuccess { profile ->
-                bindProfileToVisualizer(profile)
+                bindProfileToVisualiser(profile)
                 binding.scrollView.visibility = View.VISIBLE
             }.onFailure {
                 Toast.makeText(this@ResumeVisualiserActivity, R.string.toast_showcase_expired, Toast.LENGTH_LONG).show()
@@ -202,11 +206,12 @@ class ResumeVisualiserActivity : AppCompatActivity() {
     private fun loadFromPreferencesOrSample() {
         lifecycleScope.launch {
             val cached = preferencesRepository.profileFlow.firstOrNull() ?: ResumeProfile.sampleProfile()
-            bindProfileToVisualizer(cached)
+            bindProfileToVisualiser(cached)
         }
     }
 
-    private fun bindProfileToVisualizer(profile: ResumeProfile) {
+    private fun bindProfileToVisualiser(profile: ResumeProfile) {
+        applySectionOrder(profile.sectionOrder, profile.dynamicSections)
         bindHeroSection(profile.hero)
         setupSection2(profile.coreSections.profileSummary)
         setupSection3(profile.coreSections.workExperience)
@@ -218,46 +223,90 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         binding.scrollView.visibility = View.VISIBLE
     }
 
+    /**
+     * Dynamically reorders the section containers inside the linear layout
+     * to match the exact sequence preserved from Structure Verification (and detected from the PDF).
+     */
+    private fun applySectionOrder(order: List<String>, customSections: List<DynamicSection> = emptyList()) {
+        val parent = binding.layoutVisualiserSections ?: return
+
+        val effectiveOrder = if (order.isNotEmpty()) {
+            order
+        } else {
+            ResumeSectionConstants.DEFAULT_CORE_ORDER + customSections.map { "${ResumeSectionConstants.CUSTOM_PREFIX}${it.sectionTitle}" }
+        }
+
+        val viewMap = mutableMapOf<String, View>()
+        viewMap[ResumeSectionConstants.SECTION_PERSONAL] = binding.heroContainer
+        binding.wrapperSectionSummary?.let { viewMap[ResumeSectionConstants.SECTION_SUMMARY] = it }
+        binding.wrapperSectionExperience?.let { viewMap[ResumeSectionConstants.SECTION_EXPERIENCE] = it }
+        binding.wrapperSectionProjects?.let { viewMap[ResumeSectionConstants.SECTION_PROJECTS] = it }
+        binding.wrapperSectionSkills?.let { viewMap[ResumeSectionConstants.SECTION_SKILLS] = it }
+        binding.wrapperSectionEducation?.let { viewMap[ResumeSectionConstants.SECTION_EDUCATION] = it }
+
+        // Temporarily detach all section children from parent layout
+        parent.removeAllViews()
+
+        val addedViews = mutableSetOf<View>()
+
+        for (secId in effectiveOrder) {
+            val view = viewMap[secId]
+            if (view != null && !addedViews.contains(view)) {
+                parent.addView(view)
+                addedViews.add(view)
+            } else if (secId.startsWith(ResumeSectionConstants.CUSTOM_PREFIX)) {
+                if (!addedViews.contains(binding.containerCustomSections)) {
+                    parent.addView(binding.containerCustomSections)
+                    addedViews.add(binding.containerCustomSections)
+                }
+            }
+        }
+
+        // Add any remaining core views that were not explicitly listed in order
+        for (view in viewMap.values) {
+            if (!addedViews.contains(view)) {
+                parent.addView(view)
+                addedViews.add(view)
+            }
+        }
+
+        // Ensure dynamic custom sections container is present if not added yet
+        if (!addedViews.contains(binding.containerCustomSections)) {
+            parent.addView(binding.containerCustomSections)
+            addedViews.add(binding.containerCustomSections)
+        }
+
+        // Maintain consistent 32dp vertical inter-section spacing (0dp for the first child)
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            val lp = child.layoutParams as? ViewGroup.MarginLayoutParams
+            if (lp != null) {
+                val topDp = if (i == 0) 0 else 32
+                val topPx = (topDp * resources.displayMetrics.density).toInt()
+                if (lp.topMargin != topPx) {
+                    lp.topMargin = topPx
+                    child.layoutParams = lp
+                }
+            }
+        }
+    }
+
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     when (state) {
                         is UiState.Success -> {
-                            bindHeroSection(state.profile.hero)
-                            setupSection2(state.profile.coreSections.profileSummary)
-                            setupSection3(state.profile.coreSections.workExperience)
-                            setupSection4(state.profile.coreSections.projects)
-                            setupSection5(state.profile.coreSections.skills)
-                            setupSection6(state.profile.coreSections.education)
-                            setupSection7(state.profile.dynamicSections)
+                            bindProfileToVisualiser(state.profile)
                         }
                         is UiState.ExtractedNeedsVerification -> {
-                            bindHeroSection(state.profile.hero)
-                            setupSection2(state.profile.coreSections.profileSummary)
-                            setupSection3(state.profile.coreSections.workExperience)
-                            setupSection4(state.profile.coreSections.projects)
-                            setupSection5(state.profile.coreSections.skills)
-                            setupSection6(state.profile.coreSections.education)
-                            setupSection7(state.profile.dynamicSections)
+                            bindProfileToVisualiser(state.profile)
                         }
                         is UiState.VerificationInProgress -> {
-                            bindHeroSection(state.profile.hero)
-                            setupSection2(state.profile.coreSections.profileSummary)
-                            setupSection3(state.profile.coreSections.workExperience)
-                            setupSection4(state.profile.coreSections.projects)
-                            setupSection5(state.profile.coreSections.skills)
-                            setupSection6(state.profile.coreSections.education)
-                            setupSection7(state.profile.dynamicSections)
+                            bindProfileToVisualiser(state.profile)
                         }
                         is UiState.EditMode -> {
-                            bindHeroSection(state.draftProfile.hero)
-                            setupSection2(state.draftProfile.coreSections.profileSummary)
-                            setupSection3(state.draftProfile.coreSections.workExperience)
-                            setupSection4(state.draftProfile.coreSections.projects)
-                            setupSection5(state.draftProfile.coreSections.skills)
-                            setupSection6(state.draftProfile.coreSections.education)
-                            setupSection7(state.draftProfile.dynamicSections)
+                            bindProfileToVisualiser(state.draftProfile)
                         }
                         else -> {
                             // UiState.Idle or InProgress
@@ -301,7 +350,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         setupContactActions(hero.contactInfo)
 
         // 7. Harmonized Initial Load Entrance Animation (identical behavior to Section 2 Summary)
-        motionDriver = HeroSectionMotionDriver(binding.heroContainer)
+        motionDriver = HeroSectionMotionDriver(binding.heroContainer, binding.scrollView)
         binding.heroContainer.doOnPreDraw {
             motionDriver.playInitialEntrance()
         }
@@ -327,6 +376,11 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         // 2. Quick-Contact & Social Toolbar (Call, GitHub, LinkedIn, Portfolio)
+        if (contact.websiteUrl.isNotBlank()) {
+            val portfolioIcon = resolveSocialPortfolioIcon(contact.websiteUrl)
+            binding.ivSocialPortfolioIcon?.setImageResource(portfolioIcon)
+        }
+
         val toolbarItems = listOf(
             Triple(binding.btnActionCall, contact.phone, "Phone"),
             Triple(binding.btnSocialGithub, contact.githubUrl, "GitHub URL"),
@@ -439,20 +493,31 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         val cleanSummary = summaryText.trim()
 
         if (cleanSummary.isBlank()) {
+            binding.wrapperSectionSummary?.visibility = View.GONE
             summaryLayout.sectionSummaryRoot.visibility = View.GONE
             return
         }
 
+        binding.wrapperSectionSummary?.visibility = View.VISIBLE
         summaryLayout.sectionSummaryRoot.visibility = View.VISIBLE
         summaryLayout.tvSummaryBody.text = cleanSummary
 
         // Initialize motion driver targeting the whole summary container
         summaryMotionDriver = SummarySectionMotionDriver(
-            sectionContainer = summaryLayout.sectionSummaryRoot
+            sectionContainer = summaryLayout.sectionSummaryRoot,
+            scrollView = binding.scrollView
         )
 
         // Trigger Phase 1 initial entrance once layout pass is complete
         summaryLayout.sectionSummaryRoot.doOnPreDraw {
+            // Clamp watermark height so it never exceeds content height and never introduces extra bottom space
+            val contentBottom = summaryLayout.tvSummaryBody.bottom
+            if (contentBottom > 0 && summaryLayout.ivSummaryWatermark.bottom > contentBottom) {
+                val overflow = summaryLayout.ivSummaryWatermark.bottom - contentBottom
+                summaryLayout.ivSummaryWatermark.updateLayoutParams<FrameLayout.LayoutParams> {
+                    height = (height - overflow).coerceAtLeast(0)
+                }
+            }
             summaryMotionDriver.playInitialEntrance()
         }
     }
@@ -469,10 +534,12 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         if (validExperiences.isEmpty()) {
+            binding.wrapperSectionExperience?.visibility = View.GONE
             expLayout.sectionExperienceRoot.visibility = View.GONE
             return
         }
 
+        binding.wrapperSectionExperience?.visibility = View.VISIBLE
         expLayout.sectionExperienceRoot.visibility = View.VISIBLE
         val container = expLayout.containerExperienceEntries
         container.removeAllViews()
@@ -502,16 +569,24 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             }
 
             // 4. Populate Bullets using item_visualiser_bullet_row (4dp dot, 14sp Inter #434655)
+            val hasClientApps = item.clientApps.isNotEmpty()
+            val hasTags = item.techStackTags.isNotEmpty()
+            val bullets = item.bulletPoints.filter { it.isNotBlank() }
+
             entryBinding.containerEntryBullets.removeAllViews()
-            item.bulletPoints.filter { it.isNotBlank() }.forEach { bullet ->
+            bullets.forEachIndexed { bulletIdx, bullet ->
                 val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, entryBinding.containerEntryBullets, false)
                 bulletBinding.tvBulletText.text = bullet.trim()
+                if (bulletIdx == bullets.lastIndex && !hasClientApps && !hasTags) {
+                    (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                        lp.bottomMargin = 0
+                        bulletBinding.root.layoutParams = lp
+                    }
+                }
                 entryBinding.containerEntryBullets.addView(bulletBinding.root)
             }
 
             // 5. Client Apps & Tech Stack Deliverables (Pill Chips with ↗ prefix)
-            val hasClientApps = item.clientApps.isNotEmpty()
-            val hasTags = item.techStackTags.isNotEmpty()
             if (hasClientApps || hasTags) {
                 entryBinding.layoutEntryDeliverables.visibility = View.VISIBLE
                 entryBinding.chipGroupEntryTags.removeAllViews()
@@ -582,7 +657,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         // Initialize motion driver targeting the whole section container
-        experienceMotionDriver = WorkExperienceMotionDriver(expLayout.sectionExperienceRoot)
+        experienceMotionDriver = WorkExperienceMotionDriver(expLayout.sectionExperienceRoot, binding.scrollView)
 
         // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Section 1 and Section 2)
         expLayout.sectionExperienceRoot.doOnPreDraw {
@@ -601,10 +676,12 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         val validProjects = projects.filter { it.projectTitle.isNotBlank() }
 
         if (validProjects.isEmpty()) {
+            binding.wrapperSectionProjects?.visibility = View.GONE
             projectsLayout.sectionProjectsRoot.visibility = View.GONE
             return
         }
 
+        binding.wrapperSectionProjects?.visibility = View.VISIBLE
         projectsLayout.sectionProjectsRoot.visibility = View.VISIBLE
         val container = projectsLayout.containerProjectEntries
         container.removeAllViews()
@@ -634,28 +711,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 entryBinding.chipGroupProjectTech.visibility = View.GONE
             }
 
-            // 3. Bullet Points (Features & Capabilities matching Professional Experience)
-            entryBinding.containerProjectBullets.removeAllViews()
-            val bullets = parseBulletsFromText(item.description)
-            if (bullets.isNotEmpty()) {
-                bullets.forEach { bullet ->
-                    val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, entryBinding.containerProjectBullets, false)
-                    bulletBinding.tvBulletText.text = bullet
-                    entryBinding.containerProjectBullets.addView(bulletBinding.root)
-                }
-                entryBinding.containerProjectBullets.visibility = View.VISIBLE
-                entryBinding.tvEntryProjectDescription.visibility = View.GONE
-            } else if (item.description.isNotBlank()) {
-                // Fallback for non-bulletized raw description text
-                entryBinding.containerProjectBullets.visibility = View.GONE
-                entryBinding.tvEntryProjectDescription.visibility = View.VISIBLE
-                entryBinding.tvEntryProjectDescription.text = item.description
-            } else {
-                entryBinding.containerProjectBullets.visibility = View.GONE
-                entryBinding.tvEntryProjectDescription.visibility = View.GONE
-            }
-
-            // 4. Single Dynamic Project Link Source in Deliverables Dock (GitHub, Storage, Web Hosting, etc.)
+            // 3. Single Dynamic Project Link Source in Deliverables Dock (GitHub, Storage, Web Hosting, etc.)
             val primaryUrl = when {
                 item.codeUrl.isNotBlank() && item.demoUrl.isNotBlank() && item.codeUrl == item.demoUrl -> item.codeUrl
                 item.codeUrl.isNotBlank() && item.demoUrl.isBlank() -> item.codeUrl
@@ -670,6 +726,34 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 else -> ""
             }.trim()
 
+            // 4. Bullet Points (Features & Capabilities matching Professional Experience)
+            entryBinding.containerProjectBullets.removeAllViews()
+            val bullets = parseBulletsFromText(item.description)
+            if (bullets.isNotEmpty()) {
+                bullets.forEachIndexed { bulletIdx, bullet ->
+                    val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, entryBinding.containerProjectBullets, false)
+                    bulletBinding.tvBulletText.text = bullet
+                    if (bulletIdx == bullets.lastIndex && primaryUrl.isBlank()) {
+                        (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                            lp.bottomMargin = 0
+                            bulletBinding.root.layoutParams = lp
+                        }
+                    }
+                    entryBinding.containerProjectBullets.addView(bulletBinding.root)
+                }
+                entryBinding.containerProjectBullets.visibility = View.VISIBLE
+                entryBinding.tvEntryProjectDescription.visibility = View.GONE
+            } else if (item.description.isNotBlank()) {
+                // Fallback for non-bulletized raw description text
+                entryBinding.containerProjectBullets.visibility = View.GONE
+                entryBinding.tvEntryProjectDescription.visibility = View.VISIBLE
+                entryBinding.tvEntryProjectDescription.text = item.description
+            } else {
+                entryBinding.containerProjectBullets.visibility = View.GONE
+                entryBinding.tvEntryProjectDescription.visibility = View.GONE
+            }
+
+            // 5. Populate Project Deliverables Dock
             if (primaryUrl.isNotBlank()) {
                 entryBinding.layoutProjectDeliverables.visibility = View.VISIBLE
                 entryBinding.chipGroupProjectLinks.removeAllViews()
@@ -719,7 +803,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         // Initialize motion driver targeting the whole section container
-        projectsMotionDriver = ProjectsMotionDriver(projectsLayout.sectionProjectsRoot)
+        projectsMotionDriver = ProjectsMotionDriver(projectsLayout.sectionProjectsRoot, binding.scrollView)
 
         // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..3)
         projectsLayout.sectionProjectsRoot.doOnPreDraw {
@@ -807,6 +891,16 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
     }
 
+    private fun resolveSocialPortfolioIcon(rawUrl: String): Int {
+        val lower = rawUrl.lowercase().trim()
+        return when {
+            lower.contains("play.google.com") -> R.drawable.ic_play_store_20
+            lower.contains("pub.dev") || lower.contains("leetcode.com") || lower.contains("hackerrank.com") || lower.contains("codeforces.com") -> R.drawable.ic_code_20
+            lower.contains("x.com") || lower.contains("twitter.com") -> R.drawable.ic_x_twitter_20
+            else -> R.drawable.ic_globe_20 // Industry-standard Globe for Portfolio / Website
+        }
+    }
+
     /**
      * SECTION 5: Technical Skills (The Semantic Domain Matrix)
      * Implements Alternating Lateral Motion (Left-to-Right arrival, alternating with Section 4)
@@ -817,10 +911,12 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         val skillsLayout = binding.includedSectionSkills
 
         if (skills.totalCount == 0) {
+            binding.wrapperSectionSkills?.visibility = View.GONE
             skillsLayout.sectionSkillsRoot.visibility = View.GONE
             return
         }
 
+        binding.wrapperSectionSkills?.visibility = View.VISIBLE
         skillsLayout.sectionSkillsRoot.visibility = View.VISIBLE
 
         // Section header title as detected from resume (default fallback to string resource)
@@ -866,6 +962,11 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 rowBinding.tvDomainHeader.visibility = View.VISIBLE
                 rowBinding.tvDomainHeader.text = domainLabel
 
+                // Zero out bottom padding on the last domain row to preserve exact 32dp gap to next section
+                if (index == domainEntries.lastIndex) {
+                    rowBinding.itemSkillDomainRoot.setPadding(0, 0, 0, 0)
+                }
+
                 rowBinding.chipGroupDomainSkills.removeAllViews()
                 skillsList.forEach { skill ->
                     val chipBinding = ItemVisualiserSkillChipBinding.inflate(layoutInflater, rowBinding.chipGroupDomainSkills, false)
@@ -892,6 +993,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             if (flatSkillsList.isNotEmpty()) {
                 val rowBinding = ItemVisualiserSkillDomainBinding.inflate(layoutInflater, container, false)
                 rowBinding.tvDomainHeader.visibility = View.GONE
+                rowBinding.itemSkillDomainRoot.setPadding(0, 0, 0, 0)
 
                 rowBinding.chipGroupDomainSkills.removeAllViews()
                 flatSkillsList.forEach { skill ->
@@ -905,7 +1007,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         }
 
         // Initialize motion driver targeting the whole section container
-        skillsMotionDriver = TechnicalSkillsMotionDriver(skillsLayout.sectionSkillsRoot)
+        skillsMotionDriver = TechnicalSkillsMotionDriver(skillsLayout.sectionSkillsRoot, binding.scrollView)
 
         // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..4)
         skillsLayout.sectionSkillsRoot.doOnPreDraw {
@@ -981,10 +1083,12 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
         val validEdu = educationList.filter { it.institution.isNotBlank() || it.degree.isNotBlank() }
         if (validEdu.isEmpty()) {
+            binding.wrapperSectionEducation?.visibility = View.GONE
             eduLayout.sectionEducationRoot.visibility = View.GONE
             return
         }
 
+        binding.wrapperSectionEducation?.visibility = View.VISIBLE
         eduLayout.sectionEducationRoot.visibility = View.VISIBLE
         val container = eduLayout.containerEducationEntries
         container.removeAllViews()
@@ -1022,9 +1126,17 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             container.addView(entryBinding.root)
         }
 
-        educationMotionDriver = EducationMotionDriver(eduLayout.sectionEducationRoot)
+        educationMotionDriver = EducationMotionDriver(eduLayout.sectionEducationRoot, binding.scrollView)
 
         eduLayout.sectionEducationRoot.doOnPreDraw {
+            // Clamp watermark height so it never exceeds content height and never introduces extra bottom space
+            val contentBottom = eduLayout.containerEducationEntries.bottom
+            if (contentBottom > 0 && eduLayout.ivEducationWatermark.bottom > contentBottom) {
+                val overflow = eduLayout.ivEducationWatermark.bottom - contentBottom
+                eduLayout.ivEducationWatermark.updateLayoutParams<FrameLayout.LayoutParams> {
+                    height = (height - overflow).coerceAtLeast(0)
+                }
+            }
             educationMotionDriver.playInitialEntrance()
         }
     }
@@ -1105,9 +1217,15 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 if (bullets.isNotEmpty()) {
                     itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
                     itemBinding.containerEntryCustomBullets.removeAllViews()
-                    bullets.forEach { bullet ->
+                    bullets.forEachIndexed { bulletIdx, bullet ->
                         val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, itemBinding.containerEntryCustomBullets, false)
                         bulletBinding.tvBulletText.text = bullet.trim()
+                        if (bulletIdx == bullets.lastIndex && item.link.isBlank()) {
+                            (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                                lp.bottomMargin = 0
+                                bulletBinding.root.layoutParams = lp
+                            }
+                        }
                         itemBinding.containerEntryCustomBullets.addView(bulletBinding.root)
                     }
                     // Cleanly hide description when bullet representation is available
@@ -1175,10 +1293,18 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             }
 
             // Attach dedicated motion driver for this custom section
-            val driver = CustomSectionMotionDriver(sectionBinding.sectionCustomRoot)
+            val driver = CustomSectionMotionDriver(sectionBinding.sectionCustomRoot, binding.scrollView)
             customSectionMotionDrivers.add(driver)
 
             sectionBinding.sectionCustomRoot.doOnPreDraw {
+                // Clamp watermark height so it never exceeds content height and never introduces extra bottom space
+                val contentBottom = sectionBinding.containerCustomItems.bottom
+                if (contentBottom > 0 && sectionBinding.ivCustomWatermark.bottom > contentBottom) {
+                    val overflow = sectionBinding.ivCustomWatermark.bottom - contentBottom
+                    sectionBinding.ivCustomWatermark.updateLayoutParams<FrameLayout.LayoutParams> {
+                        height = (height - overflow).coerceAtLeast(0)
+                    }
+                }
                 driver.playInitialEntrance()
             }
 

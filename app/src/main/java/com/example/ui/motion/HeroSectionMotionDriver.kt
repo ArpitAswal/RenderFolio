@@ -9,41 +9,37 @@ import android.view.animation.OvershootInterpolator
 /**
  * HeroSectionMotionDriver
  *
- * Drives whole-section motion on Section 1 (hero_container), synchronized with Section 2 (Summary) style:
- *
+ * Drives whole-section motion on Section 1 (hero_container):
  * 1. Initial Load Entrance Animation:
  *    - Pinned at top edge (pivotX = 50%, pivotY = 0f).
  *    - Starts from alpha = 0f, scale = 0.80f, translationY = 50dp.
- *    - Starts after 350ms delay to clear window transitions.
- *    - Interpolates to alpha = 1.0f, scale = 1.0f, translationY = 0dp over 1100ms/1200ms.
+ *    - Interpolates to alpha = 1.0f, scale = 1.0f, translationY = 0dp over 1100ms/1200ms with Overshoot spring.
  *
  * 2. Continuous Scroll Physics:
- *    - Upward Parallax Glide: container translates at 20% scroll speed (-scrollY * 0.20f).
- *    - Perspective Fade & Compression: between 140dp and 480dp, gracefully dims and compresses scale.
+ *    - Upward Parallax Glide: container translates at 18% scroll speed (-scrollY * 0.18f) giving continuous depth.
+ *    - Perspective Scale Compression: subtle continuous perspective scaling as it scrolls upward.
+ *    - Smooth Top Exit Fade: stays at full 1.0f alpha while on screen, then smoothly fades out as it leaves the top.
  *    - Elastic Pull-Down Scaling: when scrolled past 0 (rubber-band), scales up to 1.08f.
- *    - Viewport 20% Threshold: fully fades to 0 when bottom passes top 20% threshold.
  */
 class HeroSectionMotionDriver(
     private val heroContainer: View,
-    private val maxFadeDistancePx: Float = 400f
+    private val scrollView: View? = null
 ) {
     companion object {
-        // --- DURATION AND TIMING CONSTANTS (SYNCHRONIZED WITH SECTION 2) ---
-        const val ENTRANCE_START_DELAY_MS: Long = 350L     // Post-launch delay ensuring activity window transition finishes
-        const val ENTRANCE_ALPHA_DURATION_MS: Long = 1100L  // Fade-in duration (0f -> 1f)
-        const val ENTRANCE_SCALE_DURATION_MS: Long = 1200L  // Scale-up duration (0.80f -> 1.0f)
-        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 1100L // Translation duration (50dp -> 0dp)
+        const val ENTRANCE_START_DELAY_MS: Long = 350L
+        const val ENTRANCE_ALPHA_DURATION_MS: Long = 1100L
+        const val ENTRANCE_SCALE_DURATION_MS: Long = 1200L
+        const val ENTRANCE_TRANSLATION_DURATION_MS: Long = 1100L
 
-        const val INITIAL_SCALE: Float = 0.80f // Synchronized with Section 2
-        const val INITIAL_TRANSLATION_DP: Float = 50f // Synchronized with Section 2
-        const val VIEWPORT_THRESHOLD_RATIO: Float = 0.20f // Viewport threshold
+        const val INITIAL_SCALE: Float = 0.80f
+        const val INITIAL_TRANSLATION_DP: Float = 50f
     }
 
     private var isEntranceAnimated = false
     private var currentScrollY: Int = 0
+    private var entranceAnimator: AnimatorSet? = null
 
     init {
-        // Pre-configure initial state for smooth entrance
         val density = heroContainer.resources.displayMetrics.density
         heroContainer.alpha = 0f
         heroContainer.scaleX = INITIAL_SCALE
@@ -51,15 +47,11 @@ class HeroSectionMotionDriver(
         heroContainer.translationY = INITIAL_TRANSLATION_DP * density
     }
 
-    /**
-     * Executes the initial fade-and-scale-up entrance animation matching Section 2.
-     */
     fun playInitialEntrance(onComplete: (() -> Unit)? = null) = startEntranceAnimation(onComplete)
 
     fun startEntranceAnimation(onComplete: (() -> Unit)? = null) {
         if (isEntranceAnimated) return
 
-        // Ensure the container has completed measurement so pivot is precise
         if (heroContainer.width == 0 || heroContainer.height == 0) {
             heroContainer.post {
                 startEntranceAnimation(onComplete)
@@ -73,7 +65,7 @@ class HeroSectionMotionDriver(
         val startTransY = INITIAL_TRANSLATION_DP * density
 
         heroContainer.pivotX = heroContainer.width / 2f
-        heroContainer.pivotY = 0f // Pinned at top edge, matching Section 2
+        heroContainer.pivotY = 0f
 
         val alphaAnim = ObjectAnimator.ofFloat(heroContainer, View.ALPHA, 0f, 1f).apply {
             duration = ENTRANCE_ALPHA_DURATION_MS
@@ -82,12 +74,12 @@ class HeroSectionMotionDriver(
 
         val scaleXAnim = ObjectAnimator.ofFloat(heroContainer, View.SCALE_X, INITIAL_SCALE, 1.0f).apply {
             duration = ENTRANCE_SCALE_DURATION_MS
-            interpolator = OvershootInterpolator(1.05f) // Matching Section 2
+            interpolator = OvershootInterpolator(1.05f)
         }
 
         val scaleYAnim = ObjectAnimator.ofFloat(heroContainer, View.SCALE_Y, INITIAL_SCALE, 1.0f).apply {
             duration = ENTRANCE_SCALE_DURATION_MS
-            interpolator = OvershootInterpolator(1.05f) // Matching Section 2
+            interpolator = OvershootInterpolator(1.05f)
         }
 
         val transYAnim = ObjectAnimator.ofFloat(heroContainer, View.TRANSLATION_Y, startTransY, 0f).apply {
@@ -95,38 +87,33 @@ class HeroSectionMotionDriver(
             interpolator = DecelerateInterpolator(1.8f)
         }
 
-        AnimatorSet().apply {
+        val animatorSet = AnimatorSet().apply {
             startDelay = ENTRANCE_START_DELAY_MS
             playTogether(alphaAnim, scaleXAnim, scaleYAnim, transYAnim)
             addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    // Re-apply any scroll position offset that might have occurred during launch
                     onScrollChanged(currentScrollY)
                     onComplete?.invoke()
                 }
             })
-            start()
         }
+        entranceAnimator = animatorSet
+        animatorSet.start()
     }
 
-    /**
-     * Drives scroll-based parallax, fade, elastic pull-down scaling, and 20% viewport threshold.
-     */
     fun onScrollChanged(scrollY: Int, viewportHeight: Int = 0) {
         currentScrollY = scrollY
 
-        // Only apply scroll physics once the initial entrance animation has completed or started
-        if (!isEntranceAnimated) return
-
-        val density = heroContainer.resources.displayMetrics.density
-        val actualViewportHeight = if (viewportHeight > 0) {
-            viewportHeight
-        } else {
-            heroContainer.resources.displayMetrics.heightPixels
+        // If user touches and scrolls while entrance animation is running, cancel and snap to scroll physics
+        if (!isEntranceAnimated) {
+            entranceAnimator?.cancel()
+            isEntranceAnimated = true
         }
 
+        val density = heroContainer.resources.displayMetrics.density
+
         if (scrollY < 0) {
-            // Elastic pull-down over-scroll (rubber-band past the top) - matching Section 2
+            // Elastic pull-down over-scroll (rubber-band past the top)
             val pullDistance = kotlin.math.abs(scrollY).toFloat()
             val scale = (1.0f + (pullDistance * 0.0008f)).coerceAtMost(1.08f)
             heroContainer.scaleX = scale
@@ -137,34 +124,27 @@ class HeroSectionMotionDriver(
             heroContainer.alpha = 1.0f
         } else {
             // DOWNWARD SCROLLING (scrollY >= 0)
-            // 1. Upward Parallax Glide: section floats with subtle lag (-20% velocity) - matching Section 2
-            heroContainer.translationY = -scrollY * 0.20f
+            // 1. Maintain locked layout alignment so gap to subsequent sections remains constant (32dp)
+            heroContainer.translationY = 0f
 
-            // 2. Scroll-driven Perspective Fade & Subtle Compression - matching Section 2
-            val fadeStartPx = 140f * density
-            val fadeEndPx = 480f * density
+            // 2. Perspective Scale Compression as it scrolls up
+            val heroH = if (heroContainer.height > 0) heroContainer.height.toFloat() else 380f * density
+            val progress = (scrollY / heroH).coerceIn(0f, 1f)
+            val scale = 1.0f - (progress * 0.05f)
+            heroContainer.scaleX = scale
+            heroContainer.scaleY = scale
+            heroContainer.pivotX = heroContainer.width / 2f
+            heroContainer.pivotY = 0f
 
+            // 3. Graceful Top Exit Fade: stays at full 1.0f opacity while visible,
+            // only smoothly fading out as its bottom approaches the top edge of the screen
+            val fadeStartPx = heroH * 0.40f
+            val fadeEndPx = heroH * 1.00f
             if (scrollY <= fadeStartPx) {
                 heroContainer.alpha = 1.0f
-                heroContainer.scaleX = 1.0f
-                heroContainer.scaleY = 1.0f
             } else {
-                val progress = ((scrollY - fadeStartPx) / (fadeEndPx - fadeStartPx)).coerceIn(0f, 1f)
-                heroContainer.alpha = 1.0f - (progress * 0.90f)
-                val scale = 1.0f - (progress * 0.05f)
-                heroContainer.scaleX = scale
-                heroContainer.scaleY = scale
-                heroContainer.pivotX = heroContainer.width / 2f
-                heroContainer.pivotY = heroContainer.height * 0.5f
-            }
-
-            // 3. Viewport 20% Threshold Guard: if bottom of view has crossed above top 20% of screen
-            val topThreshold = actualViewportHeight * VIEWPORT_THRESHOLD_RATIO
-            val locationOnScreen = IntArray(2)
-            heroContainer.getLocationOnScreen(locationOnScreen)
-            val viewBottom = locationOnScreen[1] + heroContainer.height
-            if (viewBottom <= topThreshold) {
-                heroContainer.alpha = 0f
+                val fadeProgress = ((scrollY - fadeStartPx) / (fadeEndPx - fadeStartPx)).coerceIn(0f, 1f)
+                heroContainer.alpha = 1.0f - fadeProgress
             }
         }
     }

@@ -353,16 +353,37 @@ data class DynamicSection(
     }
 }
 
+object ResumeSectionConstants {
+    const val SECTION_PERSONAL = "section_personal"
+    const val SECTION_SUMMARY = "section_summary"
+    const val SECTION_EXPERIENCE = "section_experience"
+    const val SECTION_PROJECTS = "section_projects"
+    const val SECTION_SKILLS = "section_skills"
+    const val SECTION_EDUCATION = "section_education"
+    const val CUSTOM_PREFIX = "custom_"
+
+    val DEFAULT_CORE_ORDER = listOf(
+        SECTION_PERSONAL,
+        SECTION_SUMMARY,
+        SECTION_EXPERIENCE,
+        SECTION_PROJECTS,
+        SECTION_SKILLS,
+        SECTION_EDUCATION
+    )
+}
+
 @Serializable
 data class ResumeProfile(
     val hero: ProfileHero = ProfileHero(),
     val coreSections: CoreSections = CoreSections(),
-    val dynamicSections: List<DynamicSection> = emptyList()
+    val dynamicSections: List<DynamicSection> = emptyList(),
+    val sectionOrder: List<String> = emptyList()
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "hero" to hero.toMap(),
         "coreSections" to coreSections.toMap(),
-        "dynamicSections" to dynamicSections.map { it.toMap() }
+        "dynamicSections" to dynamicSections.map { it.toMap() },
+        "sectionOrder" to sectionOrder
     )
 
     fun toJson(): String {
@@ -386,10 +407,14 @@ data class ResumeProfile(
                 ?.filterIsInstance<Map<String, Any?>>()
                 ?.map { DynamicSection.fromMap(it) } ?: emptyList()
 
+            val orderList = (map["sectionOrder"] as? List<*>)
+                ?.filterIsInstance<String>() ?: emptyList()
+
             return ResumeProfile(
                 hero = ProfileHero.fromMap(map["hero"] as? Map<String, Any?>),
                 coreSections = CoreSections.fromMap(map["coreSections"] as? Map<String, Any?>),
-                dynamicSections = dynamicList
+                dynamicSections = dynamicList,
+                sectionOrder = orderList
             )
         }
 
@@ -397,89 +422,131 @@ data class ResumeProfile(
             return ResumeProfile(
                 hero = ProfileHero(
                     fullName = "Alex Mercer",
-                    headlineTitle = "Senior Staff Android & Distributed Systems Engineer",
+                    headlineTitle = "Staff Mobile Systems Architect | Android & Cross-Platform",
                     location = "San Francisco, CA · Remote",
+                    targetCompany = "",
                     contactInfo = ContactInfo(
-                        email = "alex.mercer.dev@gmail.com",
-                        phone = "+1 (415) 890-4321",
+                        email = "alex.mercer.dev@example.com",
+                        phone = "+1 (415) 555-0198",
                         linkedinUrl = "https://linkedin.com/in/alexmercer-dev",
                         githubUrl = "https://github.com/alexmercer",
                         websiteUrl = "https://alexmercer.design"
                     )
                 ),
                 coreSections = CoreSections(
-                    profileSummary = "Product-minded Mobile Architect with 8+ years building high-concurrency mobile systems, reactive Jetpack Compose architectures, and privacy-first local ML pipelines. Passionate about developer tooling, fluid UI interactions, and high-performance cross-platform bridges.",
+                    profileSummary = "Product-minded Mobile Systems Architect with 8+ years architecting high-scale Android applications, reactive Kotlin Flow micro-features, and on-device ML pipelines. Specialized in fluid design systems, resilient offline data synchronization, and high-throughput modular architectures.",
                     workExperience = listOf(
                         WorkExperienceItem(
                             id = "exp-1",
                             companyName = "Apex Mobile Technologies",
-                            roleTitle = "Lead Mobile Architect",
-                            startDate = "2022",
+                            roleTitle = "Staff Mobile Architect",
+                            startDate = "Jan 2022",
                             endDate = "Present",
                             bulletPoints = listOf(
-                                "Spearheaded migration of legacy Android multi-module architecture to Jetpack Compose and Coroutines Flow, cutting UI render lag by 42%.",
-                                "Engineered on-device document intelligence pipeline delivering zero-latency text parsing with local ML Kit and native C++ decoding.",
-                                "Mentored 14 mobile engineers across Android & iOS, standardizing design system tokens and automated screenshot testing."
+                                "Spearheaded modernization of multi-module Android architecture to Jetpack Compose and Coroutines Flow, reducing UI frame latency by 38%.",
+                                "Architected high-throughput offline-first synchronization engine supporting 1.5M daily active users with automatic conflict resolution.",
+                                "Established design system token architecture and automated visual regression testing pipeline across 12 distributed feature teams."
                             ),
-                            techStackTags = listOf("Kotlin", "Jetpack Compose", "Coroutines", "Room", "Hilt", "ML Kit")
+                            clientApps = listOf(
+                                ClientAppItem(
+                                    name = "ApexPay",
+                                    url = "https://play.google.com/store/apps/details?id=com.apex.pay.sample"
+                                ),
+                                ClientAppItem(
+                                    name = "ApexFlow",
+                                    url = "https://play.google.com/store/apps/details?id=com.apex.flow.sample"
+                                )
+                            ),
+                            techStackTags = emptyList()
                         ),
                         WorkExperienceItem(
                             id = "exp-2",
                             companyName = "CloudStream Systems",
                             roleTitle = "Senior Android Engineer",
-                            startDate = "2019",
-                            endDate = "2022",
+                            startDate = "Jun 2019",
+                            endDate = "Dec 2021",
                             bulletPoints = listOf(
-                                "Architected real-time WebSocket syncing layer supporting 1.2M daily active users with offline conflict-free replicated data types.",
-                                "Reduced cold-start app launch duration from 1.8s to 420ms through baseline profiles and dependency graph pruning."
+                                "Designed resilient bi-directional WebSocket client layer with automated backoff retry, achieving 99.98% connection reliability.",
+                                "Optimized cold-start launch latency from 1.6s to 410ms through Android Baseline Profiles and modular dependency injection tuning."
                             ),
-                            techStackTags = listOf("Kotlin", "RxJava", "OkHttp", "SQLite", "Biometrics", "CI/CD")
+                            clientApps = emptyList(),
+                            techStackTags = listOf("Kotlin", "Coroutines", "Room", "Hilt", "WebSockets", "CI/CD")
                         )
                     ),
                     projects = listOf(
                         ProjectItem(
                             id = "proj-1",
-                            projectTitle = "NeuralDoc - Smart PDF Scanner",
-                            description = "Open-source Android scanner app utilizing edge detection and ML Kit text recognition to extract clean markdown from handwritten and typed documents.",
-                            techStackTags = listOf("Jetpack Compose", "ML Kit", "CameraX", "DataStore"),
-                            demoUrl = "https://neuraldoc.dev/demo",
+                            projectTitle = "NeuralDoc · On-Device Document Intelligence",
+                            description = "• Engineered privacy-first document scanning engine with CameraX and on-device ML Kit text recognition.\n• Built reactive local persistence pipeline utilizing encrypted Room database and Proto DataStore.\n• Published open-source library on GitHub with 1.8k+ stars and automated semantic versioning.",
+                            techStackTags = listOf("Jetpack Compose", "ML Kit", "CameraX", "Room"),
+                            demoUrl = "https://github.com/alexmercer/neuraldoc",
                             codeUrl = "https://github.com/alexmercer/neuraldoc"
+                        ),
+                        ProjectItem(
+                            id = "proj-2",
+                            projectTitle = "PulseSync · Distributed Event Engine",
+                            description = "• Built high-performance event stream aggregator capable of processing 40,000 live telemetry updates per second.\n• Implemented conflict-free replicated data types (CRDTs) to power peer-to-peer collaboration without central lock contention.",
+                            techStackTags = listOf("Kotlin Multiplatform", "Ktor", "Flow", "SQLite"),
+                            demoUrl = "https://play.google.com/store/apps/details?id=com.cloudstream.pulsesync",
+                            codeUrl = "https://play.google.com/store/apps/details?id=com.cloudstream.pulsesync"
                         )
                     ),
                     skills = SkillCategories(
                         sectionTitle = "TECHNICAL SKILLS",
-                        languages = listOf("Kotlin", "Java", "Python", "Rust", "SQL"),
-                        frameworks = listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Ktor", "Room"),
-                        cloudDevOps = listOf("Firebase", "Google Cloud Platform", "GitHub Actions", "Docker"),
-                        toolsMethodologies = listOf("Clean Architecture", "MVVM / MVI", "TDD & Robolectric", "Git"),
+                        languages = listOf("Kotlin", "Java", "Dart", "Rust", "SQL"),
+                        frameworks = listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Clean MVVM", "Hilt"),
+                        cloudDevOps = listOf("Firebase", "Google Cloud", "GitHub Actions", "Docker", "CI/CD"),
+                        toolsMethodologies = listOf("Clean Architecture", "MVI", "TDD & Robolectric", "Git"),
                         categorizedDomains = linkedMapOf(
-                            "Languages & Core" to listOf("Kotlin", "Java", "Python", "Rust", "SQL"),
-                            "Frameworks & SDKs" to listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Ktor", "Room"),
-                            "Cloud & DevOps" to listOf("Firebase", "Google Cloud Platform", "GitHub Actions", "Docker"),
-                            "Tools & Methodologies" to listOf("Clean Architecture", "MVVM / MVI", "TDD & Robolectric", "Git")
+                            "Programming Languages" to listOf("Kotlin", "Java", "Dart", "Rust", "SQL"),
+                            "Mobile & Architecture" to listOf("Jetpack Compose", "Android SDK", "Coroutines & Flow", "Clean MVVM", "Hilt"),
+                            "Networking & Storage" to listOf("Ktor", "Retrofit", "Room", "DataStore", "SQLite"),
+                            "Cloud & DevOps" to listOf("Firebase", "Google Cloud", "GitHub Actions", "Docker", "CI/CD")
                         )
                     ),
                     education = listOf(
                         EducationItem(
+                            institution = "Stanford University",
+                            degree = "Master of Science - Computer Science | Systems & Architecture Track",
+                            graduationYear = "2017 – 2019"
+                        ),
+                        EducationItem(
                             institution = "University of California, Berkeley",
-                            degree = "B.S. in Electrical Engineering and Computer Sciences (EECS)",
-                            graduationYear = "2017"
+                            degree = "Bachelor of Science - Electrical Engineering & Computer Sciences (EECS)",
+                            graduationYear = "2013 – 2017"
                         )
                     )
                 ),
                 dynamicSections = listOf(
                     DynamicSection(
-                        sectionTitle = "Certifications & Honors",
+                        sectionTitle = "Open Source & Certifications",
                         items = listOf(
+                            DynamicItem(
+                                title = "compose_motion_transitions",
+                                subtitle = "Creator & Lead Maintainer",
+                                dateOrPeriod = "Active",
+                                description = "• Engineered fluid physics-driven spring transition system for Jetpack Compose with zero frame drop.\n• Published to Maven Central with 800+ weekly downloads and interactive component documentation.",
+                                bulletPoints = listOf(
+                                    "Engineered fluid physics-driven spring transition system for Jetpack Compose with zero frame drop.",
+                                    "Published to Maven Central with 800+ weekly downloads and interactive component documentation."
+                                ),
+                                link = "https://github.com/alexmercer/compose-motion-transitions"
+                            ),
                             DynamicItem(
                                 title = "Google Associate Android Developer (AAD)",
                                 subtitle = "Google Developers Certification",
-                                dateOrPeriod = "2021",
-                                description = "Mastery of Android core architecture and async processing."
+                                dateOrPeriod = "Verified",
+                                description = "• Validated competency in Android architectural components, asynchronous processing, and UI accessibility.\n• Completed practical performance evaluation assessed by Google Developers certification board.",
+                                bulletPoints = listOf(
+                                    "Validated competency in Android architectural components, asynchronous processing, and UI accessibility.",
+                                    "Completed practical performance evaluation assessed by Google Developers certification board."
+                                ),
+                                link = "https://www.credly.com/badges/sample-associate-android-developer"
                             )
                         )
                     )
-                )
+                ),
+                sectionOrder = ResumeSectionConstants.DEFAULT_CORE_ORDER + listOf("custom_Open Source Contributions")
             )
         }
     }

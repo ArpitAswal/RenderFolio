@@ -1,0 +1,114 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Frosted Glass Stack / Layers (Night Mode): -15 degree rotation around center (107.5, 82.5), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="107.5"
+        android:pivotY="82.5"
+        android:rotation="-15">
+
+        <!-- Layer 1: Bottom Frosted Glass Plate -->
+        <path
+            android:pathData="M 50,115 L 120,75 L 165,100 L 95,140 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#662A3548" />
+                    <item android:offset="0.7" android:color="#2618202C" />
+                    <item android:offset="1.0" android:color="#003B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#66FFFFFF" />
+                    <item android:offset="0.5" android:color="#593B82F6" />
+                    <item android:offset="1.0" android:color="#262A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Layer 2: Middle Frosted Glass Plate -->
+        <path
+            android:pathData="M 50,90 L 120,50 L 165,75 L 95,115 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#732A3548" />
+                    <item android:offset="0.7" android:color="#3318202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.5" android:color="#593B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Layer 3: Top Frosted Glass Plate -->
+        <path
+            android:pathData="M 50,65 L 120,25 L 165,50 L 95,90 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="50"
+                    android:startY="20"
+                    android:endX="160"
+                    android:endY="160">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.7" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#1F3B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="60"
+                    android:startY="30"
+                    android:endX="150"
+                    android:endY="150">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.5" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#402A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Core Electric Blue Hairline Accent on Top Plate -->
+        <path
+            android:pathData="M 68,62 L 120,32 L 148,48 L 96,78 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="1.0" />
+
+    </group>
+
+</vector>
+

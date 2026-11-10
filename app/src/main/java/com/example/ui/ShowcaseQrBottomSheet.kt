@@ -26,7 +26,7 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
     private var candidateName: String = ""
     private var isCelebrationMode: Boolean = true
     private var qrBitmap: Bitmap? = null
-    var onViewVisualizer: (() -> Unit)? = null
+    var onViewVisualiser: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,19 +53,12 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
         val ivQrCode = view.findViewById<ImageView>(R.id.iv_qr_code)
         val btnSaveQr = view.findViewById<ImageButton>(R.id.btn_action_save_qr)
         val btnShareQr = view.findViewById<ImageButton>(R.id.btn_action_share_qr)
-        val btnViewVisualizer = view.findViewById<MaterialButton>(R.id.btn_qr_view_visualizer)
+        val btnViewVisualiser = view.findViewById<MaterialButton>(R.id.btn_qr_view_visualiser)
 
-        if (isCelebrationMode) {
-            // Post-compilation celebration mode from Structure Verification
-            tvTitle.text = getString(R.string.title_showcase_ready)
-            tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
-            btnViewVisualizer.visibility = View.VISIBLE
-        } else {
-            // Standalone QR display from Cold Start (candidate name header, no redundant visualizer button)
-            tvTitle.text = if (candidateName.isNotBlank()) candidateName else getString(R.string.title_showcase_ready)
-            tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
-            btnViewVisualizer.visibility = View.GONE
-        }
+        // Always display the standardized showcase title - never show candidate/user name as the title
+        tvTitle.text = getString(R.string.title_showcase_ready)
+        tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
+        btnViewVisualiser.visibility = if (isCelebrationMode) View.VISIBLE else View.GONE
 
         // Generate QR Code Bitmap in-memory
         val qrTargetUrl = if (shareUrl.isNotBlank()) shareUrl else "https://lightweight-firebase-projects.web.app"
@@ -106,10 +99,10 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        // Primary Action: View Visualizer
-        btnViewVisualizer.setOnClickListener {
+        // Primary Action: View Visualiser
+        btnViewVisualiser.setOnClickListener {
             dismiss()
-            onViewVisualizer?.invoke()
+            onViewVisualiser?.invoke()
         }
     }
 

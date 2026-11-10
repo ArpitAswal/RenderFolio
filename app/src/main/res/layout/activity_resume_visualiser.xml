@@ -31,10 +31,13 @@
 
         <!-- Outer Column Centered to Screen -->
         <LinearLayout
+            android:id="@+id/layout_visualiser_sections"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:paddingTop="36dp"
             android:paddingBottom="48dp">
 
@@ -240,10 +243,11 @@
                         android:clickable="true"
                         android:focusable="true">
                         <ImageView
+                            android:id="@+id/iv_social_portfolio_icon"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_link_20"
+                            android:src="@drawable/ic_globe_20"
                             app:tint="@color/hero_name_text"
                             android:contentDescription="@string/cd_hero_profile_link" />
                     </FrameLayout>
@@ -254,10 +258,13 @@
 
             <!-- SECTION 2: PROFESSIONAL OVERVIEW & SUMMARY -->
             <FrameLayout
+                android:id="@+id/wrapper_section_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
 
@@ -268,6 +275,7 @@
 
             <!-- SECTION 3: WORK EXPERIENCE -->
             <FrameLayout
+                android:id="@+id/wrapper_section_experience"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
@@ -282,6 +290,7 @@
 
             <!-- SECTION 4: FEATURED PROJECTS -->
             <FrameLayout
+                android:id="@+id/wrapper_section_projects"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
@@ -296,6 +305,7 @@
 
             <!-- SECTION 5: TECHNICAL SKILLS -->
             <FrameLayout
+                android:id="@+id/wrapper_section_skills"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
@@ -311,6 +321,7 @@
 
             <!-- SECTION 6: EDUCATION -->
             <FrameLayout
+                android:id="@+id/wrapper_section_education"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxWidth="680dp"
