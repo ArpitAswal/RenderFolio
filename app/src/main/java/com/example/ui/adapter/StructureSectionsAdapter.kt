@@ -49,6 +49,33 @@ enum class SectionType {
     FOOTER
 }
 
+enum class CustomSectionArchetype {
+    CERTIFICATIONS,
+    ACHIEVEMENTS,
+    PUBLICATIONS,
+    VOLUNTEER,
+    AWARDS,
+    OPEN_SOURCE,
+    LANGUAGES,
+    HOBBIES,
+    GENERIC
+}
+
+fun resolveCustomSectionArchetype(title: String): CustomSectionArchetype {
+    val lower = title.lowercase()
+    return when {
+        lower.contains("certif") || lower.contains("course") || lower.contains("license") -> CustomSectionArchetype.CERTIFICATIONS
+        lower.contains("achieve") -> CustomSectionArchetype.ACHIEVEMENTS
+        lower.contains("publicat") || lower.contains("paper") || lower.contains("article") -> CustomSectionArchetype.PUBLICATIONS
+        lower.contains("volunt") || lower.contains("community") -> CustomSectionArchetype.VOLUNTEER
+        lower.contains("award") || lower.contains("honor") -> CustomSectionArchetype.AWARDS
+        lower.contains("open source") || lower.contains("open-source") || lower.contains("repo") || lower.contains("source") -> CustomSectionArchetype.OPEN_SOURCE
+        lower.contains("language") -> CustomSectionArchetype.LANGUAGES
+        lower.contains("hobbi") || lower.contains("interest") -> CustomSectionArchetype.HOBBIES
+        else -> CustomSectionArchetype.GENERIC
+    }
+}
+
 data class SectionItem(
     val type: SectionType,
     var customSection: DynamicSection? = null
@@ -108,14 +135,18 @@ class StructureSectionsAdapter(
     val profileLinks = mutableListOf<String>()
 
     init {
-        if (profile.hero.contactInfo.linkedinUrl.isNotBlank()) profileLinks.add(profile.hero.contactInfo.linkedinUrl)
-        if (profile.hero.contactInfo.githubUrl.isNotBlank()) profileLinks.add(profile.hero.contactInfo.githubUrl)
-        if (profile.hero.contactInfo.websiteUrl.isNotBlank() && !profileLinks.contains(profile.hero.contactInfo.websiteUrl)) {
-            profileLinks.add(profile.hero.contactInfo.websiteUrl)
+        val initialLinks = mutableListOf<String>()
+        if (profile.hero.contactInfo.linkedinUrl.isNotBlank()) initialLinks.add(profile.hero.contactInfo.linkedinUrl)
+        if (profile.hero.contactInfo.githubUrl.isNotBlank()) initialLinks.add(profile.hero.contactInfo.githubUrl)
+        if (profile.hero.contactInfo.websiteUrl.isNotBlank() && !initialLinks.contains(profile.hero.contactInfo.websiteUrl)) {
+            initialLinks.add(profile.hero.contactInfo.websiteUrl)
         }
-        if (profileLinks.isEmpty()) {
-            profileLinks.add("https://github.com/candidate")
+        profile.hero.contactInfo.customLinks.forEach { link ->
+            if (link.isNotBlank() && !initialLinks.contains(link)) {
+                initialLinks.add(link)
+            }
         }
+        profileLinks.addAll(initialLinks.distinct())
 
         buildSectionsList()
     }
@@ -171,9 +202,12 @@ class StructureSectionsAdapter(
                     }
                 }
 
-                // If any core section wasn't in order, append it to guarantee all 6 core sections exist
+                // If any core section wasn't in order, insert it at its canonical position
                 if (!addedCoreTypes.contains(SectionType.PERSONAL_INFO)) sections.add(0, SectionItem(SectionType.PERSONAL_INFO))
-                if (!addedCoreTypes.contains(SectionType.ABOUT_SUMMARY)) sections.add(SectionItem(SectionType.ABOUT_SUMMARY))
+                if (!addedCoreTypes.contains(SectionType.ABOUT_SUMMARY)) {
+                    val insertIdx = if (sections.isNotEmpty() && sections[0].type == SectionType.PERSONAL_INFO) 1 else 0
+                    sections.add(insertIdx, SectionItem(SectionType.ABOUT_SUMMARY))
+                }
                 if (!addedCoreTypes.contains(SectionType.WORK_EXPERIENCE)) sections.add(SectionItem(SectionType.WORK_EXPERIENCE))
                 if (!addedCoreTypes.contains(SectionType.PROJECTS)) sections.add(SectionItem(SectionType.PROJECTS))
                 if (!addedCoreTypes.contains(SectionType.TECHNICAL_SKILLS)) sections.add(SectionItem(SectionType.TECHNICAL_SKILLS))
@@ -1781,8 +1815,8 @@ class StructureSectionsAdapter(
                 currentSkills.categorizedDomains.forEach { (cat, skills) ->
                     if (skills.isNotEmpty()) categorizedMap[cat] = skills
                 }
-            } else {
-                // If categorizedDomains is empty, check legacy standard lists if populated with distinct content
+            } else if (currentSkills.rawFlatSkills.isEmpty()) {
+                // Only if categorizedDomains AND rawFlatSkills are empty, check legacy standard lists
                 val standardEntries = listOf(
                     context.getString(R.string.skills_domain_languages) to currentSkills.languages,
                     context.getString(R.string.skills_domain_frameworks) to currentSkills.frameworks,
@@ -1802,6 +1836,11 @@ class StructureSectionsAdapter(
             val isCase1Categorized = categorizedMap.isNotEmpty()
 
             if (isCase1Categorized) {
+                binding.btnAddSkill.text = context.getString(R.string.action_add_domain)
+                binding.btnAddSkill.setOnClickListener {
+                    showAddOrEditDomainDialog(null, emptyList())
+                }
+
                 // =========================================================================
                 // CASE 1: CATEGORIZED SKILLS (Domain Label + Inline Skills Stream)
                 // Use exact domain names from the resume (e.g. Mobile Development, Networking)
@@ -1839,10 +1878,14 @@ class StructureSectionsAdapter(
                     container.addView(rowBinding.itemSkillsDomainRoot)
                 }
             } else {
+                binding.btnAddSkill.text = "+ Add Skill"
+                binding.btnAddSkill.setOnClickListener {
+                    showAddSingleSkillDialog()
+                }
+
                 // =========================================================================
-                // CASE 2: UNCATEGORIZED / FLAT LIST (Bullets, ZERO Random Domain Labels)
-                // • Flutter      • Android SDK   • Kotlin        • Swift
-                // • Jetpack Compose              • Firebase      • Git
+                // CASE 2: UNCATEGORIZED / FLAT LIST
+                // Render direct bullet items with "X" to delete and tap to edit.
                 // =========================================================================
                 val flatSkillsList = when {
                     currentSkills.rawFlatSkills.isNotEmpty() -> currentSkills.rawFlatSkills
@@ -1868,36 +1911,101 @@ class StructureSectionsAdapter(
                     return
                 }
 
-                val inflater = LayoutInflater.from(context)
-                val rowBinding = ItemSkillsDomainEntryBinding.inflate(inflater, container, false)
-
-                // CRITICAL: Absolutely NO random domain label in Case 2!
-                rowBinding.tvDomainTitle.visibility = View.GONE
-
-                // Clean bulleted stream: "•  Flutter   •  Android SDK   •  Kotlin   •  Swift"
-                rowBinding.tvDomainSkillsContent.text = flatSkillsList.joinToString("   •   ", prefix = "•   ")
-
-                val openEdit = {
-                    showAddOrEditDomainDialog(null, flatSkillsList)
+                flatSkillsList.forEachIndexed { sIdx, skillText ->
+                    val skillBulletView = createBulletView(
+                        context = context,
+                        text = skillText,
+                        onEdit = {
+                            showEditSingleSkillDialog(sIdx, skillText)
+                        },
+                        onDelete = {
+                            val currentFlat = (if (currentSkills.rawFlatSkills.isNotEmpty()) currentSkills.rawFlatSkills else flatSkillsList).toMutableList()
+                            if (sIdx in currentFlat.indices) {
+                                currentFlat.removeAt(sIdx)
+                                currentSkills = currentSkills.copy(
+                                    rawFlatSkills = currentFlat,
+                                    categorizedDomains = emptyMap()
+                                )
+                                renderSemanticSkillsDomains()
+                            }
+                        }
+                    )
+                    container.addView(skillBulletView)
                 }
-                rowBinding.btnEditDomain.setOnClickListener { openEdit() }
+            }
+        }
 
-                rowBinding.btnDeleteDomain.setOnClickListener {
+        private fun showAddSingleSkillDialog() {
+            val context = binding.root.context
+            val container = createDialogContainer(context)
+            val (til, et) = createDialogTextInputLayout(
+                context,
+                hint = "Skill Name (or comma-separated)",
+                startIconRes = R.drawable.ic_work
+            )
+            container.addView(til)
+
+            val dialog = createMaterialDialog(
+                context = context,
+                title = "Add Skill",
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
+                val text = et.text?.toString()?.trim().orEmpty()
+                if (text.isNotBlank()) {
+                    val newSkills = text.split(",").map { it.trim().removePrefix("•").removePrefix("-").trim() }.filter { it.isNotBlank() }
+                    val currentFlat = (if (currentSkills.rawFlatSkills.isNotEmpty()) currentSkills.rawFlatSkills else currentSkills.frameworks + currentSkills.languages).toMutableList()
+                    currentFlat.addAll(newSkills)
                     currentSkills = currentSkills.copy(
-                        rawFlatSkills = emptyList(),
-                        categorizedDomains = emptyMap(),
-                        languages = emptyList(),
-                        frameworks = emptyList(),
-                        cloudDevOps = emptyList(),
-                        toolsMethodologies = emptyList(),
-                        customCategories = emptyMap()
+                        rawFlatSkills = currentFlat.distinct(),
+                        categorizedDomains = emptyMap()
                     )
                     renderSemanticSkillsDomains()
+                    d.dismiss()
+                } else {
+                    til.error = context.getString(R.string.error_skills_required)
                 }
-
-                rowBinding.dividerDomain.visibility = View.GONE
-                container.addView(rowBinding.itemSkillsDomainRoot)
             }
+            et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+            dialog.show()
+        }
+
+        private fun showEditSingleSkillDialog(index: Int, oldSkill: String) {
+            val context = binding.root.context
+            val container = createDialogContainer(context)
+            val (til, et) = createDialogTextInputLayout(
+                context,
+                hint = "Skill Name",
+                startIconRes = R.drawable.ic_work
+            )
+            et.setText(oldSkill)
+            et.setSelection(oldSkill.length)
+            container.addView(til)
+
+            val dialog = createMaterialDialog(
+                context = context,
+                title = "Edit Skill",
+                customView = container,
+                positiveText = context.getString(R.string.action_save)
+            ) { d ->
+                val text = et.text?.toString()?.trim().orEmpty()
+                if (text.isNotBlank()) {
+                    val currentFlat = (if (currentSkills.rawFlatSkills.isNotEmpty()) currentSkills.rawFlatSkills else currentSkills.frameworks + currentSkills.languages).toMutableList()
+                    if (index in currentFlat.indices) {
+                        currentFlat[index] = text
+                        currentSkills = currentSkills.copy(
+                            rawFlatSkills = currentFlat,
+                            categorizedDomains = emptyMap()
+                        )
+                        renderSemanticSkillsDomains()
+                    }
+                    d.dismiss()
+                } else {
+                    til.error = context.getString(R.string.error_skills_required)
+                }
+            }
+            et.addTextChangedListener(SimpleTextWatcher { til.error = null })
+            dialog.show()
         }
 
         /**
@@ -2242,18 +2350,28 @@ class StructureSectionsAdapter(
             binding.btnEditSection.setOnClickListener { openRenameDialog() }
 
             val context = binding.root.context
-            val singularType = when {
-                sec.sectionTitle.contains("Open Source", ignoreCase = true) -> context.getString(R.string.custom_type_source)
-                sec.sectionTitle.contains("Certif", ignoreCase = true) -> context.getString(R.string.custom_type_certificate)
-                sec.sectionTitle.contains("Award", ignoreCase = true) || sec.sectionTitle.contains(
-                    "Honor",
-                    ignoreCase = true
-                ) -> context.getString(R.string.custom_type_award)
-
-                sec.sectionTitle.contains("Publication", ignoreCase = true) -> context.getString(R.string.custom_type_publication)
-                else -> context.getString(R.string.custom_type_item)
+            val archetype = resolveCustomSectionArchetype(sec.sectionTitle)
+            val singularType = when (archetype) {
+                CustomSectionArchetype.CERTIFICATIONS -> context.getString(R.string.custom_type_certificate)
+                CustomSectionArchetype.ACHIEVEMENTS -> context.getString(R.string.custom_type_achievement)
+                CustomSectionArchetype.PUBLICATIONS -> context.getString(R.string.custom_type_publication)
+                CustomSectionArchetype.VOLUNTEER -> context.getString(R.string.custom_type_volunteer)
+                CustomSectionArchetype.AWARDS -> context.getString(R.string.custom_type_award)
+                CustomSectionArchetype.OPEN_SOURCE -> context.getString(R.string.custom_type_source)
+                CustomSectionArchetype.LANGUAGES -> context.getString(R.string.custom_type_language)
+                CustomSectionArchetype.HOBBIES -> "Hobby"
+                CustomSectionArchetype.GENERIC -> context.getString(R.string.custom_type_item)
             }
-            binding.btnAddCustomItem.text = context.getString(R.string.add_new_item_format, singularType)
+
+            if (archetype == CustomSectionArchetype.LANGUAGES) {
+                binding.btnAddCustomItem.text = context.getString(R.string.action_add_language)
+                binding.btnAddCustomItem.visibility = View.VISIBLE
+            } else if (archetype == CustomSectionArchetype.HOBBIES) {
+                binding.btnAddCustomItem.visibility = View.GONE
+            } else {
+                binding.btnAddCustomItem.text = context.getString(R.string.add_new_item_format, singularType)
+                binding.btnAddCustomItem.visibility = View.VISIBLE
+            }
 
             // Circular minus button click removes optional section with confirmation
             binding.btnRemoveSection.setOnClickListener {
@@ -2276,7 +2394,7 @@ class StructureSectionsAdapter(
                 }
             }
 
-            renderCustomItems(sectionItem, singularType)
+            renderCustomItems(sectionItem, singularType, archetype)
 
             binding.btnAddCustomItem.setOnClickListener {
                 val currentSec = sectionItem.customSection ?: return@setOnClickListener
@@ -2291,36 +2409,111 @@ class StructureSectionsAdapter(
                 val updatedItems = currentSec.items.toMutableList()
                 updatedItems.add(newItem)
                 sectionItem.customSection = currentSec.copy(items = updatedItems)
-                addCustomItemView(sectionItem, newItem, singularType)
-                updateCustomItemHeaders(singularType)
+                addCustomItemView(sectionItem, newItem, singularType, archetype)
+                updateCustomItemHeaders(archetype, singularType)
             }
         }
 
-        private fun updateCustomItemHeaders(resolvedSingularType: String) {
+        private fun updateCustomItemHeaders(archetype: CustomSectionArchetype, resolvedSingularType: String) {
             val context = binding.root.context
             for (i in 0 until binding.llCustomItems.childCount) {
                 val child = binding.llCustomItems.getChildAt(i)
                 val tvHeader = child.findViewById<TextView>(R.id.tvCustomItemHeader)
                 val btnRemove = child.findViewById<TextView>(R.id.btnRemoveCustomItem)
                 val divider = child.findViewById<View>(R.id.dividerEntry)
-                tvHeader?.text = context.getString(R.string.custom_item_header_format, resolvedSingularType, i + 1)
-                btnRemove?.text = context.getString(R.string.remove_item_format, resolvedSingularType)
-                divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
+                if (archetype == CustomSectionArchetype.HOBBIES) {
+                    tvHeader?.visibility = View.GONE
+                    btnRemove?.visibility = View.GONE
+                    divider?.visibility = View.GONE
+                } else {
+                    tvHeader?.visibility = View.VISIBLE
+                    btnRemove?.visibility = View.VISIBLE
+                    tvHeader?.text = context.getString(R.string.custom_item_header_format, resolvedSingularType, i + 1)
+                    btnRemove?.text = context.getString(R.string.remove_item_format, resolvedSingularType)
+                    divider?.visibility = if (i > 0) View.VISIBLE else View.GONE
+                }
             }
         }
 
-        private fun renderCustomItems(sectionItem: SectionItem, singularType: String? = null) {
+        private fun renderCustomItems(
+            sectionItem: SectionItem,
+            singularType: String? = null,
+            archetype: CustomSectionArchetype
+        ) {
             val section = sectionItem.customSection ?: return
             val context = binding.root.context
+
+            if (archetype == CustomSectionArchetype.HOBBIES) {
+                binding.btnAddCustomItem.visibility = View.GONE
+                if (section.items.isEmpty()) {
+                    val defaultItem = DynamicItem(
+                        title = "Hobbies",
+                        subtitle = "",
+                        dateOrPeriod = "",
+                        description = "",
+                        link = "",
+                        bulletPoints = emptyList()
+                    )
+                    sectionItem.customSection = section.copy(items = listOf(defaultItem))
+                }
+            } else if (archetype == CustomSectionArchetype.LANGUAGES) {
+                binding.btnAddCustomItem.visibility = View.VISIBLE
+                binding.btnAddCustomItem.text = context.getString(R.string.action_add_language)
+                // If items contains 1 generic "Languages" container with bullets, unroll into individual items
+                val unrolled = mutableListOf<DynamicItem>()
+                for (it in section.items) {
+                    if ((it.title.equals("Languages", ignoreCase = true) || it.title.isBlank()) && it.bulletPoints.isNotEmpty()) {
+                        for (bp in it.bulletPoints) {
+                            if (bp.isNotBlank()) unrolled.add(DynamicItem(title = bp))
+                        }
+                    } else if (it.title.isNotBlank() && !it.title.equals("Languages", ignoreCase = true)) {
+                        unrolled.add(it)
+                    } else if (it.description.isNotBlank()) {
+                        val parsed = it.description.split("\n").map { l -> l.trim() }.filter { l -> l.isNotBlank() }
+                        for (l in parsed) {
+                            unrolled.add(DynamicItem(title = l))
+                        }
+                    }
+                }
+                if (unrolled.isEmpty()) {
+                    unrolled.add(DynamicItem(title = ""))
+                }
+                sectionItem.customSection = section.copy(items = unrolled)
+            } else {
+                binding.btnAddCustomItem.visibility = View.VISIBLE
+                if (section.items.isEmpty()) {
+                    sectionItem.customSection = section.copy(
+                        items = listOf(
+                            DynamicItem(
+                                title = "",
+                                subtitle = "",
+                                dateOrPeriod = "",
+                                description = "",
+                                link = "",
+                                bulletPoints = emptyList()
+                            )
+                        )
+                    )
+                }
+            }
+
+            val curSection = sectionItem.customSection ?: section
             val resolvedSingularType = singularType ?: context.getString(R.string.custom_type_item)
             binding.llCustomItems.removeAllViews()
-            section.items.forEach { item ->
-                addCustomItemView(sectionItem, item, resolvedSingularType)
+            curSection.items.forEach { item ->
+                addCustomItemView(sectionItem, item, resolvedSingularType, archetype)
             }
-            updateCustomItemHeaders(resolvedSingularType)
+            if (archetype != CustomSectionArchetype.HOBBIES) {
+                updateCustomItemHeaders(archetype, resolvedSingularType)
+            }
         }
 
-        private fun addCustomItemView(sectionItem: SectionItem, item: DynamicItem, resolvedSingularType: String) {
+        private fun addCustomItemView(
+            sectionItem: SectionItem,
+            item: DynamicItem,
+            resolvedSingularType: String,
+            archetype: CustomSectionArchetype
+        ) {
             val context = binding.root.context
             val inflater = LayoutInflater.from(context)
             val entryBinding = ItemCustomEntryBinding.inflate(inflater, binding.llCustomItems, false)
@@ -2334,30 +2527,213 @@ class StructureSectionsAdapter(
             }
 
             val section = sectionItem.customSection ?: return
-            entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title)
-            entryBinding.etCustomTitle.setText(item.title)
 
-            val linkHint = when {
-                section.sectionTitle.contains("Certif", ignoreCase = true) ||
-                        section.sectionTitle.contains("License", ignoreCase = true) ->
-                    context.getString(R.string.hint_link_certification)
+            // Handle Hobbies special single input view
+            if (archetype == CustomSectionArchetype.HOBBIES) {
+                entryBinding.dividerEntry.visibility = View.GONE
+                entryBinding.tvCustomItemHeader.visibility = View.GONE
+                entryBinding.btnRemoveCustomItem.visibility = View.GONE
+                entryBinding.tilCustomSubtitle.visibility = View.GONE
+                entryBinding.tilCustomPeriod.visibility = View.GONE
+                entryBinding.tilCustomLink.visibility = View.GONE
+                entryBinding.layoutCustomBulletsSection.visibility = View.GONE
 
-                section.sectionTitle.contains("Publication", ignoreCase = true) ||
-                        section.sectionTitle.contains("Paper", ignoreCase = true) ||
-                        section.sectionTitle.contains("Article", ignoreCase = true) ->
-                    context.getString(R.string.hint_link_publication)
+                entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                entryBinding.tilCustomTitle.hint = "Hobbies (comma separated)"
+                entryBinding.tilCustomTitle.helperText = "e.g. Painting, Flying, Kite Surfing"
+                entryBinding.tilCustomTitle.isErrorEnabled = false
 
-                section.sectionTitle.contains("Open Source", ignoreCase = true) ||
-                        section.sectionTitle.contains("Repo", ignoreCase = true) ||
-                        section.sectionTitle.contains("Source", ignoreCase = true) ->
-                    context.getString(R.string.hint_link_open_source)
+                val hobbiesInitial = if (item.description.isNotBlank()) item.description else item.bulletPoints.joinToString(", ")
+                entryBinding.etCustomTitle.setText(hobbiesInitial)
 
-                else ->
-                    context.getString(R.string.hint_link_general)
+                entryBinding.etCustomTitle.addTextChangedListener(SimpleTextWatcher { newText ->
+                    val cur = sectionItem.customSection ?: return@SimpleTextWatcher
+                    val pos = getPos()
+                    if (pos in cur.items.indices) {
+                        val tokens = newText.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                        val updatedItems = cur.items.toMutableList()
+                        updatedItems[pos] = updatedItems[pos].copy(
+                            title = "Hobbies",
+                            description = newText,
+                            bulletPoints = tokens
+                        )
+                        sectionItem.customSection = cur.copy(items = updatedItems)
+                    }
+                })
+                return
             }
-            entryBinding.tilCustomLink.hint = linkHint
+
+            // Divider visibility
+            entryBinding.dividerEntry.visibility = if (getPos() > 0) View.VISIBLE else View.GONE
+
+            // Configure fields by archetype
+            when (archetype) {
+                CustomSectionArchetype.CERTIFICATIONS -> {
+                    // Title: Certificate Name *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    val titleLabel = if (section.sectionTitle.contains("Course", ignoreCase = true)) "Course Name" else context.getString(R.string.hint_custom_title_cert)
+                    entryBinding.tilCustomTitle.setRequiredHint(titleLabel)
+
+                    // Subtitle: Issuing Organization *
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.setRequiredHint(R.string.hint_custom_subtitle_issuer)
+
+                    // Period: DO NOT ask Issue/Validity Date per user requirement
+                    entryBinding.tilCustomPeriod.visibility = View.GONE
+
+                    // Link: Credential URL (Optional)
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_certification)
+
+                    // Bullets: Key Learnings / Highlights (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_cert)
+                }
+
+                CustomSectionArchetype.ACHIEVEMENTS -> {
+                    // Title: Achievement Headline *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_achieve)
+
+                    // Subtitle: Context / Organization (Optional)
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.hint = context.getString(R.string.hint_custom_subtitle_achieve_ctx)
+
+                    // Period: Year / Date (Optional)
+                    entryBinding.tilCustomPeriod.visibility = View.VISIBLE
+                    entryBinding.tilCustomPeriod.hint = context.getString(R.string.hint_custom_period_date)
+
+                    // Link: Proof / Article Link (Optional)
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_achievement)
+
+                    // Bullets: Details & Impact (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_achieve)
+                }
+
+                CustomSectionArchetype.PUBLICATIONS -> {
+                    // Title: Paper / Article Title *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_pub)
+
+                    // Subtitle: DO NOT ask Journal / Conference per user requirement
+                    entryBinding.tilCustomSubtitle.visibility = View.GONE
+
+                    // Period: Publication Date / Year (Optional)
+                    entryBinding.tilCustomPeriod.visibility = View.VISIBLE
+                    entryBinding.tilCustomPeriod.hint = context.getString(R.string.hint_custom_period_pub)
+
+                    // Link: DOI / Paper URL (Optional)
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_publication)
+
+                    // Bullets: Summary / Findings (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_pub)
+                }
+
+                CustomSectionArchetype.VOLUNTEER -> {
+                    // Title: Role / Title *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_vol_role)
+
+                    // Subtitle: Organization / Cause *
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.setRequiredHint(R.string.hint_custom_subtitle_vol_org)
+
+                    // Period: Dates of Service (Optional)
+                    entryBinding.tilCustomPeriod.visibility = View.VISIBLE
+                    entryBinding.tilCustomPeriod.hint = context.getString(R.string.hint_custom_period_vol)
+
+                    // Link: DO NOT ask Organization URL per user requirement
+                    entryBinding.tilCustomLink.visibility = View.GONE
+
+                    // Bullets: Impact & Duties (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_vol)
+                }
+
+                CustomSectionArchetype.AWARDS -> {
+                    // Title: Award Name *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_award)
+
+                    // Subtitle: Granting Organization / Issuer *
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.setRequiredHint(R.string.hint_custom_subtitle_award_issuer)
+
+                    // Period: Year / Date (Optional)
+                    entryBinding.tilCustomPeriod.visibility = View.VISIBLE
+                    entryBinding.tilCustomPeriod.hint = context.getString(R.string.hint_custom_period_date)
+
+                    // Link: Verification / Recognition Link (Optional)
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_award)
+
+                    // Bullets: Scope & Details (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_award)
+                }
+
+                CustomSectionArchetype.OPEN_SOURCE -> {
+                    // Title: Package / Repository Name *
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_oss)
+
+                    // Subtitle: Role / Subtitle (Optional)
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.hint = context.getString(R.string.hint_custom_subtitle_oss_role)
+
+                    // Period: DO NOT ask Status / Period per user requirement
+                    entryBinding.tilCustomPeriod.visibility = View.GONE
+
+                    // Link: Package / Repository Link (Optional)
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_open_source)
+
+                    // Bullets: Highlights & Contributions (Optional)
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details_oss)
+                }
+
+                CustomSectionArchetype.LANGUAGES -> {
+                    // Option A: Single input per row for Language & Proficiency
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title_lang)
+
+                    entryBinding.tilCustomSubtitle.visibility = View.GONE
+                    entryBinding.tilCustomPeriod.visibility = View.GONE
+                    entryBinding.tilCustomLink.visibility = View.GONE
+                    entryBinding.layoutCustomBulletsSection.visibility = View.GONE
+                }
+
+                CustomSectionArchetype.GENERIC -> {
+                    // Generic default
+                    entryBinding.tilCustomTitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomTitle.setRequiredHint(R.string.hint_custom_title)
+
+                    entryBinding.tilCustomSubtitle.visibility = View.VISIBLE
+                    entryBinding.tilCustomSubtitle.hint = context.getString(R.string.hint_custom_subtitle)
+
+                    entryBinding.tilCustomPeriod.visibility = View.VISIBLE
+                    entryBinding.tilCustomPeriod.hint = context.getString(R.string.hint_custom_period)
+
+                    entryBinding.tilCustomLink.visibility = View.VISIBLE
+                    entryBinding.tilCustomLink.hint = context.getString(R.string.hint_link_general)
+
+                    entryBinding.layoutCustomBulletsSection.visibility = View.VISIBLE
+                    entryBinding.tvCustomDetailsHeader.text = context.getString(R.string.header_custom_details)
+                }
+            }
+
+            // Populate initial values
+            entryBinding.etCustomTitle.setText(item.title)
+            entryBinding.etCustomSubtitle.setText(item.subtitle)
+            entryBinding.etCustomPeriod.setText(item.dateOrPeriod)
             entryBinding.etCustomLink.setText(item.link)
 
+            // Watchers for Title, Subtitle, Period
             entryBinding.etCustomTitle.addTextChangedListener(SimpleTextWatcher { newTitle ->
                 entryBinding.tilCustomTitle.error = null
                 val cur = sectionItem.customSection ?: return@SimpleTextWatcher
@@ -2369,6 +2745,29 @@ class StructureSectionsAdapter(
                 }
             })
 
+            entryBinding.etCustomSubtitle.addTextChangedListener(SimpleTextWatcher { newSubtitle ->
+                entryBinding.tilCustomSubtitle.error = null
+                val cur = sectionItem.customSection ?: return@SimpleTextWatcher
+                val pos = getPos()
+                if (pos in cur.items.indices) {
+                    val updatedItems = cur.items.toMutableList()
+                    updatedItems[pos] = updatedItems[pos].copy(subtitle = newSubtitle)
+                    sectionItem.customSection = cur.copy(items = updatedItems)
+                }
+            })
+
+            entryBinding.etCustomPeriod.addTextChangedListener(SimpleTextWatcher { newPeriod ->
+                entryBinding.tilCustomPeriod.error = null
+                val cur = sectionItem.customSection ?: return@SimpleTextWatcher
+                val pos = getPos()
+                if (pos in cur.items.indices) {
+                    val updatedItems = cur.items.toMutableList()
+                    updatedItems[pos] = updatedItems[pos].copy(dateOrPeriod = newPeriod)
+                    sectionItem.customSection = cur.copy(items = updatedItems)
+                }
+            })
+
+            // Link text watcher and blur formatting
             entryBinding.etCustomLink.addTextChangedListener(SimpleTextWatcher(trim = false) { rawLink ->
                 val cur = sectionItem.customSection ?: return@SimpleTextWatcher
                 val pos = getPos()
@@ -2426,11 +2825,8 @@ class StructureSectionsAdapter(
                     .toMutableList()
             }
 
-            entryBinding.tvCustomDetailsHeader.setRequiredHeader(R.string.header_custom_details)
-
             fun renderCustomBullets() {
                 entryBinding.llCustomBulletsContainer.removeAllViews()
-
                 bullets.forEachIndexed { bIdx, bText ->
                     val bulletView = createBulletView(
                         context = entryBinding.root.context,
@@ -2470,28 +2866,29 @@ class StructureSectionsAdapter(
                             }
                         }
                     )
-
                     entryBinding.llCustomBulletsContainer.addView(bulletView)
                 }
             }
-            renderCustomBullets()
 
-            // Add Bullet
-            entryBinding.btnAddCustomBullet.setOnClickListener {
-                val ctx = entryBinding.root.context
-                showAddBulletDialog(ctx) { newBullet ->
-                    bullets.add(newBullet)
-                    val cur = sectionItem.customSection
-                    val pos = getPos()
-                    if (cur != null && pos in cur.items.indices) {
-                        val updatedItems = cur.items.toMutableList()
-                        updatedItems[pos] = updatedItems[pos].copy(
-                            bulletPoints = bullets,
-                            description = bullets.joinToString("\n")
-                        )
-                        sectionItem.customSection = cur.copy(items = updatedItems)
+            if (entryBinding.layoutCustomBulletsSection.visibility == View.VISIBLE) {
+                renderCustomBullets()
+
+                entryBinding.btnAddCustomBullet.setOnClickListener {
+                    val ctx = entryBinding.root.context
+                    showAddBulletDialog(ctx) { newBullet ->
+                        bullets.add(newBullet)
+                        val cur = sectionItem.customSection
+                        val pos = getPos()
+                        if (cur != null && pos in cur.items.indices) {
+                            val updatedItems = cur.items.toMutableList()
+                            updatedItems[pos] = updatedItems[pos].copy(
+                                bulletPoints = bullets,
+                                description = bullets.joinToString("\n")
+                            )
+                            sectionItem.customSection = cur.copy(items = updatedItems)
+                        }
+                        renderCustomBullets()
                     }
-                    renderCustomBullets()
                 }
             }
 
@@ -2499,9 +2896,10 @@ class StructureSectionsAdapter(
                 val cur = sectionItem.customSection ?: return@setOnClickListener
                 val pos = getPos()
                 if (pos in cur.items.indices) {
-                    val item = cur.items[pos]
-                    val isBlank = item.title.isBlank() && item.link.isBlank() &&
-                            item.bulletPoints.isEmpty() && item.dateOrPeriod.isBlank()
+                    val curItem = cur.items[pos]
+                    val isBlank = curItem.title.isBlank() && curItem.subtitle.isBlank() &&
+                            curItem.link.isBlank() && curItem.bulletPoints.isEmpty() &&
+                            curItem.dateOrPeriod.isBlank()
                     val doRemove = {
                         val posToRemove = getPos()
                         val currentSec = sectionItem.customSection
@@ -2511,14 +2909,14 @@ class StructureSectionsAdapter(
                             val updatedSec = currentSec.copy(items = updatedItems)
                             sectionItem.customSection = updatedSec
                             binding.llCustomItems.removeViewAt(posToRemove)
-                            updateCustomItemHeaders(resolvedSingularType)
+                            updateCustomItemHeaders(archetype, resolvedSingularType)
                         }
                     }
                     if (isBlank) {
                         doRemove()
                     } else {
                         val ctx = entryBinding.root.context
-                        val title = item.title.trim()
+                        val title = curItem.title.trim()
                         val msg: CharSequence = if (title.isNotBlank()) {
                             formatBoldMessage(ctx, R.string.dialog_message_remove_custom_item, title)
                         } else {
@@ -2580,11 +2978,14 @@ class StructureSectionsAdapter(
             !it.contains("linkedin", ignoreCase = true) && !it.contains("github", ignoreCase = true)
         } ?: ""
 
+        val extraLinks = normalizedProfileLinks.filter { it != linkedIn && it != github && it != website }
+
         val finalHero = targetLeft.currentHero.copy(
             contactInfo = targetLeft.currentHero.contactInfo.copy(
                 linkedinUrl = linkedIn,
                 githubUrl = github,
-                websiteUrl = website
+                websiteUrl = website,
+                customLinks = extraLinks
             )
         )
 
@@ -2607,11 +3008,21 @@ class StructureSectionsAdapter(
         }
 
         val finalDynamicSections = allDynamicSections
-            .filter { sec -> sec.items.any { it.title.isNotBlank() } }
+            .filter { sec -> sec.items.any { it.title.isNotBlank() || it.bulletPoints.isNotEmpty() || it.description.isNotBlank() } }
             .map { sec ->
                 sec.copy(
-                    items = sec.items.filter { it.title.isNotBlank() }.map { item ->
-                        if (item.link.isNotBlank()) item.copy(link = normalizeUrl(item.link)) else item
+                    items = sec.items.filter { it.title.isNotBlank() || it.bulletPoints.isNotEmpty() || it.description.isNotBlank() }.map { item ->
+                        val fixedTitle = if (item.title.isNotBlank()) {
+                            item.title
+                        } else if (sec.sectionTitle.contains("Hobbi", ignoreCase = true) || sec.sectionTitle.contains("Interest", ignoreCase = true)) {
+                            "Hobbies"
+                        } else if (sec.sectionTitle.contains("Language", ignoreCase = true)) {
+                            "Languages"
+                        } else {
+                            sec.sectionTitle
+                        }
+                        val itemWithTitle = item.copy(title = fixedTitle)
+                        if (itemWithTitle.link.isNotBlank()) itemWithTitle.copy(link = normalizeUrl(itemWithTitle.link)) else itemWithTitle
                     }
                 )
             }

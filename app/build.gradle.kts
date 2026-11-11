@@ -63,7 +63,12 @@ android {
     buildConfig = true
     viewBinding = true
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests.isIncludeAndroidResources = true
+    unitTests.all {
+      (it as org.gradle.api.tasks.testing.Test).jvmArgs("-Xmx2048m")
+    }
+  }
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true

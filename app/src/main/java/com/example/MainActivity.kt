@@ -3,6 +3,7 @@ package com.example
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -88,6 +89,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Force fixed portrait orientation for mobile devices (< 600dp)
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            try {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } catch (_: Exception) {}
+        }
+
         setContentView(R.layout.activity_main)
 
         preferencesRepository = ResumePreferencesRepository.getInstance(applicationContext)

@@ -11,25 +11,30 @@ data class ContactInfo(
     val phone: String = "",
     val linkedinUrl: String = "",
     val githubUrl: String = "",
-    val websiteUrl: String = ""
+    val websiteUrl: String = "",
+    val customLinks: List<String> = emptyList()
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "email" to email,
         "phone" to phone,
         "linkedinUrl" to linkedinUrl,
         "githubUrl" to githubUrl,
-        "websiteUrl" to websiteUrl
+        "websiteUrl" to websiteUrl,
+        "customLinks" to customLinks
     )
 
     companion object {
+        @Suppress("UNCHECKED_CAST")
         fun fromMap(map: Map<String, Any?>?): ContactInfo {
             if (map == null) return ContactInfo()
+            val extra = (map["customLinks"] as? List<*>)?.filterIsInstance<String>() ?: emptyList()
             return ContactInfo(
                 email = map["email"] as? String ?: "",
                 phone = map["phone"] as? String ?: "",
                 linkedinUrl = map["linkedinUrl"] as? String ?: "",
                 githubUrl = map["githubUrl"] as? String ?: "",
-                websiteUrl = map["websiteUrl"] as? String ?: ""
+                websiteUrl = map["websiteUrl"] as? String ?: "",
+                customLinks = extra
             )
         }
     }
@@ -457,7 +462,7 @@ data class ResumeProfile(
                                     url = "https://play.google.com/store/apps/details?id=com.apex.flow.sample"
                                 )
                             ),
-                            techStackTags = emptyList()
+                            techStackTags = listOf("Kotlin", "Jetpack Compose", "Coroutines Flow", "Room", "Hilt")
                         ),
                         WorkExperienceItem(
                             id = "exp-2",
@@ -469,7 +474,12 @@ data class ResumeProfile(
                                 "Designed resilient bi-directional WebSocket client layer with automated backoff retry, achieving 99.98% connection reliability.",
                                 "Optimized cold-start launch latency from 1.6s to 410ms through Android Baseline Profiles and modular dependency injection tuning."
                             ),
-                            clientApps = emptyList(),
+                            clientApps = listOf(
+                                ClientAppItem(
+                                    name = "CloudStream Sync",
+                                    url = "https://play.google.com/store/apps/details?id=com.cloudstream.sync.sample"
+                                )
+                            ),
                             techStackTags = listOf("Kotlin", "Coroutines", "Room", "Hilt", "WebSockets", "CI/CD")
                         )
                     ),
@@ -519,12 +529,120 @@ data class ResumeProfile(
                 ),
                 dynamicSections = listOf(
                     DynamicSection(
-                        sectionTitle = "Open Source & Certifications",
+                        sectionTitle = "Certifications",
+                        items = listOf(
+                            DynamicItem(
+                                title = "AWS Certified Solutions Architect – Professional",
+                                subtitle = "Amazon Web Services (AWS)",
+                                dateOrPeriod = "",
+                                description = "• Demonstrated advanced mastery in architecting secure, resilient, and elastic cloud infrastructure.\n• Validated deep competency in multi-tier application architectures and automated disaster recovery.",
+                                bulletPoints = listOf(
+                                    "Demonstrated advanced mastery in architecting secure, resilient, and elastic cloud infrastructure.",
+                                    "Validated deep competency in multi-tier application architectures and automated disaster recovery."
+                                ),
+                                link = "https://aws.amazon.com/verification"
+                            ),
+                            DynamicItem(
+                                title = "Google Associate Android Developer",
+                                subtitle = "Google Developers Certification",
+                                dateOrPeriod = "",
+                                description = "• Validated core competency in Android UI, Jetpack architectural components, and background threading.\n• Demonstrated proficiency in building accessible, testable, and secure native mobile experiences.",
+                                bulletPoints = listOf(
+                                    "Validated core competency in Android UI, Jetpack architectural components, and background threading.",
+                                    "Demonstrated proficiency in building accessible, testable, and secure native mobile experiences."
+                                ),
+                                link = "https://www.credly.com/badges/sample-associate-android-developer"
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Honors & Awards",
+                        items = listOf(
+                            DynamicItem(
+                                title = "Google Play Best App of the Year",
+                                subtitle = "Google Play Editorial Board",
+                                dateOrPeriod = "2023",
+                                description = "• Awarded top honor among 10,000+ evaluated mobile applications for outstanding fluid user experience.\n• Recognized for innovative offline caching and breakthrough design system engineering.",
+                                bulletPoints = listOf(
+                                    "Awarded top honor among 10,000+ evaluated mobile applications for outstanding fluid user experience.",
+                                    "Recognized for innovative offline caching and breakthrough design system engineering."
+                                ),
+                                link = "https://play.google.com/store/apps/topic?id=editors_choice"
+                            ),
+                            DynamicItem(
+                                title = "First Place - Global Android Dev Challenge",
+                                subtitle = "Google Developer Group & Android Team",
+                                dateOrPeriod = "2021",
+                                description = "• Won grand prize in Jetpack Compose UI animation and responsive design category.\n• Built fully accessible multiplatform design toolkit featured in official Android developer showcase.",
+                                bulletPoints = listOf(
+                                    "Won grand prize in Jetpack Compose UI animation and responsive design category.",
+                                    "Built fully accessible multiplatform design toolkit featured in official Android developer showcase."
+                                ),
+                                link = "https://developer.android.com/community"
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Volunteer Work",
+                        items = listOf(
+                            DynamicItem(
+                                title = "Lead Technical Mentor & Organizer",
+                                subtitle = "Code for Good Foundation",
+                                dateOrPeriod = "2021 – Present",
+                                description = "• Mentored 45+ aspiring mobile engineers from underrepresented communities in Kotlin and modern Android.\n• Conducted bi-weekly code review workshops on clean architecture, coroutines, and unit testing.",
+                                bulletPoints = listOf(
+                                    "Mentored 45+ aspiring mobile engineers from underrepresented communities in Kotlin and modern Android.",
+                                    "Conducted bi-weekly code review workshops on clean architecture, coroutines, and unit testing."
+                                ),
+                                link = ""
+                            ),
+                            DynamicItem(
+                                title = "Open Source Community Advocate",
+                                subtitle = "Mobile Developers Alliance",
+                                dateOrPeriod = "2020 – 2022",
+                                description = "• Organized monthly technical meetups with 200+ attendees focusing on on-device machine learning.\n• Curated community contribution guidelines and reviewed pull requests for junior contributors.",
+                                bulletPoints = listOf(
+                                    "Organized monthly technical meetups with 200+ attendees focusing on on-device machine learning.",
+                                    "Curated community contribution guidelines and reviewed pull requests for junior contributors."
+                                ),
+                                link = ""
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Publications",
+                        items = listOf(
+                            DynamicItem(
+                                title = "High-Throughput Reactive State Management in Modular Mobile Systems",
+                                subtitle = "",
+                                dateOrPeriod = "2023",
+                                description = "• Co-authored peer-reviewed study evaluating main-thread contention across reactive Android architectures.\n• Demonstrated 42% reduction in memory churn utilizing zero-copy unidirectional StateFlow streams.",
+                                bulletPoints = listOf(
+                                    "Co-authored peer-reviewed study evaluating main-thread contention across reactive Android architectures.",
+                                    "Demonstrated 42% reduction in memory churn utilizing zero-copy unidirectional StateFlow streams."
+                                ),
+                                link = "https://doi.org/10.1145/sample.mobile.systems"
+                            ),
+                            DynamicItem(
+                                title = "Architecting Offline-First Mobile Applications at Scale",
+                                subtitle = "",
+                                dateOrPeriod = "2021",
+                                description = "• Authored comprehensive engineering handbook on conflict-free replicated data types in SQLite.\n• Analyzed real-world network failure recovery patterns across 5 million active enterprise endpoints.",
+                                bulletPoints = listOf(
+                                    "Authored comprehensive engineering handbook on conflict-free replicated data types in SQLite.",
+                                    "Analyzed real-world network failure recovery patterns across 5 million active enterprise endpoints."
+                                ),
+                                link = "https://doi.org/10.1145/sample.offline.first"
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Open Source Contributions",
                         items = listOf(
                             DynamicItem(
                                 title = "compose_motion_transitions",
                                 subtitle = "Creator & Lead Maintainer",
-                                dateOrPeriod = "Active",
+                                dateOrPeriod = "",
                                 description = "• Engineered fluid physics-driven spring transition system for Jetpack Compose with zero frame drop.\n• Published to Maven Central with 800+ weekly downloads and interactive component documentation.",
                                 bulletPoints = listOf(
                                     "Engineered fluid physics-driven spring transition system for Jetpack Compose with zero frame drop.",
@@ -533,20 +651,104 @@ data class ResumeProfile(
                                 link = "https://github.com/alexmercer/compose-motion-transitions"
                             ),
                             DynamicItem(
-                                title = "Google Associate Android Developer (AAD)",
-                                subtitle = "Google Developers Certification",
-                                dateOrPeriod = "Verified",
-                                description = "• Validated competency in Android architectural components, asynchronous processing, and UI accessibility.\n• Completed practical performance evaluation assessed by Google Developers certification board.",
+                                title = "kotlin-crdt-sync",
+                                subtitle = "Core Contributor",
+                                dateOrPeriod = "",
+                                description = "• Implemented delta-state conflict-free replicated data structures for Kotlin Multiplatform mobile apps.\n• Benchmarked peer-to-peer data replication achieving sub-10ms synchronization overhead over Bluetooth.",
                                 bulletPoints = listOf(
-                                    "Validated competency in Android architectural components, asynchronous processing, and UI accessibility.",
-                                    "Completed practical performance evaluation assessed by Google Developers certification board."
+                                    "Implemented delta-state conflict-free replicated data structures for Kotlin Multiplatform mobile apps.",
+                                    "Benchmarked peer-to-peer data replication achieving sub-10ms synchronization overhead over Bluetooth."
                                 ),
-                                link = "https://www.credly.com/badges/sample-associate-android-developer"
+                                link = "https://github.com/alexmercer/kotlin-crdt-sync"
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Achievements",
+                        items = listOf(
+                            DynamicItem(
+                                title = "Global Mobile Hackathon Grand Champion",
+                                subtitle = "TechCrunch Disrupt 2022",
+                                dateOrPeriod = "2022",
+                                description = "• Ranked 1st among 350 international developer teams for creating on-device accessibility visual assistant.\n• Engineered real-time computer vision inference pipeline running entirely locally at 30fps.",
+                                bulletPoints = listOf(
+                                    "Ranked 1st among 350 international developer teams for creating on-device accessibility visual assistant.",
+                                    "Engineered real-time computer vision inference pipeline running entirely locally at 30fps."
+                                ),
+                                link = "https://techcrunch.com/sample-hackathon-winner"
+                            ),
+                            DynamicItem(
+                                title = "Enterprise Innovation & Scalability Award",
+                                subtitle = "Apex Mobile Technologies",
+                                dateOrPeriod = "2023",
+                                description = "• Honored with annual CTO award for leading architecture re-platforming supporting 15M transactions daily.\n• Cut crash-free user sessions from 99.2% to 99.98% across all tier-1 Android production releases.",
+                                bulletPoints = listOf(
+                                    "Honored with annual CTO award for leading architecture re-platforming supporting 15M transactions daily.",
+                                    "Cut crash-free user sessions from 99.2% to 99.98% across all tier-1 Android production releases."
+                                ),
+                                link = "https://apex.sample.com/engineering-awards"
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Languages",
+                        items = listOf(
+                            DynamicItem(
+                                title = "English - Fluent (Native)",
+                                subtitle = "",
+                                dateOrPeriod = "",
+                                description = "English: Fluent (Native)",
+                                bulletPoints = listOf("English: Fluent (Native)"),
+                                link = ""
+                            ),
+                            DynamicItem(
+                                title = "Spanish - Professional Working",
+                                subtitle = "",
+                                dateOrPeriod = "",
+                                description = "Spanish: Professional Working",
+                                bulletPoints = listOf("Spanish: Professional Working"),
+                                link = ""
+                            ),
+                            DynamicItem(
+                                title = "German - Elementary Proficiency",
+                                subtitle = "",
+                                dateOrPeriod = "",
+                                description = "German: Elementary Proficiency",
+                                bulletPoints = listOf("German: Elementary Proficiency"),
+                                link = ""
+                            )
+                        )
+                    ),
+                    DynamicSection(
+                        sectionTitle = "Hobbies & Interests",
+                        items = listOf(
+                            DynamicItem(
+                                title = "Hobbies",
+                                subtitle = "",
+                                dateOrPeriod = "",
+                                description = "High-altitude Trekking, Classical Piano, Marathon Running, Strategic Chess",
+                                bulletPoints = listOf("High-altitude Trekking", "Classical Piano", "Marathon Running", "Strategic Chess"),
+                                link = ""
                             )
                         )
                     )
                 ),
-                sectionOrder = ResumeSectionConstants.DEFAULT_CORE_ORDER + listOf("custom_Open Source Contributions")
+                sectionOrder = listOf(
+                    ResumeSectionConstants.SECTION_PERSONAL,
+                    ResumeSectionConstants.SECTION_SUMMARY,
+                    ResumeSectionConstants.SECTION_EXPERIENCE,
+                    ResumeSectionConstants.SECTION_PROJECTS,
+                    ResumeSectionConstants.SECTION_SKILLS,
+                    ResumeSectionConstants.SECTION_EDUCATION,
+                    "custom_Certifications",
+                    "custom_Honors & Awards",
+                    "custom_Volunteer Work",
+                    "custom_Publications",
+                    "custom_Open Source Contributions",
+                    "custom_Achievements",
+                    "custom_Languages",
+                    "custom_Hobbies & Interests"
+                )
             )
         }
     }

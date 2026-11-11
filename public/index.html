@@ -57,7 +57,8 @@
       --top-banner-bg: rgba(248, 250, 252, 0.88);
       --top-banner-border: rgba(226, 232, 240, 0.8);
       --section-header-color: #2563EB;
-      --section-watermark-opacity: 0.12;
+      --duration-text: #334155;
+      --section-watermark-opacity: 0.22;
       --section-watermark-invert: 0;
     }
 
@@ -108,7 +109,8 @@
         --top-banner-bg: rgba(11, 15, 25, 0.88);
         --top-banner-border: rgba(255, 255, 255, 0.06);
         --section-header-color: #60A5FA;
-        --section-watermark-opacity: 0.18;
+        --duration-text: #CBD5E1;
+        --section-watermark-opacity: 0.25;
         --section-watermark-invert: 1;
       }
     }
@@ -157,7 +159,8 @@
       --top-banner-bg: rgba(11, 15, 25, 0.88);
       --top-banner-border: rgba(255, 255, 255, 0.06);
       --section-header-color: #60A5FA;
-      --section-watermark-opacity: 0.18;
+      --duration-text: #CBD5E1;
+      --section-watermark-opacity: 0.25;
       --section-watermark-invert: 1;
     }
 
@@ -521,10 +524,10 @@
     }
 
     .exp-duration {
-      font-size: 0.825rem;
-      color: var(--text-muted);
+      font-size: 0.85rem;
+      color: var(--duration-text);
       font-family: 'JetBrains Mono', monospace;
-      font-weight: 500;
+      font-weight: 700;
       flex-shrink: 0;
       margin-top: 2px;
     }
@@ -579,7 +582,7 @@
     .deliverable-chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       background: var(--deliverable-chip-bg);
       color: var(--deliverable-chip-text);
       font-size: 0.8rem;
@@ -589,6 +592,13 @@
       text-decoration: none;
       border: 1px solid rgba(37, 99, 235, 0.15);
       transition: all 0.2s;
+    }
+
+    .deliverable-chip svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+      flex-shrink: 0;
     }
 
     .deliverable-chip:hover {
@@ -723,35 +733,53 @@
     /* SECTION 7: DYNAMIC CUSTOM SECTIONS */
     .custom-section-block {
       margin-top: 36px;
+      position: relative;
+    }
+
+    .section-watermark {
+      position: absolute;
+      top: -10px;
+      right: -8px;
+      width: 135px;
+      height: 135px;
+      pointer-events: none;
+      opacity: var(--section-watermark-opacity);
+      color: var(--brand-primary);
+      z-index: 0;
+    }
+
+    .section-watermark.compact {
+      width: 100px;
+      height: 100px;
     }
 
     .custom-item-entry {
       padding: 10px 0;
-    }
-
-    .custom-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
+      position: relative;
+      z-index: 1;
     }
 
     .custom-item-title {
       font-size: 1.1rem;
       font-weight: 700;
       color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .custom-item-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 3px;
+      margin-bottom: 8px;
     }
 
     .custom-item-subtitle {
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--brand-primary);
-      margin-top: 3px;
-    }
-
-    .custom-item-subtitle a {
-      color: var(--brand-primary);
-      text-decoration: underline;
+      flex: 1;
     }
 
     /* States & Notifications */
@@ -1088,6 +1116,143 @@
     }
 
     // -----------------------------------------------------------------
+    // Helper: Custom Section Archetype Resolver (1:1 with Android)
+    // -----------------------------------------------------------------
+    function resolveArchetype(title) {
+      const lower = (title || "").toLowerCase();
+      if (lower.includes("certif") || lower.includes("course") || lower.includes("license")) return "CERTIFICATIONS";
+      if (lower.includes("achieve")) return "ACHIEVEMENTS";
+      if (lower.includes("publicat") || lower.includes("paper") || lower.includes("article")) return "PUBLICATIONS";
+      if (lower.includes("volunt") || lower.includes("community")) return "VOLUNTEER";
+      if (lower.includes("award") || lower.includes("honor")) return "AWARDS";
+      if (lower.includes("open source") || lower.includes("open-source") || lower.includes("repo") || lower.includes("source")) return "OPEN_SOURCE";
+      if (lower.includes("language")) return "LANGUAGES";
+      if (lower.includes("hobbi") || lower.includes("interest")) return "HOBBIES";
+      return "GENERIC";
+    }
+
+    // -----------------------------------------------------------------
+    // Helper: Resolve Section Header Icon SVG
+    // -----------------------------------------------------------------
+    function getHeaderIconSvg(archetype) {
+      switch (archetype) {
+        case "CERTIFICATIONS":
+        case "PUBLICATIONS":
+          return `<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+        case "OPEN_SOURCE":
+          return `<svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`;
+        case "LANGUAGES":
+          return `<svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 0 1 5.08 16zm2.95-8H5.08a7.987 7.987 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>`;
+        default:
+          return `<svg viewBox="0 0 24 24"><path d="M12 2l2.4 3.7 4.4-.3 1.2 4.2 3.9 2-1.6 4.1 2.2 3.8-3.8 2.2-1.6 4.1-4.2-1.2-2.5 3.7-2.5-3.7-4.2 1.2-1.6-4.1-3.8-2.2 2.2-3.8-1.6-4.1 3.9-2 1.2-4.2 4.4.3L12 2zm-1.8 13.6l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>`;
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // Helper: Resolve Thematic Background Watermark Artwork SVG
+    // -----------------------------------------------------------------
+    function getWatermarkSvg(archetype, isCompact) {
+      const cls = isCompact ? "section-watermark compact" : "section-watermark";
+      switch (archetype) {
+        case "CERTIFICATIONS":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M58 34h94a10 10 0 0 1 10 10v112a10 10 0 0 1-10 10H58a10 10 0 0 1-10-10V44a10 10 0 0 1 10-10z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M64 40h82a6 6 0 0 1 6 6v100a6 6 0 0 1-6 6H64a6 6 0 0 1-6-6V46a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"/>
+                <path d="M74 58h62M74 72h62M74 86h44" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.4"/>
+                <circle cx="128" cy="120" r="16" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M128 109l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8 2.4-4.8z" fill="currentColor"/>
+                <path d="M123 134l-5 22 10-6 4 6-1-22" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"/>
+              </g>
+            </svg>
+          `;
+        case "AWARDS":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M72 42h66c0 32-13 54-33 54s-33-22-33-54z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M68 36h74a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3H68a3 3 0 0 1-3-3v-3a3 3 0 0 1 3-3z" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M72 48C56 48 50 62 50 72c0 14 10 22 24 22M138 48c16 0 22 14 22 24 0 14-10 22-24 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M100 96v26M90 122h30M82 136h46a4 4 0 0 1 4 4v10H78v-10a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M105 56l2.5 5 5.5.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8 2.5-5z" fill="currentColor"/>
+              </g>
+            </svg>
+          `;
+        case "ACHIEVEMENTS":
+        case "GENERIC":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M92 116l-18 54 18-12 10 12-4-50z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M112 120l-4 50 10-12 18 12-18-54z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="105" cy="80" r="38" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="105" cy="80" r="30" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
+                <path d="M105 60l4 12h13l-11 8 4 12-10-8-10 8 4-12-11-8h13l4-12z" fill="currentColor"/>
+              </g>
+            </svg>
+          `;
+        case "OPEN_SOURCE":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M105 34l51 24v56l-51 34-51-34V58z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M88 64v62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="88" cy="68" r="5" fill="currentColor"/>
+                <circle cx="88" cy="122" r="5" fill="currentColor"/>
+                <path d="M88 88c0 10 34 10 34 22v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="122" cy="122" r="5" fill="currentColor"/>
+                <path d="M95 52l-14 14 14 14M115 52l14 14-14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </svg>
+          `;
+        case "PUBLICATIONS":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M54 44c18-6 38-4 51 8 13-12 33-14 51-8v104c-18-6-38-4-51 8-13-12-33-14-51-8V44z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M105 52v104" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M66 66h26M66 82h26M66 98h20M118 66h26M118 82h26M118 98h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.5"/>
+              </g>
+            </svg>
+          `;
+        case "VOLUNTEER":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <circle cx="105" cy="95" r="44" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M105 76c-4-8-16-10-22-4-8 8-4 20 6 28l16 14 16-14c10-8 14-20 6-28-6-6-18-4-22 4z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M64 126c12 14 26 22 41 22s29-8 41-22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </g>
+            </svg>
+          `;
+        case "LANGUAGES":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <path d="M94 42a38 38 0 0 1 38 38c0 14-8 27-20 33l5 16-16-10c-2.3.5-4.6.8-7 .8a38 38 0 1 1 0-76z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M56 80c12-10 64-10 76 0M56 80c12 10 64 10 76 0" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"/>
+                <path d="M94 42c-12 16-12 60 0 76" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"/>
+                <path d="M120 70a24 24 0 0 1 24 24c0 9-5 17-13 21l3 10-10-6a24 24 0 0 1-4 .4" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.4"/>
+              </g>
+            </svg>
+          `;
+        case "HOBBIES":
+          return `
+            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g transform="rotate(-15 105 95)">
+                <circle cx="105" cy="95" r="38" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M105 68l5 15h16l-13 10 5 15-13-10-13 10 5-15-13-10h16l5-15z" fill="currentColor"/>
+                <path d="M70 128c10 12 22 18 35 18s25-6 35-18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </g>
+            </svg>
+          `;
+        default:
+          return "";
+      }
+    }
+
+    // -----------------------------------------------------------------
     // Core Showcase Loader from Cloud Firestore
     // -----------------------------------------------------------------
     async function loadShowcase() {
@@ -1389,45 +1554,139 @@
         eduWrap.style.display = "none";
       }
 
-      // 11. SECTION 7: Dynamic Custom Sections (N-section support with Credential badge styling)
+      // 11. SECTION 7: Dynamic Custom Sections (1:1 with Android ResumeVisualiserActivity)
       const dynamicWrapper = document.getElementById("customSectionsDynamicWrapper");
       dynamicWrapper.innerHTML = "";
       if (customSections.length > 0) {
         let dynamicHtml = "";
+        let prevIsCompact = false;
+
         customSections.forEach((sec, sIdx) => {
           const items = sec.items || [];
-          if (items.length > 0) {
-            dynamicHtml += `
-              <section id="custom_${sec.sectionTitle || sIdx}" class="custom-section-block">
-                <div class="section-header">
-                  <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                  <span>${sec.sectionTitle || "Custom Section"}</span>
-                </div>
-                <div>
-                  ${items.map((item, idx) => `
-                    <div class="custom-item-entry">
-                      <div class="custom-item-row">
-                        <span class="custom-item-title">${item.title || "Item Title"}</span>
-                        ${item.dateOrPeriod && item.dateOrPeriod.toLowerCase() !== "active" ? `<span class="exp-duration">${item.dateOrPeriod}</span>` : ""}
-                      </div>
-                      ${item.subtitle || item.link ? `
-                        <div class="custom-item-subtitle">
-                          ${item.link ? `<a href="${item.link}" target="_blank">${item.subtitle || item.link} ↗</a>` : (item.subtitle || "")}
-                        </div>
-                      ` : ""}
-                      ${item.description ? `<p class="summary-editorial-body" style="margin-top: 6px;">${item.description}</p>` : ""}
-                      ${item.bulletPoints && item.bulletPoints.length ? `
-                        <ul class="bullet-list">
-                          ${item.bulletPoints.map(b => `<li class="bullet-item">${b}</li>`).join("")}
-                        </ul>
-                      ` : ""}
-                      ${idx < items.length - 1 ? `<div class="entry-divider"></div>` : ""}
-                    </div>
-                  `).join("")}
-                </div>
-              </section>
+          if (items.length === 0) return;
+
+          const title = sec.sectionTitle || "Custom Section";
+          const archetype = resolveArchetype(title);
+          const isLanguages = archetype === "LANGUAGES";
+          const isHobbies = archetype === "HOBBIES";
+          const isCompact = isLanguages || isHobbies;
+
+          // Margin-top between sections: 20px when entering or leaving compact sections, else 36px
+          const marginTop = (sIdx > 0 && (prevIsCompact || isCompact)) ? "20px" : "36px";
+          prevIsCompact = isCompact;
+
+          const headerIconSvg = getHeaderIconSvg(archetype);
+          const watermarkSvg = getWatermarkSvg(archetype, isCompact);
+          const headerMarginBottom = isCompact ? "8px" : "18px";
+
+          let contentHtml = "";
+
+          if (isLanguages) {
+            // Languages: Render all language bullets together in a single compact list
+            const allBullets = items.flatMap(item => {
+              if (item.bulletPoints && item.bulletPoints.length) {
+                return item.bulletPoints.filter(b => b && b.trim());
+              } else if (item.description && item.description.trim()) {
+                return parseBullets(item.description);
+              } else if (item.title && item.title.trim() && item.title.toLowerCase() !== "languages") {
+                return [item.title.trim()];
+              }
+              return [];
+            });
+
+            contentHtml = `
+              <ul class="bullet-list" style="margin-top: 0; padding-left: 0;">
+                ${allBullets.map((b, bIdx) => `
+                  <li class="bullet-item" style="margin-bottom: ${bIdx === allBullets.length - 1 ? '0' : '6px'};">${b}</li>
+                `).join("")}
+              </ul>
             `;
+          } else if (isHobbies) {
+            // Hobbies: Single narrative/comma-separated text paragraph directly beneath header
+            const allHobbies = items.map(item => {
+              if (item.description && item.description.trim()) {
+                return item.description.trim();
+              } else if (item.bulletPoints && item.bulletPoints.length) {
+                return item.bulletPoints.filter(b => b && b.trim()).join(", ");
+              } else if (item.title && item.title.trim() && item.title.toLowerCase() !== "hobbies") {
+                return item.title.trim();
+              }
+              return null;
+            }).filter(Boolean).join(", ");
+
+            contentHtml = `
+              <p class="summary-editorial-body" style="margin-top: 0;">${allHobbies}</p>
+            `;
+          } else {
+            // Standard Custom Section Items
+            contentHtml = items.map((item, idx) => {
+              const isVerifiedContributor = (item.subtitle || "").toLowerCase().includes("verified contributor");
+              const hasPublishedLink = Boolean(item.link && item.link.trim());
+              const showSubtitle = item.subtitle && item.subtitle.trim() && !(isVerifiedContributor && hasPublishedLink);
+              const showPeriod = item.dateOrPeriod && item.dateOrPeriod.trim() && item.dateOrPeriod.toLowerCase() !== "active";
+
+              const bullets = (item.bulletPoints && item.bulletPoints.length)
+                ? item.bulletPoints.filter(b => b && b.trim())
+                : (item.description ? parseBullets(item.description) : []);
+
+              const linkMeta = item.link ? resolveProjectLinkMetadata(item.link) : null;
+              let linkLabel = linkMeta ? linkMeta.label : "";
+              if (linkMeta && linkLabel.toLowerCase() === (item.subtitle || "").trim().toLowerCase()) {
+                linkLabel = "Live Web App";
+              }
+
+              return `
+                <div class="custom-item-entry">
+                  <!-- Row 1: Full-width Headline Title -->
+                  <div class="custom-item-title">${item.title || "Item Title"}</div>
+
+                  <!-- Row 2: Metadata Row (Subtitle on left, Duration on right) -->
+                  ${(showSubtitle || showPeriod) ? `
+                    <div class="custom-item-meta-row">
+                      ${showSubtitle ? `<span class="custom-item-subtitle">${item.subtitle}</span>` : `<span></span>`}
+                      ${showPeriod ? `<span class="exp-duration">${item.dateOrPeriod}</span>` : ""}
+                    </div>
+                  ` : ""}
+
+                  <!-- Row 3: Bullets or Narrative Description -->
+                  ${bullets.length > 0 ? `
+                    <ul class="bullet-list">
+                      ${bullets.map(b => `<li class="bullet-item">${b}</li>`).join("")}
+                    </ul>
+                  ` : (item.description ? `
+                    <p class="summary-editorial-body" style="margin-top: 6px;">${item.description}</p>
+                  ` : "")}
+
+                  <!-- Row 4: Deliverables Pill Chip (Never repeats subtitle) -->
+                  ${linkMeta ? `
+                    <div class="deliverables-chips-row" style="margin-top: 10px;">
+                      <a href="${item.link}" target="_blank" class="deliverable-chip">
+                        ${linkMeta.icon}
+                        <span>${linkLabel}</span>
+                        <span class="deliverable-arrow">↗</span>
+                      </a>
+                    </div>
+                  ` : ""}
+
+                  <!-- Row 5: Hairline Divider -->
+                  ${idx < items.length - 1 ? `<div class="entry-divider"></div>` : ""}
+                </div>
+              `;
+            }).join("");
           }
+
+          dynamicHtml += `
+            <section id="custom_${sec.sectionTitle || sIdx}" class="custom-section-block" style="margin-top: ${marginTop};">
+              ${watermarkSvg}
+              <div class="section-header" style="margin-bottom: ${headerMarginBottom}; position: relative; z-index: 1;">
+                ${headerIconSvg}
+                <span>${title}</span>
+              </div>
+              <div style="position: relative; z-index: 1;">
+                ${contentHtml}
+              </div>
+            </section>
+          `;
         });
         dynamicWrapper.innerHTML = dynamicHtml;
       }

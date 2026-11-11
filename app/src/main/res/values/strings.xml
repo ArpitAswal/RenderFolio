@@ -181,7 +181,47 @@
     <string name="custom_type_certificate">Certificate</string>
     <string name="custom_type_award">Award</string>
     <string name="custom_type_publication">Publication</string>
+    <string name="custom_type_volunteer">Volunteer Role</string>
+    <string name="custom_type_achievement">Achievement</string>
+    <string name="custom_type_language">Language</string>
     <string name="custom_type_item">Item</string>
+    <string name="action_add_language">+ Add Language</string>
+
+    <!-- Template Custom Section Hints -->
+    <string name="hint_custom_title_cert">Certificate Name</string>
+    <string name="hint_custom_title_award">Award Name</string>
+    <string name="hint_custom_title_pub">Paper / Article Title</string>
+    <string name="hint_custom_title_vol_role">Role / Title</string>
+    <string name="hint_custom_title_achieve">Achievement Headline</string>
+    <string name="hint_custom_title_oss">Package / Repository Name</string>
+    <string name="hint_custom_title_lang">Language &amp; Proficiency (e.g. English - Fluent)</string>
+
+    <string name="hint_custom_subtitle">Subtitle / Organization (Optional)</string>
+    <string name="hint_custom_subtitle_issuer">Issuing Organization</string>
+    <string name="hint_custom_subtitle_award_issuer">Granting Organization / Issuer</string>
+    <string name="hint_custom_subtitle_vol_org">Organization / Cause</string>
+    <string name="hint_custom_subtitle_achieve_ctx">Context / Organization (Optional)</string>
+    <string name="hint_custom_subtitle_oss_role">Role / Subtitle (Optional)</string>
+
+    <string name="hint_custom_period">Date / Period (Optional)</string>
+    <string name="hint_custom_period_date">Year / Date (Optional)</string>
+    <string name="hint_custom_period_pub">Publication Date / Year (Optional)</string>
+    <string name="hint_custom_period_vol">Dates of Service (Optional)</string>
+
+    <string name="hint_link_award">Verification / Recognition Link (Optional)</string>
+    <string name="hint_link_achievement">Proof / Article Link (Optional)</string>
+
+    <string name="header_custom_details_cert"><![CDATA[Key Learnings & Highlights (Optional)]]></string>
+    <string name="header_custom_details_achieve"><![CDATA[Details & Impact (Optional)]]></string>
+    <string name="header_custom_details_pub"><![CDATA[Summary & Findings (Optional)]]></string>
+    <string name="header_custom_details_vol"><![CDATA[Impact & Duties (Optional)]]></string>
+    <string name="header_custom_details_award"><![CDATA[Scope & Details (Optional)]]></string>
+    <string name="header_custom_details_oss"><![CDATA[Highlights & Contributions (Optional)]]></string>
+
+    <string name="error_custom_title_required">%1$s #%2$d: Title is required.</string>
+    <string name="error_custom_issuer_required">%1$s #%2$d: Issuing Organization is required.</string>
+    <string name="error_custom_award_issuer_required">%1$s #%2$d: Granting Organization is required.</string>
+    <string name="error_custom_org_required">%1$s #%2$d: Organization / Cause is required.</string>
     <string name="hint_link_certification">Credential / Verification URL (Optional)</string>
     <string name="hint_link_publication">Publication / Article URL (Optional)</string>
     <string name="hint_link_open_source">Repository / Package Link (Optional)</string>

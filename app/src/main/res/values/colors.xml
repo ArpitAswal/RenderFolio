@@ -59,7 +59,7 @@
     <color name="exp_card_stroke">#1E000000</color>
     <color name="exp_role_title">#0F172A</color>
     <color name="exp_company_name">#2563EB</color>
-    <color name="exp_duration_text">#737686</color>
+    <color name="exp_duration_text">#334155</color>
     <color name="exp_bullet_text">#434655</color>
     <color name="exp_bullet_dot">#2563EB</color>
     <color name="exp_deliverables_label">#737686</color>

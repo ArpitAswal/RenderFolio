@@ -13,20 +13,26 @@
 3. **Test-Driven Implementation (`RED → GREEN → REFACTOR`)**:
    - Write or update failing tests first (`skills/tdd-workflow/SKILL.md`).
    - Implement the minimal code required to pass.
-   - Refactor for clarity, immutability, and adherence to `rules/common/coding-style.md`.
+   - Refactor for clarity, immutability, and adherence to `rules/common/coding_style.md`.
 4. **Verify (`skills/verification-loop/SKILL.md`)**:
    - Run the platform's native static analyzer, formatter, and test suite on affected modules.
-   - Review diffs against `agents/code-reviewer.md` and `rules/common/security.md`.
+   - Review diffs against `personas/code-reviewer.md` and `rules/common/security.md`.
 
-## 3. Baseline Standards
+## 3. Personas (Roles)
+- **Analyzer**: `personas/analyzer.md` (Evaluates requirements, challenges assumptions, and outputs architectural trade-offs with pros/cons before code is written).
+- **Orchestrator**: `personas/orchestrator.md` (Routes the task and chains workflows).
+
+## 4. Baseline Standards
 Always apply the shared baseline rules:
-- `rules/common/coding-style.md`
+- `rules/common/coding_style.md`
 - `rules/common/security.md`
 - `rules/common/testing.md`
-- `rules/common/development-workflow.md`
+- `rules/common/development_workflow.md`
 
-## 4. Conditional Platform Extensions
+## 5. Conditional Platform Extensions
 Load ONLY the platform rule matching your active workspace files:
-
-- Android/Kotlin: `rules/platforms/android-kotlin.md` (when editing `android/` or Kotlin code)
-- Android Adaptive UI (Phone/Tablet): `rules/platforms/android-adaptive-ui.md` (and `personas/android-adaptive-screen-agent.md`)
+- Flutter/Dart: `rules/platforms/flutter-dart.md`
+- Android/Kotlin: `rules/platforms/android-kotlin.md`
+- iOS/Swift: `rules/platforms/ios-swift.md`
+- React/TypeScript: `rules/platforms/react-web.md`
+- Flutter Adaptive UI: `rules/platforms/flutter-adaptive-ui.md`

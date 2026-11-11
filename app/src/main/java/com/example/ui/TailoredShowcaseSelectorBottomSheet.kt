@@ -1,10 +1,12 @@
 package com.example.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -57,7 +59,7 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
             tvSubtitle.text = "Choose which tailored resume to view (ordered by earliest expiration):"
         } else {
             tvTitle.text = "Select Showcase QR Code"
-            tvSubtitle.text = "Choose which tailored resume QR code to display:"
+            tvSubtitle.text = "Choose which tailored resume QR code to display and share:"
         }
 
         val repo = ResumePreferencesRepository.getInstance(requireContext())
@@ -72,6 +74,7 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
         rvShowcases.layoutManager = LinearLayoutManager(requireContext())
         val adapter = ShowcaseAdapter(
             items = showcases.toMutableList(),
+            mode = mode,
             onClick = { selected ->
                 dismiss()
                 onShowcaseSelected?.invoke(selected)
@@ -108,6 +111,7 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
 
     private class ShowcaseAdapter(
         private val items: MutableList<SavedShowcase>,
+        private val mode: Mode,
         private val onClick: (SavedShowcase) -> Unit,
         private val onDelete: (SavedShowcase, Int, ShowcaseAdapter) -> Unit
     ) : RecyclerView.Adapter<ShowcaseAdapter.ViewHolder>() {
@@ -123,10 +127,14 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
         }
 
         class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+            val tvCompanyInitial: TextView = view.findViewById(R.id.tv_company_initial)
+            val ivFallbackIcon: ImageView = view.findViewById(R.id.iv_company_fallback_icon)
+            val tvCompany: TextView = view.findViewById(R.id.tv_card_company)
             val tvHeadline: TextView = view.findViewById(R.id.tv_card_headline)
-            val tvCandidate: TextView = view.findViewById(R.id.tv_card_candidate)
             val tvExpiry: TextView = view.findViewById(R.id.tv_card_expiry)
             val btnDelete: ImageButton = view.findViewById(R.id.btn_delete_showcase)
+            val ivActionArrow: ImageView = view.findViewById(R.id.iv_action_arrow)
+            val ivActionQr: ImageView = view.findViewById(R.id.iv_action_qr)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -136,15 +144,50 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = items[position]
-            holder.tvHeadline.text = item.displayHeadline.ifBlank { "Professional Resume" }
-            holder.tvCandidate.text = item.candidateName
 
+            // 1. Company Name & Leading Avatar Initial
+            val company = item.targetCompany.trim()
+            if (company.isNotBlank()) {
+                holder.tvCompany.text = company
+                holder.tvHeadline.text = item.headline.ifBlank { "Professional Resume" }
+                holder.tvCompanyInitial.text = company.first().uppercase()
+                holder.tvCompanyInitial.visibility = View.VISIBLE
+                holder.ivFallbackIcon.visibility = View.GONE
+            } else {
+                holder.tvCompany.text = item.headline.ifBlank { "Professional Resume" }
+                holder.tvHeadline.text = item.candidateName.ifBlank { "Tailored Portfolio" }
+                holder.tvCompanyInitial.visibility = View.GONE
+                holder.ivFallbackIcon.visibility = View.VISIBLE
+                if (mode == Mode.SHOW_QR) {
+                    holder.ivFallbackIcon.setImageResource(R.drawable.ic_qr_code)
+                } else {
+                    holder.ivFallbackIcon.setImageResource(R.drawable.ic_description)
+                }
+            }
+
+            // 2. Expiration metadata
             val days = item.daysRemaining
             val createdDateStr = dateFormat.format(Date(item.createdAtMillis))
             holder.tvExpiry.text = if (days <= 1) {
-                "⚠️ Expires tomorrow (Created $createdDateStr)"
+                "⚠️ Expires tomorrow · Created $createdDateStr"
             } else {
-                "⏱ Expires in $days days (Created $createdDateStr)"
+                "⏱ Expires in $days days · Created $createdDateStr"
+            }
+            if (days <= 1) {
+                holder.tvExpiry.setTextColor(Color.parseColor("#EF4444"))
+            } else {
+                holder.tvExpiry.setTextColor(Color.parseColor("#D97706"))
+            }
+
+            // 3. Mode-specific Trailing Action (Perfect vertical alignment with Delete button)
+            if (mode == Mode.SHOW_QR) {
+                holder.ivActionQr.visibility = View.VISIBLE
+                holder.ivActionArrow.visibility = View.GONE
+                holder.view.contentDescription = "Show QR code for ${if (company.isNotBlank()) company else item.headline}"
+            } else {
+                holder.ivActionQr.visibility = View.GONE
+                holder.ivActionArrow.visibility = View.VISIBLE
+                holder.view.contentDescription = "Visualise resume for ${if (company.isNotBlank()) company else item.headline}"
             }
 
             holder.view.setOnClickListener {

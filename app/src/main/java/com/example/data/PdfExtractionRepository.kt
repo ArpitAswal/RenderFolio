@@ -26,6 +26,7 @@ import java.util.zip.InflaterInputStream
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.tom_roush.pdfbox.text.TextPosition
 
 data class ExtractionResult(
     val profile: ResumeProfile,
@@ -67,9 +68,11 @@ class PdfExtractionRepository(private val context: Context) {
                 }
             } ?: throw IllegalStateException("Could not open input stream for provided document")
 
+            var headerLinksList: List<String>? = null
             val (tier1Text, extractedLinks) = if (!AppConstants.DISABLE_NATIVE_PDF_EXTRACTION) {
                 try {
                     val nativeResult = extractNativePdfData(tempFile)
+                    headerLinksList = nativeResult.headerLinks
                     Pair(nativeResult.text, nativeResult.links)
                 } catch (e: Exception) {
                     Log.w(tag, "Native PDF extraction encountered error: ${e.message}. Falling back to ML Kit OCR.")
@@ -121,7 +124,7 @@ class PdfExtractionRepository(private val context: Context) {
             onProgress(detectedSections.last(), 1.0f, detectedSections.lastIndex, detectedSections)
             kotlinx.coroutines.delay(350)
 
-            val parsedProfile = parseRawTextToProfile(finalRawText, extractedLinks, detectedSections)
+            val parsedProfile = parseRawTextToProfile(finalRawText, extractedLinks, detectedSections, headerLinksList)
             ExtractionResult(parsedProfile, finalRawText, tierUsed)
         } finally {
             if (tempFile.exists()) {
@@ -131,9 +134,10 @@ class PdfExtractionRepository(private val context: Context) {
     }
 
     /**
-     * Inspects the raw text extracted from the uploaded PDF to detect the actual
+     * Inspects the raw text extracted from the uploaded PDF to dynamically detect the actual
      * section titles written by the candidate (e.g. "Summary" vs "Profile",
-     * "Professional Experience" vs "Work Experience", "Open Source Contributions", etc.).
+     * "Professional Experience" vs "Employment History", "Courses", "Achievements", "Hobbies", "Languages", etc.)
+     * without relying on hardcoded rigid whitelists.
      */
     fun detectResumeSectionHeadings(rawText: String): List<String> {
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
@@ -142,54 +146,86 @@ class PdfExtractionRepository(private val context: Context) {
         // First item is always contact / personal header
         detected.add("Personal Info & Contact")
 
-        val headingKeywords = listOf(
-            Regex("^(?:PROFESSIONAL SUMMARY|EXECUTIVE SUMMARY|CAREER OBJECTIVE|ABOUT ME|SUMMARY|PROFILE|OBJECTIVE|OVERVIEW)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:PROFESSIONAL EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT HISTORY|WORK HISTORY|CAREER HISTORY|EXPERIENCE)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:FEATURED PROJECTS|PERSONAL PROJECTS|KEY PROJECTS|ACADEMIC PROJECTS|PROJECTS)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:OPEN[- ]SOURCE CONTRIBUTIONS|OPEN[- ]SOURCE|CONTRIBUTIONS|COMMUNITY INITIATIVES)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:TECHNICAL SKILLS|CORE COMPETENCIES|SKILLS & TOOLS|AREAS OF EXPERTISE|TECHNOLOGIES|SKILLS)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:EDUCATION & CREDENTIALS|ACADEMIC BACKGROUND|ACADEMICS|QUALIFICATIONS|EDUCATION)\\b", RegexOption.IGNORE_CASE),
-            Regex("^(?:HONORS & AWARDS|CERTIFICATIONS|ACHIEVEMENTS|PUBLICATIONS)\\b", RegexOption.IGNORE_CASE)
+        // Known personal/contact tags and metadata that are NOT body section headings
+        val ignoredHeaderTags = setOf(
+            "LINKS", "DETAILS", "INFO", "PERSONAL DETAILS", "CONTACT", "CONTACT ME",
+            "DATE OF BIRTH", "PLACE OF BIRTH", "DRIVING LICENSE", "NATIONALITY",
+            "ADDRESS", "PHONE", "EMAIL", "RESUME", "CURRICULUM VITAE", "CV", "PORTFOLIO"
         )
 
+        // Common standard section keywords for semantic matching
+        val knownSectionWords = listOf(
+            "SUMMARY", "PROFILE", "OBJECTIVE", "OVERVIEW", "ABOUT ME",
+            "EXPERIENCE", "EMPLOYMENT HISTORY", "WORK HISTORY", "CAREER HISTORY", "WORK EXPERIENCE",
+            "PROJECTS", "FEATURED PROJECTS", "PERSONAL PROJECTS", "KEY PROJECTS", "ACADEMIC PROJECTS",
+            "SKILLS", "TECHNICAL SKILLS", "CORE COMPETENCIES", "SKILLS & TOOLS", "AREAS OF EXPERTISE", "TECHNOLOGIES",
+            "EDUCATION", "ACADEMICS", "ACADEMIC BACKGROUND", "QUALIFICATIONS", "CREDENTIALS",
+            "COURSES", "COURSEWORK", "CERTIFICATIONS", "CERTIFICATES", "LICENSES",
+            "ACHIEVEMENTS", "HONORS", "AWARDS", "PUBLICATIONS", "RESEARCH",
+            "HOBBIES", "INTERESTS", "LANGUAGES", "REFERENCES", "COMMUNITY",
+            "VOLUNTEER", "VOLUNTEERING", "OPEN SOURCE", "CONTRIBUTIONS"
+        )
+
+        // Non-heading metric/tech acronyms that should never be treated as section headings
+        val ignoredMetricAndTechAcronyms = setOf(
+            "DAU", "MAU", "WAU", "ROI", "CTR", "KPI", "KPIS", "ANR", "ANRS", "SLA", "SLAS",
+            "API", "APIS", "SDK", "SDKS", "URL", "URLS", "QPS", "RAG", "LLM", "LLMS", "AI", "ML",
+            "CI", "CD", "CI/CD", "AWS", "GCP", "GCS", "UI", "UX", "UI/UX", "B2B", "B2C",
+            "SDE", "SWE", "MTS", "MLE", "EM", "VP", "CEO", "CTO", "CFO", "COO", "CMO",
+            "SQL", "NOSQL", "REST", "JSON", "XML", "HTTP", "HTTPS", "TCP", "UDP", "IP"
+        )
+
+        val topLines = lines.take(3)
+        val candidateName = topLines.firstOrNull()?.trim() ?: ""
+
         for (rawLine in lines) {
-            // Filter out obviously non-heading long paragraphs or contact details
-            if (rawLine.length > 90) continue
-            if (rawLine.contains("@") || rawLine.contains("http") || rawLine.contains("linkedin") || rawLine.contains("github") || rawLine.contains(".com")) continue
-            if (rawLine.startsWith("•") || rawLine.startsWith("-") || rawLine.startsWith("*")) continue
+            if (rawLine.length > 55 || rawLine.length < 3) continue
+            if (rawLine.contains("@") || rawLine.contains("http") || rawLine.contains(".com")) continue
+            if (rawLine.startsWith("•") || rawLine.startsWith("-") || rawLine.startsWith("*") || rawLine.startsWith("·")) continue
+            if (rawLine.matches(Regex("^[0-9]+[.)\\-].*"))) continue
 
             // Resumes often right-align dates/locations at the same vertical height as section headings
-            // (e.g. "EDUCATION     Aug 2023 – Feb 2024"). Split on multiple spaces/tabs or colon/pipe.
+            // (e.g. "EDUCATION     Aug 2023 – Feb 2024"). Split on multiple spaces/tabs.
             val candidate = rawLine.split(Regex("\\s{2,}|\t"))[0].trim()
-            val cleanedCandidate = candidate
-                .replace(Regex("^[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*"), "") // remove numbering e.g. "1. " or "I. "
+            val cleaned = cleanSpacedLetters(candidate)
+                .replace(Regex("^[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*"), "")
                 .removeSuffix(":")
                 .trim()
 
-            for (pattern in headingKeywords) {
-                val match = pattern.find(cleanedCandidate)
-                if (match != null && match.range.first == 0) {
-                    val matchedKeyword = match.value.trim()
-                    val remainder = cleanedCandidate.substring(match.range.last + 1).trim()
+            if (cleaned.length < 3 || cleaned.length > 45) continue
+            // Section headings do not end with sentence punctuation
+            if (cleaned.endsWith(".") || cleaned.endsWith(",") || cleaned.endsWith(";") || cleaned.endsWith("!")) continue
 
-                    // Remainder must be either empty, bracketed note like "(Selected)", or contain dates/symbols
-                    val isValidHeading = remainder.isEmpty() ||
-                            remainder.startsWith("(") ||
-                            remainder.matches(Regex("^[|:–\\-\\s0-9,/]*(?:(?:19|20)\\d{2}|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Present|Current).*"))
+            val upper = cleaned.uppercase()
+            if (ignoredHeaderTags.contains(upper)) continue
+            if (ignoredMetricAndTechAcronyms.contains(upper)) continue
+            if (candidateName.isNotBlank() && upper == candidateName.uppercase()) continue
+            if (isLikelyLocation(cleaned)) continue
 
-                    if (isValidHeading) {
-                        val formatted = toTitleCase(matchedKeyword)
-                        if (!detected.contains(formatted)) {
-                            detected.add(formatted)
-                        }
-                        break
-                    }
+            // Heading identification criteria:
+            // 1. Semantic match against known section keywords
+            val matchedKnown = knownSectionWords.firstOrNull { kw ->
+                upper == kw || upper.startsWith("$kw ") || upper.startsWith("$kw &") || upper.startsWith("$kw /") || upper.endsWith(" $kw")
+            }
+
+            // 2. Typographic heading detection: pure uppercase standalone heading line
+            val isAllUpperTypography = cleaned.length >= 4 &&
+                    cleaned.matches(Regex("^[A-Z0-9\\s&/,'-]+$")) &&
+                    cleaned.any { it.isLetter() } &&
+                    cleaned.split(Regex("\\s+")).size <= 5
+
+            if (matchedKnown != null || isAllUpperTypography) {
+                val rawHeadingName = if (matchedKnown != null && upper == matchedKnown) matchedKnown else cleaned
+                val formatted = toTitleCase(rawHeadingName)
+
+                if (!detected.any { it.equals(formatted, ignoreCase = true) }) {
+                    detected.add(formatted)
                 }
             }
         }
 
         if (detected.size < 3) {
-            return listOf(
+            val defaults = listOf(
                 "Personal Info & Contact",
                 "Summary / Profile",
                 "Work Experience",
@@ -197,6 +233,7 @@ class PdfExtractionRepository(private val context: Context) {
                 "Technical Skills",
                 "Education & Academics"
             )
+            return (detected + defaults.filter { d -> !detected.any { it.equals(d, ignoreCase = true) } })
         }
 
         return detected
@@ -206,8 +243,26 @@ class PdfExtractionRepository(private val context: Context) {
         return text.split(" ")
             .filter { it.isNotBlank() }
             .joinToString(" ") { word ->
+                val cleanWord = word.replace(Regex("[,.:;|•·]+$"), "")
+                val suffix = word.substring(cleanWord.length)
                 when {
                     word == "|" -> "|"
+                    word == "·" -> "·"
+                    word == "•" -> "•"
+                    word.equals("Node.js", ignoreCase = true) -> "Node.js"
+                    word.equals("PostgreSQL", ignoreCase = true) -> "PostgreSQL"
+                    word.equals("TypeScript", ignoreCase = true) -> "TypeScript"
+                    cleanWord.equals("AKTU", ignoreCase = true) -> "AKTU$suffix"
+                    cleanWord.equals("CSE", ignoreCase = true) -> "CSE$suffix"
+                    cleanWord.equals("UP", ignoreCase = true) -> "UP$suffix"
+                    cleanWord.equals("B.Tech", ignoreCase = true) -> "B.Tech$suffix"
+                    cleanWord.equals("M.Tech", ignoreCase = true) -> "M.Tech$suffix"
+                    cleanWord.equals("B.E.", ignoreCase = true) -> "B.E.$suffix"
+                    cleanWord.equals("M.E.", ignoreCase = true) -> "M.E.$suffix"
+                    cleanWord.equals("BCA", ignoreCase = true) -> "BCA$suffix"
+                    cleanWord.equals("MCA", ignoreCase = true) -> "MCA$suffix"
+                    cleanWord.equals("A.K.T.U.", ignoreCase = true) -> "A.K.T.U.$suffix"
+                    cleanWord.equals("R.D.", ignoreCase = true) -> "R.D.$suffix"
                     word.matches(Regex("^(?:[A-Za-z]\\.)+[A-Za-z]?$")) -> word.uppercase()
                     word.equals("CGPA", ignoreCase = true) || word.startsWith("CGPA:", ignoreCase = true) -> word.replace(Regex("(?i)cgpa"), "CGPA")
                     word.equals("GPA", ignoreCase = true) || word.startsWith("GPA:", ignoreCase = true) -> word.replace(Regex("(?i)gpa"), "GPA")
@@ -222,23 +277,36 @@ class PdfExtractionRepository(private val context: Context) {
                     word.equals("SDKs", ignoreCase = true) -> "SDKs"
                     word.equals("REST", ignoreCase = true) -> "REST"
                     word.equals("MVVM", ignoreCase = true) -> "MVVM"
+                    word.equals("BLoC", ignoreCase = true) || word.equals("Bloc", ignoreCase = true) -> "BLoC"
+                    word.equals("IT", ignoreCase = true) -> "IT"
+                    word.equals("IIT", ignoreCase = true) -> "IIT"
+                    word.equals("NIT", ignoreCase = true) -> "NIT"
+                    word.equals("IIIT", ignoreCase = true) -> "IIIT"
+                    cleanWord.equals("ECE", ignoreCase = true) -> "ECE$suffix"
+                    cleanWord.equals("AWS", ignoreCase = true) -> "AWS$suffix"
+                    cleanWord.equals("GCP", ignoreCase = true) -> "GCP$suffix"
                     else -> word.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
                 }
             }
     }
 
     private fun cleanSpacedLetters(text: String): String {
-        return if (text.matches(Regex(".*(?:[A-Za-z]\\s){2,}[A-Za-z].*"))) {
-            text.split(Regex("\\s{2,}"))
-                .joinToString(" ") { word -> word.replace(" ", "") }
-        } else {
-            text
-        }
+        if (!text.contains(" ")) return text
+        return text.split(Regex("\\s{2,}"))
+            .joinToString(" ") { token ->
+                val pieces = token.trim().split(" ").filter { it.isNotBlank() }
+                if (pieces.size >= 3 && pieces.all { it.length == 1 }) {
+                    pieces.joinToString("")
+                } else {
+                    token
+                }
+            }
     }
 
     data class NativePdfData(
         val text: String,
-        val links: List<String> = emptyList()
+        val links: List<String> = emptyList(),
+        val headerLinks: List<String> = emptyList()
     )
 
     private fun extractAnnotationLinks(file: File): List<String> {
@@ -265,9 +333,210 @@ class PdfExtractionRepository(private val context: Context) {
         return extractedLinks
     }
 
+    internal data class SpatialTextLine(
+        val text: String,
+        val minX: Float,
+        val maxX: Float,
+        val y: Float
+    )
+
+    internal class SpatialPageStripper : PDFTextStripper() {
+        val lines = mutableListOf<SpatialTextLine>()
+
+        override fun writeString(text: String?, textPositions: MutableList<TextPosition>?) {
+            if (text.isNullOrBlank() || textPositions.isNullOrEmpty()) return
+
+            var currentSegment = mutableListOf<TextPosition>()
+            var hadSplit = false
+            for (i in textPositions.indices) {
+                val tp = textPositions[i]
+                if (currentSegment.isNotEmpty()) {
+                    val prev = currentSegment.last()
+                    val gap = tp.xDirAdj - (prev.xDirAdj + prev.widthDirAdj)
+                    if (gap > 24.0f) {
+                        hadSplit = true
+                        // Split into separate spatial text line across large column gap
+                        val segMinX = currentSegment.minOf { it.xDirAdj }
+                        val segMaxX = currentSegment.maxOf { it.xDirAdj + it.widthDirAdj }
+                        val segY = currentSegment.minOf { it.yDirAdj }
+                        val segText = buildSegmentText(currentSegment)
+                        if (segText.isNotBlank()) {
+                            lines.add(SpatialTextLine(segText, segMinX, segMaxX, segY))
+                        }
+                        currentSegment = mutableListOf()
+                    }
+                }
+                currentSegment.add(tp)
+            }
+            if (currentSegment.isNotEmpty()) {
+                val segMinX = currentSegment.minOf { it.xDirAdj }
+                val segMaxX = currentSegment.maxOf { it.xDirAdj + it.widthDirAdj }
+                val segY = currentSegment.minOf { it.yDirAdj }
+                val segText = if (!hadSplit) {
+                    text
+                } else {
+                    buildSegmentText(currentSegment)
+                }
+                if (segText.isNotBlank()) {
+                    lines.add(SpatialTextLine(segText, segMinX, segMaxX, segY))
+                }
+            }
+        }
+
+        private fun buildSegmentText(segment: List<TextPosition>): String {
+            if (segment.isEmpty()) return ""
+            val sb = StringBuilder()
+            for (j in segment.indices) {
+                val tp = segment[j]
+                if (j > 0) {
+                    val prev = segment[j - 1]
+                    val dist = tp.xDirAdj - (prev.xDirAdj + prev.widthDirAdj)
+                    val spaceWidth = prev.widthOfSpace.coerceAtLeast(1.5f)
+                    if (dist > spaceWidth * 0.7f) {
+                        sb.append(" ")
+                    }
+                }
+                sb.append(tp.unicode ?: "")
+            }
+            return sb.toString().trim()
+        }
+    }
+
+    private fun extractSpatialTextFromDocument(document: PDDocument): String {
+        val pageCount = document.numberOfPages
+        val fullDocSb = StringBuilder()
+
+        for (p in 0 until pageCount) {
+            val page = document.getPage(p)
+            val pageWidth = page.mediaBox.width
+
+            val stripper = SpatialPageStripper()
+            stripper.sortByPosition = true
+            stripper.startPage = p + 1
+            stripper.endPage = p + 1
+            stripper.writeText(document, java.io.StringWriter())
+
+            val rawLines = stripper.lines
+            if (rawLines.isEmpty()) continue
+
+            val mergedLines = consolidateSameYLines(rawLines)
+
+            // Evaluate potential column gutter X between 18% and 82% of page width
+            var bestGutter = -1f
+            var minCross = Int.MAX_VALUE
+            val step = 5f
+            var xProbe = pageWidth * 0.18f
+
+            while (xProbe <= pageWidth * 0.82f) {
+                val cross = mergedLines.count { l -> l.minX < xProbe && l.maxX > xProbe }
+                val left = mergedLines.count { l -> l.maxX <= xProbe }
+                val right = mergedLines.count { l -> l.minX >= xProbe }
+
+                if (left >= 4 && right >= 4 && cross < minCross) {
+                    minCross = cross
+                    bestGutter = xProbe
+                }
+                xProbe += step
+            }
+
+            val hasMultiColumn = bestGutter > 0 && minCross <= 6
+
+            if (!hasMultiColumn) {
+                // Single column layout
+                mergedLines.sortedBy { it.y }.forEach { fullDocSb.appendLine(it.text) }
+            } else {
+                // Multi-column or sidebar layout
+                val isLeftSidebar = bestGutter < pageWidth * 0.40f
+                val crossingItems = mergedLines.filter { it.minX < bestGutter && it.maxX > bestGutter }
+                val crossingMaxY = crossingItems.maxOfOrNull { it.y } ?: -1f
+
+                val leftItems = mergedLines.filter { it.maxX <= bestGutter }
+                val rightItems = mergedLines.filter { it.minX >= bestGutter }
+
+                // Determine top header/banner region that precedes the two-column layout
+                val bannerCutoffY = if (isLeftSidebar && leftItems.isNotEmpty()) {
+                    val leftStartY = leftItems.minOf { it.y }
+                    maxOf(crossingMaxY, leftStartY - 2.0f)
+                } else if (!isLeftSidebar && rightItems.isNotEmpty()) {
+                    val rightStartY = rightItems.minOf { it.y }
+                    maxOf(crossingMaxY, rightStartY - 2.0f)
+                } else {
+                    crossingMaxY
+                }
+
+                val bannerLines = mergedLines.filter { it.y <= bannerCutoffY }.sortedBy { it.y }
+                val leftLines = mergedLines.filter { it.y > bannerCutoffY && it.maxX <= bestGutter }.sortedBy { it.y }
+                val rightLines = mergedLines.filter { it.y > bannerCutoffY && it.minX >= bestGutter }.sortedBy { it.y }
+
+                bannerLines.forEach { fullDocSb.appendLine(it.text) }
+                if (isLeftSidebar) {
+                    leftLines.forEach { fullDocSb.appendLine(it.text) }
+                    rightLines.forEach { fullDocSb.appendLine(it.text) }
+                } else {
+                    leftLines.forEach { fullDocSb.appendLine(it.text) }
+                    rightLines.forEach { fullDocSb.appendLine(it.text) }
+                }
+            }
+        }
+
+        return fullDocSb.toString()
+    }
+
+    internal fun consolidateSameYLines(lines: List<SpatialTextLine>): List<SpatialTextLine> {
+        if (lines.size <= 1) return lines
+        val sorted = lines.sortedWith(compareBy({ it.y }, { it.minX }))
+        val result = mutableListOf<SpatialTextLine>()
+
+        var currentGroup = mutableListOf<SpatialTextLine>()
+
+        for (line in sorted) {
+            if (currentGroup.isEmpty()) {
+                currentGroup.add(line)
+            } else {
+                val prev = currentGroup.last()
+                val isSameY = Math.abs(line.y - prev.y) <= 2.0f
+                val xDist = line.minX - prev.maxX
+                if (isSameY && xDist in -2.0f..14.0f) {
+                    currentGroup.add(line)
+                } else {
+                    result.add(mergeTextLines(currentGroup))
+                    currentGroup = mutableListOf(line)
+                }
+            }
+        }
+        if (currentGroup.isNotEmpty()) {
+            result.add(mergeTextLines(currentGroup))
+        }
+
+        return result
+    }
+
+    private fun mergeTextLines(group: List<SpatialTextLine>): SpatialTextLine {
+        if (group.size == 1) return SpatialTextLine(cleanSpacedLetters(group[0].text.trim()), group[0].minX, group[0].maxX, group[0].y)
+        val minX = group.minOf { it.minX }
+        val maxX = group.maxOf { it.maxX }
+        val y = group.first().y
+        val sb = StringBuilder()
+        for (i in group.indices) {
+            val item = group[i]
+            if (i > 0) {
+                val prev = group[i - 1]
+                val xDist = item.minX - prev.maxX
+                if (item.text.startsWith(" ") || prev.text.endsWith(" ") || xDist > 4.0f) {
+                    if (!sb.endsWith(" ")) sb.append(" ")
+                }
+            }
+            sb.append(item.text.trim())
+        }
+        val combinedText = sb.toString().trim()
+        val cleaned = cleanSpacedLetters(combinedText)
+        return SpatialTextLine(cleaned, minX, maxX, y)
+    }
+
     private fun extractNativePdfData(file: File): NativePdfData {
         val extractedLinks = mutableListOf<String>()
-        // Tier 1A: Apache PDFBox for Android (zero-latency, full native font, stream & hyperlink support)
+        val headerLinks = mutableListOf<String>()
+        // Tier 1A: Apache PDFBox for Android with Spatial Column Segmentation
         try {
             PDDocument.load(file).use { document ->
                 for (page in document.pages) {
@@ -284,11 +553,115 @@ class PdfExtractionRepository(private val context: Context) {
                     }
                 }
 
-                val stripper = PDFTextStripper()
-                stripper.sortByPosition = true
-                val text = stripper.getText(document)
+                if (document.numberOfPages > 0) {
+                    val page0 = document.getPage(0)
+                    val page0Height = page0.mediaBox.height
+                    val page0Width = page0.mediaBox.width
+
+                    val stripper = SpatialPageStripper()
+                    stripper.sortByPosition = true
+                    stripper.startPage = 1
+                    stripper.endPage = 1
+                    stripper.writeText(document, java.io.StringWriter())
+
+                    val rawLines = stripper.lines
+                    val page0Lines = consolidateSameYLines(rawLines)
+
+                    val bodyHeadingWords = listOf(
+                        "summary", "profile", "about me", "objective",
+                        "experience", "work experience", "employment", "work history", "career",
+                        "education", "academics", "qualifications",
+                        "skills", "technical skills", "projects", "key projects", "featured projects",
+                        "open source", "references", "courses"
+                    )
+
+                    fun isBodyHeadingLine(text: String): Boolean {
+                        val cleaned = cleanSpacedLetters(text).trim().lowercase()
+                        return bodyHeadingWords.any { kw ->
+                            cleaned == kw || cleaned.startsWith("$kw ") || cleaned.startsWith("$kw &") ||
+                                    cleaned.startsWith("$kw /") || cleaned.startsWith("$kw:") ||
+                                    cleaned.endsWith(" $kw") || cleaned.contains(" $kw")
+                        }
+                    }
+
+                    var bestGutter = -1f
+                    var minCross = Int.MAX_VALUE
+                    val step = 5f
+                    var xProbe = page0Width * 0.18f
+                    while (xProbe <= page0Width * 0.82f) {
+                        val cross = page0Lines.count { l -> l.minX < xProbe && l.maxX > xProbe }
+                        val left = page0Lines.count { l -> l.maxX <= xProbe }
+                        val right = page0Lines.count { l -> l.minX >= xProbe }
+                        if (left >= 4 && right >= 4 && cross < minCross) {
+                            minCross = cross
+                            bestGutter = xProbe
+                        }
+                        xProbe += step
+                    }
+                    val hasMultiColumn = bestGutter > 0 && minCross <= 6
+
+                    if (!hasMultiColumn) {
+                        val firstBodyHeadingY = page0Lines.firstOrNull { isBodyHeadingLine(it.text) }?.y ?: Float.MAX_VALUE
+                        for (ann in page0.annotations) {
+                            if (ann is com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink) {
+                                val act = ann.action
+                                if (act is com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionURI) {
+                                    val uri = act.uri
+                                    if (!uri.isNullOrBlank()) {
+                                        val topY = page0Height - ann.rectangle.upperRightY
+                                        if (topY < firstBodyHeadingY - 3.0f && !headerLinks.contains(uri)) {
+                                            headerLinks.add(uri)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        val isLeftSidebar = bestGutter < page0Width * 0.40f
+                        val crossingItems = page0Lines.filter { it.minX < bestGutter && it.maxX > bestGutter }
+                        val crossingMaxY = crossingItems.maxOfOrNull { it.y } ?: -1f
+                        val leftItems = page0Lines.filter { it.maxX <= bestGutter }
+                        val rightItems = page0Lines.filter { it.minX >= bestGutter }
+
+                        val bannerCutoffY = if (isLeftSidebar && leftItems.isNotEmpty()) {
+                            val leftStartY = leftItems.minOf { it.y }
+                            maxOf(crossingMaxY, leftStartY - 2.0f)
+                        } else if (!isLeftSidebar && rightItems.isNotEmpty()) {
+                            val rightStartY = rightItems.minOf { it.y }
+                            maxOf(crossingMaxY, rightStartY - 2.0f)
+                        } else {
+                            crossingMaxY
+                        }
+
+                        val sidebarBodyHeadingY = if (isLeftSidebar) {
+                            page0Lines.filter { it.maxX <= bestGutter && isBodyHeadingLine(it.text) }.minOfOrNull { it.y } ?: Float.MAX_VALUE
+                        } else {
+                            page0Lines.filter { it.minX >= bestGutter && isBodyHeadingLine(it.text) }.minOfOrNull { it.y } ?: Float.MAX_VALUE
+                        }
+
+                        for (ann in page0.annotations) {
+                            if (ann is com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink) {
+                                val act = ann.action
+                                if (act is com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionURI) {
+                                    val uri = act.uri
+                                    if (!uri.isNullOrBlank()) {
+                                        val topY = page0Height - ann.rectangle.upperRightY
+                                        val centerX = (ann.rectangle.lowerLeftX + ann.rectangle.upperRightX) / 2f
+                                        val isSidebarAnn = if (isLeftSidebar) centerX <= bestGutter else centerX >= bestGutter
+                                        val isHeader = topY <= bannerCutoffY || (isSidebarAnn && topY < sidebarBodyHeadingY - 3.0f)
+                                        if (isHeader && !headerLinks.contains(uri)) {
+                                            headerLinks.add(uri)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val text = extractSpatialTextFromDocument(document)
                 if (text.isNotBlank() && text.length >= AppConstants.TIER_1_CHAR_THRESHOLD) {
-                    return NativePdfData(cleanExtractedText(text), extractedLinks)
+                    return NativePdfData(cleanExtractedText(text), extractedLinks, headerLinks)
                 }
             }
         } catch (e: Exception) {
@@ -407,7 +780,8 @@ class PdfExtractionRepository(private val context: Context) {
     fun parseRawTextToProfile(
         rawText: String,
         annotationLinks: List<String> = emptyList(),
-        detectedHeadings: List<String> = emptyList()
+        detectedHeadings: List<String> = emptyList(),
+        headerAnnotationLinks: List<String>? = null
     ): ResumeProfile {
         if (rawText.isBlank() || rawText.lines().count { it.isNotBlank() } < 3) {
             throw IllegalArgumentException("The attached PDF contains no readable text or is corrupted. Please ensure you attach a valid PDF document.")
@@ -415,15 +789,51 @@ class PdfExtractionRepository(private val context: Context) {
 
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotEmpty() }
 
-        val emailMatcher = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})").matcher(rawText)
-        var email = if (emailMatcher.find()) emailMatcher.group(1) ?: "" else ""
+        val bodyHeadingKeywords = listOf(
+            "summary", "profile", "about me", "objective",
+            "experience", "employment", "work history", "career",
+            "education", "academics", "qualifications",
+            "skills", "technical skills", "projects", "references", "courses"
+        )
 
-        val phoneMatcher = Pattern.compile("(\\+?\\d{1,3}[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}").matcher(rawText)
+        val headerLines = mutableListOf<String>()
+        for (line in lines) {
+            val cleaned = cleanSpacedLetters(line).trim().lowercase()
+            val isBodyHeading = bodyHeadingKeywords.any { kw ->
+                cleaned == kw || cleaned.startsWith("$kw ") || cleaned.startsWith("$kw &") ||
+                        cleaned.startsWith("$kw /") || cleaned.startsWith("$kw:") ||
+                        cleaned.endsWith(" $kw") || cleaned.contains(" $kw")
+            }
+            if (isBodyHeading && headerLines.size >= 2) {
+                break
+            }
+            headerLines.add(line)
+        }
+        val personalHeaderText = headerLines.joinToString("\n")
+
+        val emailMatcher = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})").matcher(personalHeaderText)
+        var email = if (emailMatcher.find()) emailMatcher.group(1) ?: "" else ""
+        if (email.isBlank()) {
+            val topEmailMatcher = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})").matcher(lines.take(20).joinToString("\n"))
+            if (topEmailMatcher.find()) email = topEmailMatcher.group(1) ?: ""
+        }
+
+        val phoneMatcher = Pattern.compile("(\\+?\\d{1,3}[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}").matcher(personalHeaderText)
         var phone = if (phoneMatcher.find()) phoneMatcher.group(0) ?: "" else ""
+        if (phone.isBlank()) {
+            val topLinesText = lines.take(15).joinToString("\n")
+            val topPhoneMatcher = Pattern.compile("(\\+?\\d{1,3}[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}").matcher(topLinesText)
+            if (topPhoneMatcher.find()) {
+                val candidatePhone = topPhoneMatcher.group(0) ?: ""
+                if (!candidatePhone.matches(Regex("^(?:19|20)\\d{2}$"))) {
+                    phone = candidatePhone
+                }
+            }
+        }
 
         // Fallback to PDF annotations for embedded mailto / tel links
         if (email.isBlank()) {
-            email = annotationLinks.firstOrNull { it.startsWith("mailto:", ignoreCase = true) }
+            email = (headerAnnotationLinks ?: annotationLinks).firstOrNull { it.startsWith("mailto:", ignoreCase = true) }
                 ?.removePrefix("mailto:")
                 ?.removePrefix("MAILTO:")
                 ?.substringBefore("?")
@@ -431,144 +841,171 @@ class PdfExtractionRepository(private val context: Context) {
         }
 
         if (phone.isBlank()) {
-            phone = annotationLinks.firstOrNull { it.startsWith("tel:", ignoreCase = true) }
+            phone = (headerAnnotationLinks ?: annotationLinks).firstOrNull { it.startsWith("tel:", ignoreCase = true) }
                 ?.removePrefix("tel:")
                 ?.removePrefix("TEL:")
                 ?.trim() ?: ""
         }
 
-        val linkedinMatcher = Pattern.compile("(https?://(www\\.)?linkedin\\.com/in/[a-zA-Z0-9_-]+|linkedin\\.com/in/[a-zA-Z0-9_-]+|LinkedIn Portfolio)").matcher(rawText)
+        // Filter out direct mobile app store links, packages, and mail/tel protocols from portfolio links
+        val candidateAnnotationLinks = (headerAnnotationLinks ?: annotationLinks).filter { link ->
+            val lower = link.lowercase().trim()
+            !lower.startsWith("mailto:") &&
+                    !lower.startsWith("tel:") &&
+                    !lower.contains("play.google.com") &&
+                    !lower.contains("apps.apple.com") &&
+                    !lower.contains("pub.dev") &&
+                    !(lower.contains("github.com/") &&
+                            link.removePrefix("https://").removePrefix("http://").removePrefix("www.").split("/").filter { s -> s.isNotBlank() }.size > 2)
+        }
+
+        val linkedinMatcher = Pattern.compile("https?://(www\\.)?linkedin\\.com/in/[a-zA-Z0-9_-]+|https?://(www\\.)?linkedin\\.com/|linkedin\\.com/in/[a-zA-Z0-9_-]+").matcher(personalHeaderText)
         var linkedinUrl = if (linkedinMatcher.find()) {
             val matched = linkedinMatcher.group(0) ?: ""
-            if (matched.startsWith("http") || matched.contains(".com")) matched else "https://linkedin.com"
+            if (matched.startsWith("http") || matched.contains(".com")) matched else ""
         } else ""
 
         if (linkedinUrl.isBlank()) {
-            linkedinUrl = annotationLinks.firstOrNull { it.contains("linkedin.com/in", ignoreCase = true) }
-                ?: annotationLinks.firstOrNull { it.contains("linkedin.com", ignoreCase = true) } ?: ""
+            linkedinUrl = candidateAnnotationLinks.firstOrNull { it.contains("linkedin.com", ignoreCase = true) } ?: ""
         }
 
-        val githubMatcher = Pattern.compile("(https?://(www\\.)?github\\.com/[a-zA-Z0-9_-]+|github\\.com/[a-zA-Z0-9_-]+|Github Portfolio)").matcher(rawText)
+        val githubMatcher = Pattern.compile("https?://(www\\.)?github\\.com/[a-zA-Z0-9_-]+|github\\.com/[a-zA-Z0-9_-]+").matcher(personalHeaderText)
         var githubUrl = if (githubMatcher.find()) {
             val matched = githubMatcher.group(0) ?: ""
-            if (matched.startsWith("http") || matched.contains(".com")) matched else "https://github.com"
+            if (matched.startsWith("http") || matched.contains(".com")) matched else ""
         } else ""
 
         if (githubUrl.isBlank()) {
-            githubUrl = annotationLinks.firstOrNull {
+            githubUrl = candidateAnnotationLinks.firstOrNull {
                 it.contains("github.com", ignoreCase = true) &&
                         !it.contains("packages", ignoreCase = true) &&
                         it.removePrefix("https://").removePrefix("http://").removePrefix("www.").split("/").filter { s -> s.isNotBlank() }.size <= 2
             } ?: ""
         }
 
-        // Top profile links: only from the header section before the first major heading
-        val firstHeadingIndex = listOf("SUMMARY", "PROFESSIONAL SUMMARY", "EXPERIENCE", "WORK EXPERIENCE", "PROJECTS", "SKILLS", "EDUCATION")
-            .mapNotNull { kw ->
-                val idx = rawText.indexOf(kw, ignoreCase = true)
-                if (idx != -1) idx else null
-            }.minOrNull() ?: (rawText.length / 4)
-
-        val headerText = rawText.substring(0, firstHeadingIndex)
-
-        // Only include websiteUrl if explicitly present in the header text, and ignore app store/deep links
-        val websiteUrl = annotationLinks.firstOrNull { link ->
-            val lower = link.lowercase()
-            !lower.contains("linkedin.com") &&
-                    !lower.contains("github.com") &&
-                    !lower.contains("play.google.com") &&
-                    !lower.contains("apps.apple.com") &&
-                    !lower.startsWith("mailto:") &&
-                    !lower.startsWith("tel:") &&
-                    headerText.contains(link.removePrefix("https://").removePrefix("http://").removePrefix("www.").substringBefore("/"), ignoreCase = true)
-        } ?: ""
-
-        val topLines = lines.take(5).filter { line ->
-            !line.contains("@") && !line.contains("linkedin", ignoreCase = true) && !line.contains("github", ignoreCase = true) && !line.contains("http", ignoreCase = true)
+        // Top website/portfolio/social link: first non-linkedin, non-github candidate link
+        val otherLinks = candidateAnnotationLinks.filter { it != linkedinUrl && it != githubUrl }
+        var websiteUrl = otherLinks.firstOrNull() ?: ""
+        if (websiteUrl.isBlank()) {
+            val webMatcher = Pattern.compile("https?://[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(/[a-zA-Z0-9._~:/?#\\[\\]@!$&'()*+,;=-]*)?").matcher(personalHeaderText)
+            while (webMatcher.find()) {
+                val candidate = webMatcher.group(0) ?: ""
+                val lower = candidate.lowercase()
+                if (!lower.contains("linkedin.com") && !lower.contains("github.com") && !lower.contains("@")) {
+                    websiteUrl = candidate
+                    break
+                }
+            }
         }
+        val extraLinks = if (otherLinks.size > 1) otherLinks.drop(1) else emptyList()
 
-        val rawName = topLines.firstOrNull()?.takeIf { it.length <= 40 && !it.contains("resume", ignoreCase = true) } ?: ""
-        val candidateName = cleanSpacedLetters(rawName)
-        val secondLine = topLines.getOrNull(1)?.takeIf { line ->
-            line.length in 3..80 &&
-                    !line.contains(Regex("[0-9]{3,}")) &&
-                    !line.contains("phone", ignoreCase = true) &&
-                    !line.contains("tel", ignoreCase = true) &&
+        val candidateNameLines = headerLines.filter { line ->
+            val l = line.lowercase().trim()
+            !l.contains("@") &&
+                    !l.contains("http") &&
+                    !l.contains("linkedin.com") &&
+                    !l.contains("github.com") &&
+                    !l.contains("resume") &&
+                    !l.contains("curriculum vitae") &&
+                    !l.contains("driving license") &&
+                    !l.contains("nationality") &&
+                    !l.contains("place of birth") &&
+                    !l.contains("date of birth") &&
+                    !l.startsWith("address") &&
+                    !l.startsWith("phone") &&
+                    !l.startsWith("email") &&
+                    !l.equals("details", ignoreCase = true) &&
+                    !l.equals("info", ignoreCase = true) &&
+                    !l.equals("links", ignoreCase = true) &&
                     !isLikelyLocation(line) &&
-                    !line.equals("Summary", ignoreCase = true) &&
-                    !line.equals("Profile", ignoreCase = true) &&
-                    !line.equals("Experience", ignoreCase = true) &&
-                    !line.equals("Education", ignoreCase = true) &&
-                    !line.equals("Skills", ignoreCase = true) &&
-                    !line.equals("Projects", ignoreCase = true)
+                    !line.matches(Regex(".*\\b\\d{3}[-.\\s]?\\d{4}\\b.*")) &&
+                    !line.matches(Regex(".*\\b\\d{5}\\b.*"))
         }
-        val headline = secondLine ?: ""
+
+        var candidateName = ""
+        var headline = ""
+
+        val rawFirst = candidateNameLines.firstOrNull() ?: ""
+        val cleanFirst = cleanSpacedLetters(rawFirst)
+            .replace(Regex("(?i)\\b(Details|Info|Links|Resume|CV)\\b"), "")
+            .trim()
+
+        if (cleanFirst.contains(",")) {
+            val parts = cleanFirst.split(",", limit = 2).map { it.trim() }
+            val nameCand = parts[0]
+            val roleCand = parts.getOrNull(1) ?: ""
+            if (isLikelyPersonalRole(roleCand)) {
+                candidateName = nameCand
+                headline = roleCand
+            } else {
+                candidateName = cleanFirst
+            }
+        } else if (cleanFirst.isNotBlank() && cleanFirst.split(Regex("\\s+")).size == 1 && candidateNameLines.size > 1) {
+            val second = cleanSpacedLetters(candidateNameLines[1])
+                .replace(Regex("(?i)\\b(Details|Info|Links|Resume|CV)\\b"), "")
+                .trim()
+            if (second.isNotBlank() && second.split(Regex("\\s+")).size == 1 && !isLikelyPersonalRole(second) && !isLikelyLocation(second)) {
+                candidateName = "$cleanFirst $second"
+                val third = candidateNameLines.getOrNull(2)?.let { cleanSpacedLetters(it).trim() } ?: ""
+                if (isLikelyPersonalRole(third)) {
+                    headline = third
+                }
+            } else {
+                candidateName = cleanFirst
+                if (isLikelyPersonalRole(second)) {
+                    headline = second
+                }
+            }
+        } else {
+            candidateName = cleanFirst
+            for (line in candidateNameLines.drop(1)) {
+                val cleaned = cleanSpacedLetters(line).trim()
+                if (isLikelyPersonalRole(cleaned)) {
+                    headline = cleaned
+                    break
+                }
+            }
+        }
+
+        val detectedLocation = extractCandidateLocation(headerLines, email, phone)
 
         val contactInfo = ContactInfo(
             email = email,
             phone = phone,
             linkedinUrl = linkedinUrl,
             githubUrl = githubUrl,
-            websiteUrl = websiteUrl
+            websiteUrl = websiteUrl,
+            customLinks = extraLinks
         )
 
-        var detectedLocation = ""
-
-        // Strategy 1: Check the header lines for a pipe/bullet-delimited segment or standalone location line
-        for (line in lines.take(10)) {
-            if (line.startsWith("Summary", ignoreCase = true) || line.startsWith("Professional Summary", ignoreCase = true)) break
-            val segments = line.split(Regex("[|•·]")).map { it.trim() }
-            for (seg in segments) {
-                if (seg.isNotBlank() &&
-                    !seg.contains("@") &&
-                    !seg.contains("linkedin", ignoreCase = true) &&
-                    !seg.contains("github", ignoreCase = true) &&
-                    !seg.contains("http", ignoreCase = true) &&
-                    !seg.contains(Regex("^\\+?\\d[\\d\\s()-]{6,}")) &&
-                    isLikelyLocation(seg) &&
-                    seg.length <= 60
-                ) {
-                    detectedLocation = seg
-                    break
-                }
-            }
-            if (detectedLocation.isNotBlank()) break
-        }
-
-        // Strategy 2: Fallback to comma-separated location match (e.g. City, State, Country)
-        if (detectedLocation.isBlank()) {
-            val locationPattern = Pattern.compile("([A-Za-z\\s.'-]+,\\s*[A-Za-z\\s.'-]+(?:,\\s*[A-Za-z\\s.'-]+)?|(?:Remote|Remote / Global))", Pattern.CASE_INSENSITIVE)
-            for (line in lines.take(10)) {
-                val cleanLine = line.replace(email, "").replace(phone, "")
-                val m = locationPattern.matcher(cleanLine)
-                if (m.find()) {
-                    val candidate = m.group(1)?.trim().orEmpty()
-                    if (candidate.length in 3..60 && isLikelyLocation(candidate)) {
-                        detectedLocation = candidate
-                        break
-                    }
-                }
-            }
-        }
-
-        if (detectedLocation.isBlank()) {
-            detectedLocation = "Remote / Global"
-        }
+        // Dynamically evaluate section headings and slice document into section blocks
+        val headingsToEvaluate = if (detectedHeadings.isNotEmpty()) detectedHeadings else detectResumeSectionHeadings(rawText)
+        val sectionMap = sliceSections(rawText, headingsToEvaluate)
 
         // Dynamic Summary Extraction
         val summaryRegex = Regex(
             "(?:^|[\\r\\n]+)[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:SUMMARY|PROFESSIONAL SUMMARY|EXECUTIVE SUMMARY|PROFILE|ABOUT ME)[ \\t]*[|:–\\-]*[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:PROFESSIONAL EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT HISTORY|WORK HISTORY|CAREER HISTORY|(?:EXPERIENCE[ \\t]*(?:[|:–\\-]|$))|PROJECTS|FEATURED PROJECTS|OPEN SOURCE|TECHNICAL SKILLS|SKILLS|EDUCATION|ACADEMICS)\\b)|$)",
             RegexOption.IGNORE_CASE
         )
-        val extractedSummary = summaryRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim()?.replace(Regex("[\\r\\n]+"), " ")
-            ?: "Professional background extracted from document."
+        val summaryHeading = headingsToEvaluate.firstOrNull { h ->
+            val l = h.lowercase()
+            l.contains("summary") || l.contains("profile") || l.contains("objective") || l.contains("about")
+        }
+        val extractedSummary = (if (summaryHeading != null) sectionMap[summaryHeading] else null)?.replace(Regex("[\\r\\n]+"), " ")
+            ?: summaryRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim()?.replace(Regex("[\\r\\n]+"), " ")
+            ?: ""
 
         // Dynamic Work Experience Extraction
         val expRegex = Regex(
             "(?:^|[\\r\\n]+)[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:PROFESSIONAL EXPERIENCE|WORK EXPERIENCE|EMPLOYMENT HISTORY|WORK HISTORY|CAREER HISTORY|(?:EXPERIENCE[ \\t]*(?:[|:–\\-]|$)))[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:PROJECTS|FEATURED PROJECTS|PERSONAL PROJECTS|KEY PROJECTS|OPEN SOURCE|SKILLS|TECHNICAL SKILLS|EDUCATION|ACADEMICS)\\b)|$)",
             RegexOption.IGNORE_CASE
         )
-        val expText = expRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim() ?: ""
+        val expHeading = headingsToEvaluate.firstOrNull { h ->
+            val l = h.lowercase()
+            l.contains("experience") || l.contains("employment") || l.contains("work history") || l.contains("career")
+        }
+        val expText = (if (expHeading != null) sectionMap[expHeading] else null)
+            ?: expRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim().orEmpty()
         val parsedWorkExperience = parseWorkExperience(expText, annotationLinks)
 
         // Dynamic Projects Extraction
@@ -576,7 +1013,12 @@ class PdfExtractionRepository(private val context: Context) {
             "(?:^|[\\r\\n]+)[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:FEATURED PROJECTS|PERSONAL PROJECTS|KEY PROJECTS|ACADEMIC PROJECTS|PROJECTS)[ \\t]*[|:–\\-]*[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:OPEN[- ]SOURCE(?: CONTRIBUTIONS)?|SKILLS|TECHNICAL SKILLS|EDUCATION|ACADEMICS|PROFESSIONAL EXPERIENCE|WORK EXPERIENCE|EXPERIENCE|CERTIFICATIONS|PUBLICATIONS|AWARDS)\\b)|$)",
             RegexOption.IGNORE_CASE
         )
-        val projText = projRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim() ?: ""
+        val projHeading = headingsToEvaluate.firstOrNull { h ->
+            val l = h.lowercase()
+            l.contains("project")
+        }
+        val projText = (if (projHeading != null) sectionMap[projHeading] else null)
+            ?: projRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim().orEmpty()
         val parsedProjects = parseProjects(projText, annotationLinks)
 
         // Dynamic Skills Extraction
@@ -586,8 +1028,13 @@ class PdfExtractionRepository(private val context: Context) {
         )
         val skillsMatch = skillsRegex.find(rawText)
         val rawSkillsHeader = skillsMatch?.groupValues?.getOrNull(1)?.trim() ?: "Technical Skills"
-        val skillsText = skillsMatch?.groupValues?.getOrNull(2)?.trim() ?: ""
-        val parsedSkills = parseSkills(skillsText, rawSkillsHeader)
+        val skillsHeading = headingsToEvaluate.firstOrNull { h ->
+            val l = h.lowercase()
+            l.contains("skill") || l.contains("technolog") || l.contains("competenc")
+        }
+        val skillsText = (if (skillsHeading != null) sectionMap[skillsHeading] else null)
+            ?: skillsMatch?.groupValues?.getOrNull(2)?.trim().orEmpty()
+        val parsedSkills = parseSkills(skillsText, skillsHeading ?: rawSkillsHeader)
 
         // Dynamic Education Extraction
         val eduRegex = Regex(
@@ -595,90 +1042,40 @@ class PdfExtractionRepository(private val context: Context) {
             RegexOption.IGNORE_CASE
         )
         val eduMatch = eduRegex.find(rawText)
-        val eduText = if (eduMatch != null) {
-            val sameLineText = eduMatch.groupValues.getOrNull(1)?.trim() ?: ""
-            val nextLinesText = eduMatch.groupValues.getOrNull(2)?.trim() ?: ""
-            "$sameLineText\n$nextLinesText".trim()
-        } else ""
+        val eduHeading = headingsToEvaluate.firstOrNull { h ->
+            val l = h.lowercase()
+            l.contains("education") || l.contains("academic") || l.contains("qualification")
+        }
+        val eduText = (if (eduHeading != null) sectionMap[eduHeading] else null)
+            ?: if (eduMatch != null) {
+                val sameLineText = eduMatch.groupValues.getOrNull(1)?.trim() ?: ""
+                val nextLinesText = eduMatch.groupValues.getOrNull(2)?.trim() ?: ""
+                "$sameLineText\n$nextLinesText".trim()
+            } else ""
         val parsedEducation = parseEducation(eduText)
 
-        // Dynamic Additional Sections (e.g. Open Source Contributions, Certifications, Awards, etc.)
-        val dynamicList = parseDynamicSections(rawText, annotationLinks)
+        // Dynamic Additional Sections (e.g. Courses, Achievements, Hobbies, Languages, Open Source, etc.)
+        val dynamicList = parseDynamicSections(rawText, annotationLinks, headingsToEvaluate, sectionMap)
 
-        // Build the initial section order strictly reflecting the PDF structure:
-        // 1. Core sections present in the PDF appear first in their detected PDF order.
-        // 2. Any core section missing from the PDF is appended to complete the 6 core sections.
-        // 3. Dynamic / Custom sections follow.
-        val headingsToEvaluate = if (detectedHeadings.isNotEmpty()) detectedHeadings else detectResumeSectionHeadings(rawText)
-        val detectedCoreOrder = mutableListOf<String>()
-        val detectedCustomOrder = mutableListOf<String>()
-
-        // Personal Info & Contact is always the first core section
-        detectedCoreOrder.add(ResumeSectionConstants.SECTION_PERSONAL)
-
-        for (heading in headingsToEvaluate) {
-            val lower = heading.lowercase()
-            when {
-                lower.contains("personal") || lower.contains("contact") -> {
-                    // Already added as first item
-                }
-                lower.contains("summary") || lower.contains("profile") || lower.contains("objective") || lower.contains("about") -> {
-                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_SUMMARY)) {
-                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_SUMMARY)
-                    }
-                }
-                lower.contains("experience") || lower.contains("employment") || lower.contains("work history") || lower.contains("career") -> {
-                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_EXPERIENCE)) {
-                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_EXPERIENCE)
-                    }
-                }
-                lower.contains("project") -> {
-                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_PROJECTS)) {
-                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_PROJECTS)
-                    }
-                }
-                lower.contains("skill") || lower.contains("technolog") || lower.contains("competenc") -> {
-                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_SKILLS)) {
-                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_SKILLS)
-                    }
-                }
-                lower.contains("education") || lower.contains("academic") || lower.contains("qualification") -> {
-                    if (!detectedCoreOrder.contains(ResumeSectionConstants.SECTION_EDUCATION)) {
-                        detectedCoreOrder.add(ResumeSectionConstants.SECTION_EDUCATION)
-                    }
-                }
-                lower.contains("open source") || lower.contains("contribution") -> {
-                    val key = "custom_Open Source Contributions"
-                    if (!detectedCustomOrder.contains(key)) {
-                        detectedCustomOrder.add(key)
-                    }
-                }
-            }
-        }
-
-        // Guarantee all 6 core sections are present: append any missing core section at the end of the core sections
-        val allCoreCandidates = listOf(
+        // Every resume always displays the 6 core sections in the exact standard order:
+        // 1. Personal Info & Contact
+        // 2. Professional Summary
+        // 3. Work Experience
+        // 4. Projects
+        // 5. Technical Skills
+        // 6. Education
+        // followed by dynamic/custom sections in the order they appear.
+        val standardCoreOrder = listOf(
+            ResumeSectionConstants.SECTION_PERSONAL,
             ResumeSectionConstants.SECTION_SUMMARY,
             ResumeSectionConstants.SECTION_EXPERIENCE,
             ResumeSectionConstants.SECTION_PROJECTS,
             ResumeSectionConstants.SECTION_SKILLS,
             ResumeSectionConstants.SECTION_EDUCATION
         )
-        for (coreKey in allCoreCandidates) {
-            if (!detectedCoreOrder.contains(coreKey)) {
-                detectedCoreOrder.add(coreKey)
-            }
-        }
 
-        // Add any remaining dynamic sections
-        dynamicList.forEach { dynamic ->
-            val key = "custom_${dynamic.sectionTitle}"
-            if (!detectedCustomOrder.contains(key)) {
-                detectedCustomOrder.add(key)
-            }
-        }
-
-        val initialSectionOrder = detectedCoreOrder + detectedCustomOrder
+        val detectedCustomOrder = dynamicList.map { "custom_${it.sectionTitle}" }.distinct()
+        val initialSectionOrder = standardCoreOrder + detectedCustomOrder
 
         return ResumeProfile(
             hero = ProfileHero(
@@ -702,23 +1099,195 @@ class PdfExtractionRepository(private val context: Context) {
     private fun isLikelyLocation(text: String): Boolean {
         val lower = text.lowercase().trim()
         if (lower.isBlank() || lower.length > 80) return false
+        if (isLikelyPersonalRole(text)) return false
         val containsKnownPlace = lower.contains("remote") || lower.contains("india") ||
                 lower.contains("noida") || lower.contains("ghaziabad") || lower.contains("uttar pradesh") ||
                 lower.contains("punjab") || lower.contains("mohali") || lower.contains("delhi") ||
                 lower.contains("bangalore") || lower.contains("bengaluru") || lower.contains("gurgaon") ||
+                lower.contains("gurugram") ||
                 lower.contains("hyderabad") || lower.contains("mumbai") || lower.contains("pune") ||
                 lower.contains("dehradun") || lower.contains("uttarakhand") ||
                 lower.contains("usa") || lower.contains("united states") || lower.contains("canada") ||
-                lower.contains("uk") || lower.contains("united kingdom") || lower.contains("germany")
-        val looksLikeCityState = text.matches(Regex("^[A-Za-z\\s.'-]+(?:,\\s*[A-Za-z\\s.'-]+)+$"))
-        return containsKnownPlace || looksLikeCityState
+                lower.contains("uk") || lower.contains("united kingdom") || lower.contains("germany") ||
+                lower.contains("los angeles") || lower.contains("new york") || lower.contains("san francisco")
+        val looksLikeCityState = text.matches(Regex("^[A-Za-z\\s.'-]+(?:,\\s*[A-Za-z0-9\\s.'-]+)+$")) &&
+                !lower.contains("designer") &&
+                !lower.contains("developer") &&
+                !lower.contains("engineer") &&
+                !lower.contains("manager") &&
+                !lower.contains("consultant") &&
+                !lower.contains("director")
+        val hasStreet = text.matches(Regex(".*\\b\\d{1,5}\\s+[A-Za-z0-9.\\s]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Lane|Ln|Dr|Drive|Way)\\b.*", RegexOption.IGNORE_CASE))
+        val hasZip = text.matches(Regex(".*\\b\\d{5}(?:-\\d{4})?\\b.*"))
+        return containsKnownPlace || looksLikeCityState || hasStreet || hasZip
+    }
+
+    private fun isLikelyAddressContinuation(line: String): Boolean {
+        if (line.isBlank() || isLikelyPersonalRole(line)) return false
+        val lower = line.lowercase().trim()
+        if (lower.contains("@") || lower.contains("http") || lower.contains("phone")) return false
+        val hasZip = line.matches(Regex(".*\\b\\d{5}(?:-\\d{4})?\\b.*"))
+        val hasCityCountry = lower.contains("usa") || lower.contains("united states") ||
+                lower.contains("los angeles") || lower.contains("new york") ||
+                lower.contains("ca") || lower.contains("ny") || lower.contains("india")
+        val looksLikeCityState = line.matches(Regex("^[A-Za-z\\s.'-]+(?:,\\s*[A-Za-z0-9\\s.'-]+)+$"))
+        return hasZip || hasCityCountry || looksLikeCityState
+    }
+
+    private fun extractCandidateLocation(
+        headerLines: List<String>,
+        candidateEmail: String,
+        candidatePhone: String
+    ): String {
+        fun cleanContactTokens(line: String): String {
+            var cleaned = line
+            if (candidateEmail.isNotBlank()) cleaned = cleaned.replace(candidateEmail, "")
+            if (candidatePhone.isNotBlank()) cleaned = cleaned.replace(candidatePhone, "")
+            cleaned = cleaned.replace(Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"), "")
+            cleaned = cleaned.replace(Regex("(\\+?\\d{1,3}[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}"), "")
+            cleaned = cleaned.replace(Regex("(?i)\\b(?:address|location):?\\b"), "")
+            cleaned = cleaned.replace(Regex("(?i)\\b(?:phone|email|mobile|tel):?\\b"), "")
+            cleaned = cleaned.replace(Regex("(?i)\\b(?:details|info|links|resume|cv)\\b"), "")
+            cleaned = cleaned.replace(Regex("(?i)\\b(?:linkedin|github|portfolio|website)\\b"), "")
+            cleaned = cleaned.replace(Regex("[|•·]"), " ")
+            return cleaned.replace(Regex("\\s{2,}"), " ").trim()
+        }
+
+        val cleanedCandidateLines = mutableListOf<String>()
+        for (rawLine in headerLines) {
+            val l = rawLine.trim().lowercase()
+            if (l.contains("linkedin.com") || l.contains("github.com") ||
+                l.contains("driving license") || l.contains("nationality") ||
+                l.contains("place of birth") || l.contains("date of birth") ||
+                l.equals("details") || l.equals("info") || l.equals("links")) {
+                continue
+            }
+            val cleaned = cleanContactTokens(rawLine)
+            if (cleaned.isNotBlank() && !isLikelyPersonalRole(cleaned)) {
+                cleanedCandidateLines.add(cleaned)
+            }
+        }
+
+        // Look for lines matching street address, zip code, or known location patterns
+        val candidateLines = mutableListOf<String>()
+
+        for (i in cleanedCandidateLines.indices) {
+            val line = cleanedCandidateLines[i]
+
+            val hasStreet = line.matches(Regex(".*\\b\\d{1,5}\\s+[A-Za-z0-9.\\s]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Lane|Ln|Dr|Drive|Way)\\b.*", RegexOption.IGNORE_CASE))
+            val hasZip = line.matches(Regex(".*\\b\\d{5}(?:-\\d{4})?\\b.*")) || line.matches(Regex(".*\\b\\d{6}\\b.*"))
+            val hasKnownPlace = isLikelyLocation(line)
+
+            if (hasStreet || hasZip || hasKnownPlace) {
+                candidateLines.add(line)
+
+                // Check if the very next line is a continuation (like "Los Angeles" or "10005, USA")
+                val nextLine = cleanedCandidateLines.getOrNull(i + 1)?.trim().orEmpty()
+                if (isLikelyAddressContinuation(nextLine)) {
+                    candidateLines.add(nextLine)
+                }
+                break
+            }
+        }
+
+        if (candidateLines.isEmpty()) {
+            return ""
+        }
+
+        // Join parts cleanly and clean up duplicate commas/spaces
+        val combined = candidateLines.joinToString(" ")
+            .replace(Regex(",\\s*,"), ",")
+            .replace(Regex("\\s{2,}"), " ")
+            .trim()
+        return combined.removePrefix(",").removeSuffix(",").trim()
+    }
+
+    private fun isLikelyPersonalRole(text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.length < 2 || trimmed.length > 130) return false
+        val lower = trimmed.lowercase()
+        if (lower.contains("years") || lower.contains("experience in") || lower.contains("building") || trimmed.endsWith(".")) return false
+
+        // Ignored non-role words / headings / metadata
+        val ignoredWords = setOf(
+            "details", "info", "links", "resume", "cv", "curriculum vitae",
+            "profile", "summary", "experience", "education", "skills",
+            "references", "contact", "address", "phone", "email",
+            "nationality", "driving license", "place of birth", "date of birth"
+        )
+        if (ignoredWords.contains(lower)) return false
+        if (lower.contains("@") || lower.contains("http") || lower.contains(".com")) return false
+
+        // Common role keywords
+        val roleKeywords = listOf(
+            "developer", "engineer", "designer", "consultant", "manager",
+            "director", "teller", "analyst", "architect", "lead",
+            "specialist", "assistant", "coordinator", "officer", "administrator",
+            "intern", "executive", "expert", "associate", "scientist",
+            "technician", "representative", "programmer", "writer", "accountant",
+            "banker", "recruiter", "strategist", "producer"
+        )
+        if (roleKeywords.any { lower.contains(it) }) return true
+
+        // Compound headlines with separators e.g. "Flutter Developer | Mobile Application Developer"
+        if (trimmed.contains("|") || trimmed.contains("/") || trimmed.contains("&")) {
+            val segments = trimmed.split(Regex("[|/&]")).map { it.trim() }
+            if (segments.any { seg -> roleKeywords.any { kw -> seg.lowercase().contains(kw) } }) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun isInstitutionLine(line: String): Boolean {
+        val lower = line.lowercase()
+        return lower.contains("college") || lower.contains("university") ||
+                lower.contains("institute") || lower.contains("school") ||
+                lower.contains("academy") || lower.contains("campus") ||
+                lower.contains("aktu") || lower.contains("board") ||
+                lower.contains("vidyalaya") || lower.contains("polytechnic") ||
+                lower.contains("faculty") || lower.contains("institution")
     }
 
     private fun parseWorkExperience(expText: String, annotationLinks: List<String> = emptyList()): List<WorkExperienceItem> {
         if (expText.isBlank()) return emptyList()
 
         val items = mutableListOf<WorkExperienceItem>()
-        val lines = expText.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val rawLines = expText.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        // Normalize lines where dates are wrapped across line breaks:
+        // Case 1: Line ends with open date range e.g. "Sep 2025 -" and next line is "Present"
+        // Case 2: Line ends with "Apr 2023 – Oct" and next line starts with "2025 · Noida"
+        val lines = mutableListOf<String>()
+        var lineIdx = 0
+        while (lineIdx < rawLines.size) {
+            val curr = rawLines[lineIdx]
+            val openDateMatch = Regex("(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?|\\d{1,2}/)?\\s*\\d{4}|\\d{1,2}/\\d{2,4})\\s*(?:–|-|—|to)\\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?)?\\s*$", RegexOption.IGNORE_CASE).find(curr)
+            if (openDateMatch != null && lineIdx + 1 < rawLines.size) {
+                val next = rawLines[lineIdx + 1]
+                val closeDateMatch = Regex("^(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?|\\d{1,2}/)?\\s*(?:\\d{2,4}|Present|Current))\\b", RegexOption.IGNORE_CASE).find(next)
+                if (closeDateMatch != null) {
+                    val remainingNext = next.substring(closeDateMatch.value.length).trim()
+                    val joinedLine = "${curr.trim()} ${closeDateMatch.value.trim()}"
+                    if (remainingNext.isNotBlank()) {
+                        val cleanedRemaining = remainingNext.replace(Regex("^[·|•,—–\\s]+"), "").trim()
+                        if (isLikelyLocation(cleanedRemaining) || cleanedRemaining.length < 30) {
+                            lines.add("$joinedLine · $cleanedRemaining")
+                        } else {
+                            lines.add(joinedLine)
+                            lines.add(cleanedRemaining)
+                        }
+                    } else {
+                        lines.add(joinedLine)
+                    }
+                    lineIdx += 2
+                    continue
+                }
+            }
+            lines.add(curr)
+            lineIdx++
+        }
 
         val datePattern = Regex(
             "(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?|\\d{1,2}/)?\\s*\\d{4}|\\d{1,2}/\\d{2,4})\\s*(?:–|-|—|to)\\s*(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?|\\d{1,2}/)?\\s*(?:\\d{2,4}|Present|Current))",
@@ -734,7 +1303,7 @@ class PdfExtractionRepository(private val context: Context) {
         }
 
         val roleWordRegex = Regex(
-            "\\b(?:developer|engineer|architect|lead|manager|intern|internship|consultant|specialist|analyst|designer|programmer|administrator|associate|director|officer|cto|ceo|vp|trainee|fresher|tester|qa|fellow|instructor|researcher|scientist|coordinator)\\b",
+            "\\b(?:sde(?:-[0-9]+)?|swe(?:-[0-9]+)?|mts|mle|developer|engineer|architect|lead|manager|intern|internship|consultant|specialist|analyst|designer|programmer|administrator|associate|director|officer|cto|ceo|vp|trainee|fresher|tester|qa|fellow|instructor|researcher|scientist|coordinator|teller)\\b",
             RegexOption.IGNORE_CASE
         )
 
@@ -767,7 +1336,18 @@ class PdfExtractionRepository(private val context: Context) {
 
         fun parseHeaderSegments(text: String): Pair<String, String>? {
             val clean = cleanTextFromDates(text)
-            val delimiterRegex = Regex("\\s*[|•·—–-]\\s*|\\s+at\\s+")
+            // 1. Explicit [Role] at [Company] structure
+            val atMatch = Regex("^(.*?)\\s+at\\s+(.*?)$", RegexOption.IGNORE_CASE).find(clean)
+            if (atMatch != null) {
+                val candidateRole = atMatch.groupValues[1].trim()
+                val candidateComp = atMatch.groupValues[2].trim()
+                if (candidateRole.isNotBlank() && candidateComp.isNotBlank()) {
+                    return Pair(candidateComp, candidateRole)
+                }
+            }
+
+            // 2. Delimit on |, •, ·, —, –, commas, or space-flanked hyphens (preserving embedded hyphens like SDE-2)
+            val delimiterRegex = Regex("\\s*[|•·—–]\\s*|\\s+-\\s+|\\s*,\\s*")
             val segments = clean.split(delimiterRegex).map { it.trim() }.filter { it.isNotBlank() }
             if (segments.size >= 2) {
                 var comp = ""
@@ -938,12 +1518,19 @@ class PdfExtractionRepository(private val context: Context) {
                     // We already have bullets for the current position.
                     // Is this line a multi-line wrap continuation of the preceding bullet?
                     val startsWithLower = line.firstOrNull()?.isLowerCase() == true
+                    val startsWithOperatorOrDigit = line.matches(Regex("^[<>=+~%$0-9].*"))
                     val lastBullet = currentBullets.last()
-                    val continuationWords = listOf("and", "with", "using", "for", "in", "to", "by", "from", "on", "into", "through", "across", "improving", "reducing", "ensuring", "achieving")
+                    val continuationWords = listOf("and", "with", "using", "for", "in", "to", "by", "from", "on", "into", "through", "across", "improving", "reducing", "ensuring", "achieving", "as", "or")
+                    val lastEndsWithOpenSentence = !lastBullet.endsWith(".") && !lastBullet.endsWith("!") && !lastBullet.endsWith("?")
+                    val lastEndsWithPreposition = continuationWords.any { lastBullet.trim().endsWith(" $it", ignoreCase = true) }
+                    val startsWithPreposition = continuationWords.any { line.startsWith("$it ", ignoreCase = true) }
+
                     val isContinuation = startsWithLower ||
-                            continuationWords.any { line.startsWith("$it ", ignoreCase = true) } ||
-                            lastBullet.endsWith(",") || lastBullet.endsWith(";") ||
-                            (!lastBullet.endsWith(".") && line.length > 40)
+                            startsWithOperatorOrDigit ||
+                            lastEndsWithPreposition ||
+                            lastBullet.endsWith(",") ||
+                            lastBullet.endsWith(";") ||
+                            (lastEndsWithOpenSentence && (startsWithPreposition || line.length > 25))
 
                     if (isContinuation) {
                         val cleaned = cleanBulletLine(line)
@@ -956,19 +1543,25 @@ class PdfExtractionRepository(private val context: Context) {
                         pendingHeaderLines.add(line)
                     }
                 } else {
-                    val pSeg = parseHeaderSegments(line)
-                    if (pSeg != null) {
-                        val (c, r) = pSeg
-                        if (c.isNotBlank() && currentCompany.isBlank()) currentCompany = c
-                        if (r.isNotBlank() && currentRole.isBlank()) currentRole = r
-                    } else if (isLikelyRole(line) && currentRole.isBlank()) {
-                        currentRole = line
-                    } else if (isCompanyIndicator(line) && currentCompany.isBlank()) {
-                        currentCompany = line
-                    } else if (!isLikelyLocation(line) && currentCompany.isBlank()) {
-                        currentCompany = line
+                    if (currentCompany.isNotBlank() && currentRole.isNotBlank()) {
+                        // Company and role are already extracted for this entry (e.g. from header line).
+                        // Standalone line here is a foreign company location or branch (e.g. Arnsberg, Brymbo).
+                        // Per requirement: locations must never be forcefully crammed into companyName or roleTitle.
                     } else {
-                        pendingHeaderLines.add(line)
+                        val pSeg = parseHeaderSegments(line)
+                        if (pSeg != null) {
+                            val (c, r) = pSeg
+                            if (c.isNotBlank() && currentCompany.isBlank()) currentCompany = c
+                            if (r.isNotBlank() && currentRole.isBlank()) currentRole = r
+                        } else if (isLikelyRole(line) && currentRole.isBlank()) {
+                            currentRole = line
+                        } else if (isCompanyIndicator(line) && currentCompany.isBlank()) {
+                            currentCompany = line
+                        } else if (!isLikelyLocation(line) && currentCompany.isBlank()) {
+                            currentCompany = line
+                        } else {
+                            pendingHeaderLines.add(line)
+                        }
                     }
                 }
             }
@@ -980,7 +1573,7 @@ class PdfExtractionRepository(private val context: Context) {
 
     private fun isBulletStart(line: String): Boolean {
         val trimmed = line.trim()
-        if (trimmed.matches(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\-*–—].*"))) return true
+        if (trimmed.matches(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\u25a0\\u25aa\\u25ab\\u25c6\\u25c7\\u27a4\\u27a2\\u2714\\u2713■▪▫◆◇❖➢➤✔✓\\-*–—].*"))) return true
         if (trimmed.matches(Regex("^[0-9]+[.)\\-]\\s+.*"))) return true
         if (trimmed.matches(Regex("^\\[[0-9]+\\]\\s+.*"))) return true
         val actionVerbs = listOf(
@@ -989,14 +1582,17 @@ class PdfExtractionRepository(private val context: Context) {
             "Managed", "Led", "Spearheaded", "Formulated", "Orchestrated", "Automated",
             "Collaborated", "Resolved", "Refactored", "Constructed", "Configured",
             "Delivered", "Executed", "Authored", "Established", "Optimized", "Reduced",
-            "Increased", "Enhanced", "Transformed", "Accelerated", "Pioneered"
+            "Increased", "Enhanced", "Transformed", "Accelerated", "Pioneered",
+            "Supported", "Assisted", "Prepared", "Ensured", "Provided", "Coached",
+            "Supervised", "Coordinated", "Conducted", "Facilitated", "Directed",
+            "Administered", "Trained", "Earned", "Outlined", "Shipped", "Revamped", "Scaled"
         )
         return actionVerbs.any { trimmed.startsWith("$it ", ignoreCase = false) }
     }
 
     private fun cleanBulletLine(line: String): String {
         return line.trim()
-            .replace(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\-*–—\\s]+"), "")
+            .replace(Regex("^[.•\\u2022\\u25cf\\u00b7\\u2043\\u25e6\\u25a0\\u25aa\\u25ab\\u25c6\\u25c7\\u27a4\\u27a2\\u2714\\u2713■▪▫◆◇❖➢➤✔✓\\-*–—\\s]+"), "")
             .replace(Regex("^[0-9]+[.)\\-]\\s*"), "")
             .replace(Regex("^\\[[0-9]+\\]\\s*"), "")
             .trim()
@@ -1009,7 +1605,8 @@ class PdfExtractionRepository(private val context: Context) {
 
     private val projectLinkKeywords = setOf(
         "github", "git", "gitlab", "bitbucket", "link", "demo", "live demo",
-        "code", "repo", "play store", "app store", "pub.dev", "website"
+        "code", "repo", "frontend repo", "backend repo", "frontend", "backend",
+        "play store", "app store", "pub.dev", "website", "live", "source", "source code"
     )
 
     private val knownPlatformTags = setOf(
@@ -1018,12 +1615,24 @@ class PdfExtractionRepository(private val context: Context) {
         "flutter", "dart", "kotlin", "java", "swift", "swiftui", "react", "react native",
         "next.js", "vue", "angular", "node.js", "python", "firebase", "aws", "gcp",
         "azure", "docker", "kubernetes", "graphql", "rest api", "rest apis", "bloc", "provider",
-        "hive", "room", "sqlite", "ci/cd"
+        "hive", "room", "sqlite", "ci/cd", "system_tray", "custompainter", "animationcontroller",
+        "globalkey", "renderobject", "websocket", "coregraphics", "bonjour", "redux"
     )
+
+    private fun isLinkDescriptor(segment: String): Boolean {
+        val l = segment.lowercase().trim()
+        return projectLinkKeywords.contains(l) ||
+                l.contains("github.com") ||
+                l.startsWith("http://") || l.startsWith("https://") || l.startsWith("www.") ||
+                l.endsWith("repo") || l.endsWith("repository") || l.endsWith("demo") || l.endsWith("link") ||
+                l == "code" || l == "live" || l == "source"
+    }
 
     private fun parseProjectHeader(rawLine: String): ParsedProjectHeader {
         // Strip trailing Link words or markdown-style links first
-        val cleanedLine = rawLine.replace(Regex("\\|\\s*Link.*", RegexOption.IGNORE_CASE), "").trim()
+        val cleanedLine = rawLine
+            .replace(Regex("\\|\\s*(?:Live Demo|Frontend Repo|Backend Repo|Demo|Link|GitHub|Repo).*$", RegexOption.IGNORE_CASE), "")
+            .trim()
         val segments = cleanedLine.split(Regex("[|•·]")).map { it.trim() }.filter { it.isNotBlank() }
         if (segments.isEmpty()) return ParsedProjectHeader(cleanedLine, emptyList())
 
@@ -1033,8 +1642,8 @@ class PdfExtractionRepository(private val context: Context) {
         for (segment in segments) {
             val lower = segment.lowercase()
 
-            // 1. If it's a link keyword or direct URL, discard it (already parsed to codeUrl/demoUrl)
-            if (projectLinkKeywords.contains(lower) || lower.startsWith("http://") || lower.startsWith("https://") || lower.startsWith("www.")) {
+            // 1. If it's a link keyword or direct URL, discard it
+            if (isLinkDescriptor(segment)) {
                 continue
             }
 
@@ -1059,8 +1668,8 @@ class PdfExtractionRepository(private val context: Context) {
                 continue
             }
 
-            // 4. Trailing platform word attached to descriptor (e.g. "Multi-Model AI Assistant Android")
-            val trailingPlatformRegex = Regex("^(.*?)\\s+(Android|iOS|Flutter|Web|Tablet|Tablets|Mobile)$", RegexOption.IGNORE_CASE)
+            // 4. Trailing platform word attached to descriptor (e.g. "ADB Helper Flutter Desktop" or "Cognix Flutter")
+            val trailingPlatformRegex = Regex("^(.*?)\\s+(Flutter Desktop|Flutter|Android|iOS|Web|macOS|Windows|Desktop|Tablet|Tablets|Mobile)$", RegexOption.IGNORE_CASE)
             val match = trailingPlatformRegex.find(segment)
             if (match != null) {
                 val prefixText = match.groupValues[1].trim()
@@ -1075,7 +1684,12 @@ class PdfExtractionRepository(private val context: Context) {
                 continue
             }
 
-            // 5. Otherwise, descriptive phrase or title part
+            // 5. App Store / Play Store status note
+            if (lower.contains("in review") || lower.contains("app store") || lower.contains("play store")) {
+                continue
+            }
+
+            // 6. Otherwise, descriptive phrase or title part
             titleSegments.add(segment)
         }
 
@@ -1092,37 +1706,120 @@ class PdfExtractionRepository(private val context: Context) {
         if (projText.isBlank()) return emptyList()
 
         val items = mutableListOf<ProjectItem>()
-        val lines = projText.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val rawLines = projText.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        // Pass 1: Pre-process lines to join wrapped headers
+        val lines = mutableListOf<String>()
+        var lIdx = 0
+        while (lIdx < rawLines.size) {
+            val curr = rawLines[lIdx]
+            val endsWithSep = curr.endsWith("·") || curr.endsWith("|") || curr.endsWith("•") || curr.endsWith(",")
+            val nextIsAppStoreContinuation = lIdx + 1 < rawLines.size &&
+                    curr.contains("In Review", ignoreCase = true) &&
+                    (rawLines[lIdx + 1].contains("App Store", ignoreCase = true) || rawLines[lIdx + 1].contains("Play Store", ignoreCase = true))
+
+            if (lIdx + 1 < rawLines.size && ((endsWithSep && !isBulletStart(rawLines[lIdx + 1])) || nextIsAppStoreContinuation)) {
+                val next = rawLines[lIdx + 1]
+                lines.add("${curr.trim()} ${next.trim()}")
+                lIdx += 2
+                continue
+            }
+            lines.add(curr)
+            lIdx++
+        }
 
         var currentTitle = ""
         var currentTags = mutableListOf<String>()
         val currentBullets = mutableListOf<String>()
+        var currentCodeUrl = ""
+        var currentDemoUrl = ""
+        val pendingPlatformTags = mutableListOf<String>()
 
         fun flushProject() {
             if (currentTitle.isNotBlank()) {
+                val finalBullets = currentBullets.filter { b ->
+                    val isSource = b.matches(Regex("(?i)^(?:Source|Code|Repo|GitHub):.*"))
+                    if (isSource && currentCodeUrl.isBlank()) {
+                        val match = Regex("(?i)(?:github\\.com/[^\\s]+|https?://[^\\s]+)").find(b)
+                        if (match != null) {
+                            var u = match.value.trim()
+                            if (!u.startsWith("http://") && !u.startsWith("https://")) u = "https://$u"
+                            currentCodeUrl = u
+                        }
+                    }
+                    !isSource
+                }
+
                 items.add(
                     ProjectItem(
                         id = UUID.randomUUID().toString(),
                         projectTitle = currentTitle,
-                        description = currentBullets.joinToString("\n").trim(),
-                        techStackTags = currentTags.toList(),
-                        demoUrl = "",
-                        codeUrl = ""
+                        description = finalBullets.joinToString("\n").trim(),
+                        techStackTags = (currentTags + pendingPlatformTags).distinct(),
+                        demoUrl = currentDemoUrl.ifBlank { currentCodeUrl },
+                        codeUrl = currentCodeUrl.ifBlank { currentDemoUrl }
                     )
                 )
                 currentBullets.clear()
                 currentTags.clear()
+                currentCodeUrl = ""
+                currentDemoUrl = ""
+                pendingPlatformTags.clear()
+                currentTitle = ""
             }
         }
 
         for (line in lines) {
-            val isBullet = isBulletStart(line)
-            if (!isBullet && (line.contains("|") || line.contains("Link", ignoreCase = true) || (currentTitle.isEmpty() && line.length < 70))) {
+            // A. In-text Source / Code URL line (e.g. "■ Source: github.com/Molterous/mobile_mouse")
+            val inTextSourceMatch = Regex("(?i)^(?:[■●•\\-*–—\\s]*)(?:Source|Code|Repo|GitHub):\\s*(?:https?://)?(github\\.com/[^\\s]+|[^\\s]+)").find(line)
+            if (inTextSourceMatch != null) {
+                var extractedUrl = inTextSourceMatch.groupValues[1].trim()
+                if (!extractedUrl.startsWith("http://") && !extractedUrl.startsWith("https://")) {
+                    extractedUrl = "https://$extractedUrl"
+                }
+                if (currentCodeUrl.isBlank()) {
+                    currentCodeUrl = extractedUrl
+                }
+                continue
+            }
+
+            // B. Dedicated Tech Stack line (e.g. "Tech Stack: React 19, TypeScript, Node.js 20...")
+            val techStackMatch = Regex("(?i)^(?:Tech(?:nology)?\\s*Stack|Technologies|Environment):\\s*(.*)$").find(line)
+            if (techStackMatch != null) {
+                val techContent = techStackMatch.groupValues[1].trim()
+                val tokens = techContent.split(Regex("[,|•·]")).map { it.trim() }.filter { it.isNotBlank() }
+                tokens.forEach { token ->
+                    if (!currentTags.any { it.equals(token, ignoreCase = true) }) {
+                        currentTags.add(token)
+                    }
+                }
+                continue
+            }
+
+            // C. Pure platform/link header line preceding project title (e.g. "Android | iOS | Phones & Tablets | GitHub")
+            val rawSegments = line.split(Regex("[|•·]")).map { it.trim() }.filter { it.isNotBlank() }
+            val isPurePlatformLine = !isBulletStart(line) && rawSegments.isNotEmpty() && rawSegments.all { seg ->
+                knownPlatformTags.contains(seg.lowercase()) || isLinkDescriptor(seg)
+            }
+            if (isPurePlatformLine) {
+                val pHeader = parseProjectHeader(line)
+                pendingPlatformTags.addAll(pHeader.techStackTags)
+                continue
+            }
+
+            // D. Project Header Detection
+            val isHeaderLine = !isBulletStart(line) && (
+                line.contains("|") ||
+                (line.contains("·") && (knownPlatformTags.any { line.contains(it, ignoreCase = true) } || line.contains("Flutter", ignoreCase = true))) ||
+                (currentTitle.isBlank() && line.length < 80)
+            )
+
+            if (isHeaderLine) {
                 if (currentTitle.isNotBlank()) flushProject()
                 val parsedHeader = parseProjectHeader(line)
                 currentTitle = parsedHeader.title
-                currentTags = parsedHeader.techStackTags.toMutableList()
-            } else if (isBullet) {
+                currentTags.addAll(parsedHeader.techStackTags)
+            } else if (isBulletStart(line)) {
                 val cleaned = cleanBulletLine(line)
                 if (cleaned.isNotBlank()) {
                     currentBullets.add(cleaned)
@@ -1213,24 +1910,52 @@ class PdfExtractionRepository(private val context: Context) {
             )
         }
 
-        val lines = skillsText.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val rawLines = skillsText.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        // Normalize line breaks where tokens or categories were wrapped across lines
+        val lines = mutableListOf<String>()
+        for (rawLine in rawLines) {
+            if (lines.isEmpty()) {
+                lines.add(rawLine)
+                continue
+            }
+            val prev = lines.last()
+            val isNewCategory = rawLine.contains(":") &&
+                    rawLine.indexOf(':') in 2..55 &&
+                    !rawLine.startsWith("http") &&
+                    !rawLine.contains("@")
+            val prevEndsWithDelim = prev.endsWith(",") || prev.endsWith(";") ||
+                    prev.endsWith("|") || prev.endsWith("•") || prev.endsWith("·") ||
+                    prev.endsWith("–") || prev.endsWith("-")
+            val prevEndsWithColon = prev.endsWith(":")
+
+            if (!isNewCategory && !prevEndsWithDelim && !prevEndsWithColon) {
+                // Line wrapped mid-token or without trailing comma
+                lines[lines.size - 1] = "$prev $rawLine"
+            } else {
+                lines.add(rawLine)
+            }
+        }
+
         val detectedCategories = linkedMapOf<String, MutableList<String>>()
         var currentCategory: String? = null
         val flatSkills = mutableListOf<String>()
 
         fun cleanSkillItem(item: String): String {
-            return item.replace(Regex("^[•\\-*·•\\s]+|[•\\-*·•\\s]+$"), "").trim()
+            return item.replace(Regex("^[•●\u2022\u25cf\u00b7\u25a0■\\-*–—\\s]+|[•●\u2022\u25cf\u00b7\u25a0■\\-*–—\\s]+$"), "")
+                .replace(Regex("\\s+(?:Expert|Advanced|Intermediate|Beginner|Proficient)$", RegexOption.IGNORE_CASE), "")
+                .trim()
         }
 
         for (line in lines) {
-            // Check if this line defines a category header (e.g. "Mobile Development:" or "Mobile Development: Flutter, Android")
+            // Check if this line defines a category header (e.g. "Mobile Development:" or "● Frontend: React, ...")
             if (line.contains(":")) {
                 val colonIdx = line.indexOf(':')
-                val potentialCat = line.substring(0, colonIdx).trim()
+                val potentialCat = cleanSkillItem(line.substring(0, colonIdx))
                 val remainder = line.substring(colonIdx + 1).trim()
 
-                // A valid category header name is typically short (<= 45 chars) and doesn't look like a URL/email
-                if (potentialCat.length in 2..45 && !potentialCat.startsWith("http") && !potentialCat.contains("@")) {
+                // A valid category header name is typically short (<= 55 chars) and doesn't look like a URL/email
+                if (potentialCat.length in 2..55 && !potentialCat.startsWith("http") && !potentialCat.contains("@")) {
                     currentCategory = potentialCat
                     val list = detectedCategories.getOrPut(currentCategory) { mutableListOf() }
                     if (remainder.isNotBlank()) {
@@ -1251,7 +1976,14 @@ class PdfExtractionRepository(private val context: Context) {
                 detectedCategories[currentCategory]?.addAll(skills)
             } else {
                 // Flat / uncategorized skills
-                val skills = line.split(Regex("[,|•·]"))
+                val delimiter = if (line.contains(",") || line.contains("|") || line.contains("•") || line.contains("·")) {
+                    Regex("[,|•·]")
+                } else if (Regex("(?i:Expert|Advanced|Intermediate|Beginner|Proficient)").containsMatchIn(line)) {
+                    Regex("(?<=(?i:Expert|Advanced|Intermediate|Beginner|Proficient))\\s+|\\s{2,}|\t")
+                } else {
+                    Regex("\\s{2,}|\t")
+                }
+                val skills = line.split(delimiter)
                     .map { cleanSkillItem(it) }
                     .filter { it.isNotBlank() }
                 flatSkills.addAll(skills)
@@ -1279,22 +2011,18 @@ class PdfExtractionRepository(private val context: Context) {
             val lower = cat.lowercase()
             when {
                 lower.contains("language") || lower.contains("programming") -> languages.addAll(skills)
-                lower.contains("framework") || lower.contains("mobile") || lower.contains("architecture") || lower.contains("state") || lower.contains("core") -> frameworks.addAll(skills)
-                lower.contains("firebase") || lower.contains("cloud") || lower.contains("devops") || lower.contains("database") || lower.contains("storage") -> cloudDevOps.addAll(skills)
+                lower.contains("framework") || lower.contains("mobile") || lower.contains("architecture") || lower.contains("state") || lower.contains("core") || lower.contains("frontend") || lower.contains("backend") -> frameworks.addAll(skills)
+                lower.contains("firebase") || lower.contains("cloud") || lower.contains("devops") || lower.contains("database") || lower.contains("storage") || lower.contains("queue") -> cloudDevOps.addAll(skills)
                 else -> toolsMethodologies.addAll(skills)
             }
         }
 
-        if (cleanedCategories.isEmpty() && cleanedFlat.isNotEmpty()) {
-            frameworks.addAll(cleanedFlat)
-        }
-
         return SkillCategories(
             sectionTitle = normalizedTitle,
-            languages = languages.distinct().ifEmpty { if (cleanedCategories.isEmpty()) listOf("Kotlin", "Dart", "Java") else emptyList() },
-            frameworks = frameworks.distinct().ifEmpty { if (cleanedCategories.isEmpty()) listOf("Android", "Flutter", "Jetpack Compose") else emptyList() },
-            cloudDevOps = cloudDevOps.distinct().ifEmpty { if (cleanedCategories.isEmpty()) listOf("Firebase", "Git") else emptyList() },
-            toolsMethodologies = toolsMethodologies.distinct().ifEmpty { if (cleanedCategories.isEmpty()) listOf("MVVM", "REST APIs", "SQLite") else emptyList() },
+            languages = languages.distinct(),
+            frameworks = frameworks.distinct(),
+            cloudDevOps = cloudDevOps.distinct(),
+            toolsMethodologies = toolsMethodologies.distinct(),
             categorizedDomains = cleanedCategories,
             rawFlatSkills = cleanedFlat
         )
@@ -1303,170 +2031,524 @@ class PdfExtractionRepository(private val context: Context) {
     private fun parseEducation(eduText: String): List<EducationItem> {
         if (eduText.isBlank()) return emptyList()
 
-        val lines = eduText.lines().map { it.trim() }.filter { it.isNotBlank() }
-        val datePattern = Regex(
-            "(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?\\d{4}\\s*(?:–|-|to)\\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?(?:\\d{4}|Present|Current)",
+        val rawLines = eduText.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val dateRangePattern = Regex(
+            "(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?\\b\\d{4}\\s*(?:–|-|—|to)\\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?(?:\\d{4}|\\d{2}|Present|Current)\\b",
             RegexOption.IGNORE_CASE
         )
-        val rangeMatch = datePattern.find(eduText)
-        val formattedDuration = if (rangeMatch != null) {
-            rangeMatch.value.trim()
-        } else {
-            val singleYearPattern = Regex("\\b(?:19|20)\\d{2}\\b")
-            val singleYear = singleYearPattern.find(eduText)?.value
-            if (singleYear != null) {
-                val y = singleYear.toIntOrNull() ?: 2024
-                "${y - 4} - $singleYear"
+        val singleYearPattern = Regex("\\b(?:19|20)\\d{2}\\b")
+        val gradePattern = Regex(
+            "(?:\\b(?:CGPA|GPA|Percentage|Score|Grade)[ \\t]*[:=]?[ \\t]*[0-9.]+(?:/[0-9.]+)?%?|[0-9.]+[ \\t]*(?:CGPA|GPA|%|Percent))",
+            RegexOption.IGNORE_CASE
+        )
+
+        fun isDegreeText(text: String): Boolean {
+            val lower = text.lowercase()
+            return lower.contains("bachelor") || lower.contains("b.tech") ||
+                    lower.contains("btech") || lower.contains("b.e.") ||
+                    lower.contains("b.e ") || lower.contains("be -") ||
+                    lower.contains("master") || lower.contains("m.tech") ||
+                    lower.contains("mtech") || lower.contains("m.e.") ||
+                    lower.contains("bca") || lower.contains("mca") ||
+                    lower.contains("b.sc") || lower.contains("bsc") ||
+                    lower.contains("m.sc") || lower.contains("msc") ||
+                    lower.contains("bba") || lower.contains("mba") ||
+                    lower.contains("ph.d") || lower.contains("phd") ||
+                    lower.contains("diploma") || lower.contains("degree") ||
+                    lower.contains("intermediate") || lower.contains("matriculation") ||
+                    lower.contains("class xii") || lower.contains("class x") ||
+                    lower.contains("senior secondary") || lower.contains("high school")
+        }
+
+        fun isInstitutionText(text: String): Boolean = isInstitutionLine(text)
+
+        fun normalizeEduDate(raw: String): String {
+            val m = Regex("(\\d{4})\\s*(?:–|-|—|to)\\s*(\\d{2,4}|Present|Current)", RegexOption.IGNORE_CASE).find(raw)
+            if (m != null) {
+                val startYear = m.groupValues[1]
+                var endYear = m.groupValues[2]
+                if (endYear.length == 2 && endYear.all { it.isDigit() }) {
+                    endYear = "20$endYear"
+                }
+                return "$startYear - $endYear"
+            }
+            return raw.replace(Regex("\\s*[–—]\\s*"), " - ").trim()
+        }
+
+        fun cleanSegment(s: String): String {
+            return s.replace(Regex("^[•●\u2022\u25cf\u00b7\u25a0■\\-*–—|:,\\s]+|[•●\u2022\u25cf\u00b7\u25a0■\\-*–—|:,\\s]+$"), "").trim()
+        }
+
+        // Group lines into education blocks
+        val blocks = mutableListOf<MutableList<String>>()
+        var currentBlock = mutableListOf<String>()
+
+        for (line in rawLines) {
+            val pipeSegments = if (line.contains("|")) line.split("|").map { it.trim() }.filter { it.isNotBlank() } else emptyList()
+            val isPipeDelimitedEntry = pipeSegments.size >= 2 &&
+                    pipeSegments.any { isInstitutionText(it) } &&
+                    pipeSegments.any { isDegreeText(it) }
+
+            if (isPipeDelimitedEntry) {
+                if (currentBlock.isNotEmpty()) {
+                    blocks.add(currentBlock)
+                    currentBlock = mutableListOf()
+                }
+                blocks.add(mutableListOf(line))
+                continue
+            }
+
+            val hasInst = isInstitutionText(line)
+            val hasDeg = isDegreeText(line)
+            val currentHasInst = currentBlock.any { isInstitutionText(it) }
+            val currentHasDeg = currentBlock.any { isDegreeText(it) }
+
+            if (currentBlock.isNotEmpty() && ((hasInst && currentHasInst) || (hasDeg && currentHasDeg))) {
+                blocks.add(currentBlock)
+                currentBlock = mutableListOf()
+            }
+            currentBlock.add(line)
+        }
+        if (currentBlock.isNotEmpty()) {
+            blocks.add(currentBlock)
+        }
+
+        val items = mutableListOf<EducationItem>()
+
+        for (block in blocks) {
+            val fullBlockText = block.joinToString("\n")
+
+            // 1. Detect Date
+            val dateMatch = dateRangePattern.find(fullBlockText)
+            val graduationYear = if (dateMatch != null) {
+                normalizeEduDate(dateMatch.value)
             } else {
-                "2020 - 2024"
+                val single = singleYearPattern.find(fullBlockText)?.value
+                if (single != null) {
+                    val y = single.toIntOrNull() ?: 2024
+                    "${y - 4} - $single"
+                } else {
+                    ""
+                }
+            }
+
+            // 2. Detect Grade
+            val gradeMatch = gradePattern.find(fullBlockText)
+            val detectedGrade = gradeMatch?.value?.trim()?.let { cleanSegment(it) }.orEmpty()
+
+            // 3. Decompose lines / pipe segments
+            val segments = if (block.size == 1 && block[0].contains("|")) {
+                block[0].split("|").map { it.trim() }.filter { it.isNotBlank() }
+            } else {
+                block
+            }
+
+            var institution = ""
+            var degree = ""
+
+            val instSegment = segments.firstOrNull { isInstitutionText(it) }
+            if (instSegment != null) {
+                institution = cleanSegment(
+                    instSegment
+                        .replace(dateRangePattern, "")
+                        .replace(gradePattern, "")
+                )
+            }
+
+            val degSegment = segments.firstOrNull { isDegreeText(it) && it != instSegment }
+            if (degSegment != null) {
+                degree = cleanSegment(
+                    degSegment
+                        .replace(dateRangePattern, "")
+                        .replace(gradePattern, "")
+                )
+            }
+
+            val remaining = segments.map {
+                cleanSegment(it.replace(dateRangePattern, "").replace(gradePattern, ""))
+            }.filter { it.isNotBlank() && it != institution && it != degree }
+
+            if (institution.isBlank() && remaining.isNotEmpty()) {
+                institution = remaining[0]
+            }
+            if (degree.isBlank() && remaining.size > (if (institution == remaining.getOrNull(0)) 1 else 0)) {
+                degree = remaining.first { it != institution }
+            }
+
+            // Strip trailing city / location if erroneously attached
+            val trailingCityPattern = Regex("\\s+(?:Arlington|Bossier City|Noida|Delhi|Mohali|Ghaziabad|Los Angeles|New York|London|Paris|Berlin)\\s*$", RegexOption.IGNORE_CASE)
+            degree = degree.replace(trailingCityPattern, "").trim()
+            institution = institution.replace(trailingCityPattern, "").trim()
+
+            // Append detected grade to degree
+            if (detectedGrade.isNotBlank() && !degree.contains(detectedGrade, ignoreCase = true)) {
+                degree = if (degree.isNotBlank()) "$degree | $detectedGrade" else detectedGrade
+            }
+
+            if (institution.isNotBlank() || degree.isNotBlank()) {
+                items.add(
+                    EducationItem(
+                        institution = toTitleCase(institution),
+                        degree = toTitleCase(degree),
+                        graduationYear = graduationYear
+                    )
+                )
             }
         }
 
-        fun cleanEduLine(line: String): String {
-            return line.replace(datePattern, "")
-                .replace(Regex("\\b(?:19|20)\\d{2}\\b"), "")
-                .replace(Regex("\\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?", RegexOption.IGNORE_CASE), "")
-                .replace(Regex("^[|:–\\-\\s,]+|[|:–\\-\\s,]+$"), "")
-                .trim()
+        return items
+    }
+
+    internal fun sliceSections(rawText: String, detectedHeadings: List<String>): Map<String, String> {
+        val lines = rawText.lines()
+        val headingIndices = mutableListOf<Pair<String, Int>>()
+
+        val bodyHeadings = detectedHeadings.filter {
+            !it.equals("Personal Info & Contact", ignoreCase = true) &&
+                    !it.contains("Personal", ignoreCase = true) &&
+                    !it.contains("Contact", ignoreCase = true)
         }
 
-        fun isInstitutionLine(line: String): Boolean {
-            val lower = line.lowercase()
-            return lower.contains("college") || lower.contains("university") ||
-                    lower.contains("institute") || lower.contains("school") ||
-                    lower.contains("academy") || lower.contains("campus") ||
-                    lower.contains("aktu") || lower.contains("board")
+        var searchFromLine = 0
+        for (heading in bodyHeadings) {
+            val upperHeading = heading.uppercase()
+            for (i in searchFromLine until lines.size) {
+                val line = lines[i].trim()
+                val candidate = line.split(Regex("\\s{2,}|\t"))[0].trim()
+                val cleaned = cleanSpacedLetters(candidate)
+                    .replace(Regex("^[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*"), "")
+                    .removeSuffix(":")
+                    .trim()
+                if (cleaned.equals(upperHeading, ignoreCase = true) || cleaned.equals(heading, ignoreCase = true)) {
+                    headingIndices.add(Pair(heading, i))
+                    searchFromLine = i + 1
+                    break
+                }
+            }
         }
 
-        fun isDegreeLine(line: String): Boolean {
-            val lower = line.lowercase()
-            return lower.contains("bachelor") || lower.contains("b.tech") ||
-                    lower.contains("btech") || lower.contains("master") ||
-                    lower.contains("m.tech") || lower.contains("b.e.") ||
-                    lower.contains("m.e.") || lower.contains("bca") ||
-                    lower.contains("mca") || lower.contains("diploma") ||
-                    lower.contains("degree") || lower.contains("ph.d") ||
-                    lower.contains("b.sc") || lower.contains("m.sc") ||
-                    lower.contains("bba") || lower.contains("mba")
+        val sectionMap = mutableMapOf<String, String>()
+        for (idx in 0 until headingIndices.size) {
+            val current = headingIndices[idx]
+            val startLine = current.second + 1
+            val endLine = if (idx + 1 < headingIndices.size) headingIndices[idx + 1].second else lines.size
+            if (startLine <= endLine) {
+                val content = lines.subList(startLine, endLine).joinToString("\n").trim()
+                sectionMap[current.first] = content
+            }
         }
 
-        val rawInstitution = lines.firstOrNull { isInstitutionLine(it) }
-            ?: lines.firstOrNull { line -> !line.matches(Regex(".*\\b(?:19|20)\\d{2}\\b.*")) && line.length > 5 }
-            ?: "University / College"
+        return sectionMap
+    }
 
-        val rawDegree = lines.firstOrNull { isDegreeLine(it) && it != rawInstitution }
-            ?: lines.firstOrNull { it != rawInstitution && !it.matches(Regex(".*\\b(?:19|20)\\d{2}\\b.*")) && !isInstitutionLine(it) }
-            ?: lines.getOrNull(1)
-            ?: "Bachelor of Technology"
+    private fun parseDynamicSections(
+        rawText: String,
+        annotationLinks: List<String> = emptyList(),
+        detectedHeadings: List<String> = emptyList(),
+        sectionMap: Map<String, String> = emptyMap()
+    ): List<DynamicSection> {
+        val list = mutableListOf<DynamicSection>()
 
-        // Grade / CGPA / GPA / Percentage detection
-        val gradePattern = Regex(
-            "(?:[|•·–\\-\\s]+)?\\b(?:CGPA|GPA|Percentage|Score|Grade)\\s*[:=]?\\s*([0-9.]+(?:/[0-9.]+)?%?)",
-            RegexOption.IGNORE_CASE
+        val coreHeadingsKeywords = listOf(
+            "personal", "contact", "summary", "profile", "objective", "about",
+            "experience", "employment", "work history", "career",
+            "project", "skill", "technolog", "competenc",
+            "education", "academic", "qualification"
         )
-        var detectedGrade = ""
-        val gradeMatch = gradePattern.find(rawInstitution) ?: gradePattern.find(rawDegree) ?: gradePattern.find(eduText)
-        if (gradeMatch != null) {
-            detectedGrade = gradeMatch.value.trim().replace(Regex("^[|•·–\\-\\s,]+|[|•·–\\-\\s,]+$"), "").trim()
+
+        val dynamicHeadings = detectedHeadings.filter { h ->
+            val l = h.lowercase()
+            coreHeadingsKeywords.none { l.contains(it) }
         }
 
-        // Clean lines and strip grade token from institution
-        var cleanedInstitution = cleanEduLine(rawInstitution.replace(gradePattern, ""))
-        var cleanedDegree = cleanEduLine(rawDegree.replace(gradePattern, ""))
-
-        if (detectedGrade.isNotBlank() && !cleanedDegree.contains(detectedGrade, ignoreCase = true)) {
-            cleanedDegree = if (cleanedDegree.isNotBlank()) "$cleanedDegree | $detectedGrade" else detectedGrade
+        for (secHeading in dynamicHeadings) {
+            val content = sectionMap[secHeading] ?: ""
+            if (content.isNotBlank()) {
+                if (secHeading.contains("Open Source", ignoreCase = true) || secHeading.contains("Contributions", ignoreCase = true)) {
+                    val parsed = parseOpenSourceSection(content, annotationLinks, secHeading)
+                    list.add(parsed)
+                } else {
+                    val parsed = parseGenericDynamicSection(secHeading, content, annotationLinks)
+                    if (parsed.items.isNotEmpty()) {
+                        list.add(parsed)
+                    }
+                }
+            }
         }
 
-        if (cleanedInstitution.isBlank() && cleanedDegree.isBlank()) {
-            return emptyList()
+        // Fallback for standalone OPEN-SOURCE heading line if not sliced in sectionMap
+        if (!list.any { it.sectionTitle.contains("Open Source", ignoreCase = true) }) {
+            val openSourceRegex = Regex(
+                "(?:^|[\\r\\n]+)[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:OPEN[- ]SOURCE CONTRIBUTIONS|OPEN[- ]SOURCE)(?:\\s*\\([A-Za-z0-9\\s]+\\))?[ \\t]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:[0-9IVXLCDMivxlcdm]+[.)\\-]\\s*)?(?:TECHNICAL SKILLS|SKILLS|EDUCATION|ACADEMICS|PROJECTS)\\b)|$)",
+                RegexOption.IGNORE_CASE
+            )
+            val openSourceText = openSourceRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim()
+            if (!openSourceText.isNullOrBlank()) {
+                list.add(parseOpenSourceSection(openSourceText, annotationLinks))
+            }
         }
 
-        return listOf(
-            EducationItem(
-                institution = toTitleCase(cleanedInstitution),
-                degree = toTitleCase(cleanedDegree),
-                graduationYear = formattedDuration
+        return list
+    }
+
+    private fun parseOpenSourceSection(
+        openSourceText: String,
+        annotationLinks: List<String>,
+        sectionHeading: String = "Open Source Contributions"
+    ): DynamicSection {
+        val openSourceLines = openSourceText.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val rawFirstLine = openSourceLines.firstOrNull() ?: "Open Source Package"
+
+        val cleanedTitle = rawFirstLine
+            .replace(Regex("(?:[|•·\\s]+)?(?:pub\\.dev|github(?:\\.com)?|gitlab|bitbucket|npm|link|demo|repo|package)(?:\\s*.*)?$", RegexOption.IGNORE_CASE), "")
+            .replace(Regex("^[|:–\\-\\s,]+|[|:–\\-\\s,]+$"), "")
+            .trim()
+            .ifBlank { rawFirstLine.replace(Regex("\\|\\s*Link.*", RegexOption.IGNORE_CASE), "").trim() }
+
+        val urlPattern = Regex("(https?://[^\\s]+|pub\\.dev/[^\\s]+|github\\.com/[^\\s]+)")
+        var detectedLink = urlPattern.find(openSourceText)?.value ?: ""
+        if (detectedLink.isBlank()) {
+            detectedLink = annotationLinks.firstOrNull { it.contains("pub.dev") }
+                ?: annotationLinks.firstOrNull { it.contains("github.com") && !it.endsWith("github.com") }
+                ?: ""
+        }
+        if (detectedLink.isNotBlank() && !detectedLink.startsWith("http://") && !detectedLink.startsWith("https://")) {
+            detectedLink = "https://$detectedLink"
+        }
+
+        val bulletLines = mutableListOf<String>()
+        for (line in openSourceLines.drop(1)) {
+            // Skip lines that are merely source/badge indicator tags e.g. "pub.dev", "github.com", "npm"
+            if (line.matches(Regex("(?i)^[•●·\\s]*(?:pub\\.dev|github(?:\\.com)?|gitlab|bitbucket|npm|link|demo|repo|package)[\\s]*$"))) {
+                continue
+            }
+            val isBullet = isBulletStart(line)
+            if (isBullet) {
+                val cleaned = cleanBulletLine(line)
+                if (cleaned.isNotBlank()) {
+                    bulletLines.add(cleaned)
+                }
+            } else {
+                val cleaned = cleanBulletLine(line)
+                if (cleaned.isNotBlank()) {
+                    if (bulletLines.isNotEmpty()) {
+                        val lastBullet = bulletLines.last()
+                        bulletLines[bulletLines.lastIndex] = "$lastBullet $cleaned"
+                    } else {
+                        bulletLines.add(cleaned)
+                    }
+                }
+            }
+        }
+
+        val desc = if (bulletLines.isNotEmpty()) {
+            bulletLines.joinToString("\n")
+        } else {
+            "Architected and published reusable open source library."
+        }
+
+        val normalizedTitle = if (sectionHeading.contains("Open Source", ignoreCase = true) || sectionHeading.contains("Contributions", ignoreCase = true)) {
+            "Open Source Contributions"
+        } else {
+            toTitleCase(sectionHeading)
+        }
+
+        return DynamicSection(
+            sectionTitle = normalizedTitle,
+            items = listOf(
+                DynamicItem(
+                    title = cleanedTitle,
+                    subtitle = "Verified Contributor",
+                    dateOrPeriod = "Active",
+                    description = desc,
+                    link = detectedLink,
+                    bulletPoints = if (bulletLines.isNotEmpty()) bulletLines else listOf("Architected and published reusable open source library.")
+                )
             )
         )
     }
 
-    private fun parseDynamicSections(rawText: String, annotationLinks: List<String> = emptyList()): List<DynamicSection> {
-        val list = mutableListOf<DynamicSection>()
+    private fun parseGenericDynamicSection(
+        sectionTitle: String,
+        content: String,
+        annotationLinks: List<String>
+    ): DynamicSection {
+        val lines = content.lines().map { it.trim() }.filter { it.isNotBlank() }
+        val items = mutableListOf<DynamicItem>()
 
-        val openSourceRegex = Regex(
-            "(?:OPEN[- ]SOURCE CONTRIBUTIONS|OPEN[- ]SOURCE)[^\\r\\n]*[\\r\\n]+([\\s\\S]*?)(?=(?:[\\r\\n]+[ \\t]*(?:TECHNICAL SKILLS|SKILLS|EDUCATION|ACADEMICS|PROJECTS)\\b)|$)",
+        val datePattern = Regex(
+            "(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?\\d{4}\\s*(?:–|-|—|to)\\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?\\s*)?(?:\\d{4}|Present|Current)",
             RegexOption.IGNORE_CASE
         )
-        val openSourceText = openSourceRegex.find(rawText)?.groupValues?.getOrNull(1)?.trim()
 
-        if (!openSourceText.isNullOrBlank()) {
-            val openSourceLines = openSourceText.lines().map { it.trim() }.filter { it.isNotBlank() }
-            val rawFirstLine = openSourceLines.firstOrNull() ?: "Open Source Package"
+        val lowerTitle = sectionTitle.lowercase()
 
-            // Strip link keywords, domains, and action words (pub.dev, github.com, etc.)
-            val cleanedTitle = rawFirstLine
-                .replace(Regex("(?:[|•·\\s]+)?(?:pub\\.dev|github(?:\\.com)?|gitlab|bitbucket|npm|link|demo|repo|package)(?:\\s*.*)?$", RegexOption.IGNORE_CASE), "")
-                .replace(Regex("^[|:–\\-\\s,]+|[|:–\\-\\s,]+$"), "")
-                .trim()
-                .ifBlank { rawFirstLine.replace(Regex("\\|\\s*Link.*", RegexOption.IGNORE_CASE), "").trim() }
-
-            val urlPattern = Regex("(https?://[^\\s]+|pub\\.dev/[^\\s]+|github\\.com/[^\\s]+)")
-            var detectedLink = urlPattern.find(openSourceText)?.value ?: ""
-            if (detectedLink.isBlank()) {
-                detectedLink = annotationLinks.firstOrNull { it.contains("pub.dev") }
-                    ?: annotationLinks.firstOrNull { it.contains("github.com") && !it.endsWith("github.com") }
-                    ?: ""
+        // 1. Date ranges (e.g. Courses, Certifications, Experience-like entries)
+        val linesWithDates = lines.filter { datePattern.containsMatchIn(it) }
+        if (linesWithDates.isNotEmpty()) {
+            val blocks = mutableListOf<MutableList<String>>()
+            var currentBlock = mutableListOf<String>()
+            for (line in lines) {
+                if (datePattern.containsMatchIn(line) && currentBlock.isNotEmpty()) {
+                    blocks.add(currentBlock)
+                    currentBlock = mutableListOf()
+                }
+                currentBlock.add(line)
             }
-            if (detectedLink.isNotBlank() && !detectedLink.startsWith("http://") && !detectedLink.startsWith("https://")) {
-                detectedLink = "https://$detectedLink"
-            }
+            if (currentBlock.isNotEmpty()) blocks.add(currentBlock)
 
-            val bulletLines = mutableListOf<String>()
-            for (line in openSourceLines.drop(1)) {
-                val isBullet = isBulletStart(line)
-                if (isBullet) {
-                    val cleaned = cleanBulletLine(line)
-                    if (cleaned.isNotBlank()) {
-                        bulletLines.add(cleaned)
+            for (block in blocks) {
+                val blockText = block.joinToString("\n")
+                val dateMatch = datePattern.find(blockText)
+                val dateStr = dateMatch?.value?.trim() ?: ""
+
+                val firstLine = block.firstOrNull() ?: sectionTitle
+                val cleanedTitle = if (dateMatch != null) {
+                    firstLine.replace(dateMatch.value, "").replace(Regex("^[|:–\\-\\s,]+|[|:–\\-\\s,]+$"), "").trim()
+                } else {
+                    firstLine
+                }
+
+                val isCourses = sectionTitle.contains("Course", ignoreCase = true) || sectionTitle.contains("Certif", ignoreCase = true)
+                val otherLines = block.drop(1).map { cleanBulletLine(it) }.filter { it.isNotBlank() }
+                val actualHighlights = if (isCourses) {
+                    // Filter out publisher place / authorizing institution (e.g. INSEAD Business School, Online.)
+                    otherLines.filter { line ->
+                        !isInstitutionLine(line) &&
+                                !line.contains("School", ignoreCase = true) &&
+                                !line.contains("University", ignoreCase = true) &&
+                                !line.contains("Online", ignoreCase = true) &&
+                                !line.contains("United Kingdom", ignoreCase = true) &&
+                                !line.contains("USA", ignoreCase = true) &&
+                                !line.contains("Germany", ignoreCase = true) &&
+                                !isLikelyLocation(line)
                     }
                 } else {
-                    val cleaned = cleanBulletLine(line)
-                    if (cleaned.isNotBlank()) {
-                        if (bulletLines.isNotEmpty()) {
-                            val lastBullet = bulletLines.last()
-                            bulletLines[bulletLines.lastIndex] = "$lastBullet $cleaned"
-                        } else {
-                            bulletLines.add(cleaned)
-                        }
+                    otherLines
+                }
+
+                items.add(
+                    DynamicItem(
+                        title = toTitleCase(cleanedTitle.ifBlank { sectionTitle }),
+                        subtitle = "",
+                        dateOrPeriod = dateStr,
+                        description = actualHighlights.joinToString("\n"),
+                        link = "",
+                        bulletPoints = actualHighlights
+                    )
+                )
+            }
+        }
+        // 2. Bullet points (e.g. Achievements, Highlights, Notes)
+        else if (lines.any { isBulletStart(it) }) {
+            val bulletList = mutableListOf<String>()
+            for (line in lines) {
+                val cleaned = cleanBulletLine(line)
+                if (cleaned.isNotBlank()) {
+                    if (isBulletStart(line) || bulletList.isEmpty()) {
+                        bulletList.add(cleaned)
+                    } else {
+                        val last = bulletList.last()
+                        bulletList[bulletList.lastIndex] = "$last $cleaned"
                     }
                 }
             }
 
-            val desc = if (bulletLines.isNotEmpty()) {
-                bulletLines.joinToString("\n")
-            } else {
-                "Architected and published reusable open source library."
+            // Check if bullets follow "Title: Description" format (e.g. Anuj's achievements)
+            val allHaveColon = bulletList.isNotEmpty() && bulletList.all { b ->
+                val colonIdx = b.indexOf(':')
+                colonIdx in 3..60 && !b.startsWith("http")
             }
 
-            list.add(
-                DynamicSection(
-                    sectionTitle = "Open Source Contributions",
-                    items = listOf(
+            if (allHaveColon) {
+                for (b in bulletList) {
+                    val colonIdx = b.indexOf(':')
+                    val itemTitle = b.substring(0, colonIdx).trim()
+                    val itemDesc = b.substring(colonIdx + 1).trim()
+                    items.add(
                         DynamicItem(
-                            title = cleanedTitle,
-                            subtitle = "Verified Contributor",
-                            dateOrPeriod = "Active",
-                            description = desc,
-                            link = detectedLink,
-                            bulletPoints = if (bulletLines.isNotEmpty()) bulletLines else listOf("Architected and published reusable open source library.")
+                            title = toTitleCase(itemTitle),
+                            subtitle = "",
+                            dateOrPeriod = "",
+                            description = itemDesc,
+                            link = "",
+                            bulletPoints = if (itemDesc.isNotBlank()) listOf(itemDesc) else emptyList()
                         )
                     )
+                }
+            } else {
+                items.add(
+                    DynamicItem(
+                        title = toTitleCase(sectionTitle),
+                        subtitle = "",
+                        dateOrPeriod = "",
+                        description = bulletList.joinToString("\n"),
+                        link = "",
+                        bulletPoints = bulletList
+                    )
+                )
+            }
+        }
+        // 3. Hobbies / Interests (comma-separated hobbies, no title/link/highlights needed)
+        else if (lowerTitle.contains("hobbi") || lowerTitle.contains("interest")) {
+            val fullText = lines.joinToString(", ")
+            val commaTokens = fullText.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            items.add(
+                DynamicItem(
+                    title = "Hobbies",
+                    subtitle = "",
+                    dateOrPeriod = "",
+                    description = fullText,
+                    link = "",
+                    bulletPoints = commaTokens
+                )
+            )
+        }
+        // 4. Languages (bullet points with language info, no title/link/highlights needed)
+        else if (lowerTitle.contains("language")) {
+            val knownLangs = "English|Spanish|French|German|Mandarin|Hindi|Arabic|Russian|Portuguese|Japanese|Italian|Chinese|Dutch|Korean"
+            val langRegex = Regex("(?i)\\b($knownLangs)\\b\\s*[:\\-]?\\s*((?:(?!\\b(?:$knownLangs)\\b)[A-Za-z\\s])+)?")
+            val fullContent = lines.joinToString(" ")
+            val matches = langRegex.findAll(fullContent).toList()
+            val bulletPoints = if (matches.isNotEmpty()) {
+                matches.map { m ->
+                    val lang = m.groupValues[1].trim()
+                    val prof = m.groupValues.getOrNull(2)?.trim()?.replace(Regex("^[|:–\\-\\s,]+|[|:–\\-\\s,]+$"), "")?.take(40) ?: ""
+                    if (prof.isNotBlank()) "${toTitleCase(lang)}: ${toTitleCase(prof)}" else toTitleCase(lang)
+                }
+            } else {
+                lines
+            }
+            items.add(
+                DynamicItem(
+                    title = "Languages",
+                    subtitle = "",
+                    dateOrPeriod = "",
+                    description = bulletPoints.joinToString("\n"),
+                    link = "",
+                    bulletPoints = bulletPoints
+                )
+            )
+        }
+        // 5. General fallback
+        else {
+            val bullets = lines.map { cleanBulletLine(it) }.filter { it.isNotBlank() }
+            items.add(
+                DynamicItem(
+                    title = toTitleCase(sectionTitle),
+                    subtitle = "",
+                    dateOrPeriod = "",
+                    description = bullets.joinToString("\n"),
+                    link = "",
+                    bulletPoints = bullets
                 )
             )
         }
 
-        return list
+        return DynamicSection(
+            sectionTitle = toTitleCase(sectionTitle),
+            items = items
+        )
     }
 }
 

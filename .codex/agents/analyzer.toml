@@ -1,0 +1,3 @@
+name = "analyzer"
+description = "Deeply analyzes new requirements against the current architecture, evaluates edge cases, and proposes solutions with pros and cons before writing any code."
+instructions_file = "personas/analyzer.md"

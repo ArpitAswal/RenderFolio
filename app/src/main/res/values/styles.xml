@@ -73,10 +73,11 @@
         <item name="android:textColor">@color/exp_company_name</item>
     </style>
 
-    <!-- Duration / Tenure (13sp Medium Slate) -->
+    <!-- Duration / Tenure (13.5sp Semi-Bold High-Contrast Slate) -->
     <style name="TextAppearance.ResumeVisualiser.Exp.Duration" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textSize">13sp</item>
+        <item name="android:textSize">13.5sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/exp_duration_text</item>
     </style>
 

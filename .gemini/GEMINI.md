@@ -12,8 +12,19 @@ This project uses the Cross-Platform AI Engineering Toolkit.
 - Development lifecycle: `@rules/common/development-workflow.md`
 
 ## 3. Platform Rules
-- Android / Kotlin / Compose / XML: `@rules/platforms/android-kotlin.md`
+- Flutter / Dart: `@rules/platforms/flutter-dart.md`
+- Flutter Adaptive UI: `@rules/platforms/flutter-adaptive-ui.md`
+- Android / Kotlin / Compose: `@rules/platforms/android-kotlin.md`
 - Android Adaptive UI: `@rules/platforms/android-adaptive-ui.md`
 
-## 4. Workflows & Skills
-- Trigger workflows in `.agent/workflows/` or load skills under `.agents/skills/`.
+## 4. Personas
+- Analyzer: `@personas/analyzer.md`
+- Orchestrator: `@personas/orchestrator.md`
+
+## 5. Workflows (Slash Commands)
+- /run: `@.agent/workflows/run.md`
+- /analyze: `@.agent/workflows/analyze.md`
+- /plan: `@.agent/workflows/plan.md`
+- /adaptive-ui: `@.agent/workflows/adaptive-ui.md`
+- /code-review: `@.agent/workflows/code-review.md`
+- /verify: `@.agent/workflows/verify.md`

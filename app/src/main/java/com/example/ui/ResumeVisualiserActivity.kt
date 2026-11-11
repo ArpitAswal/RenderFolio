@@ -2,6 +2,7 @@ package com.example.ui
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.net.Uri
@@ -53,6 +54,8 @@ import com.example.model.ResumeProfile
 import com.example.model.ResumeSectionConstants
 import com.example.model.SkillCategories
 import com.example.model.WorkExperienceItem
+import com.example.ui.adapter.CustomSectionArchetype
+import com.example.ui.adapter.resolveCustomSectionArchetype
 import com.example.ui.motion.CustomSectionMotionDriver
 import com.example.ui.motion.EducationMotionDriver
 import com.example.ui.motion.HeroSectionMotionDriver
@@ -93,6 +96,13 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Force fixed portrait orientation for mobile devices (< 600dp)
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            try {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } catch (_: Exception) {}
+        }
 
         // Strict Edge-to-Edge Canvas Rule
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -936,7 +946,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 val valid = list.filter { it.isNotBlank() }
                 if (valid.isNotEmpty()) categorizedMap[cat] = valid
             }
-        } else {
+        } else if (skills.rawFlatSkills.isEmpty()) {
             val standardEntries = listOf(
                 getString(R.string.skills_domain_languages) to skills.languages,
                 getString(R.string.skills_domain_frameworks) to skills.frameworks,
@@ -1166,130 +1176,264 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
         validSections.forEachIndexed { sectionIdx, section ->
             val sectionBinding = LayoutSectionCustomDynamicBinding.inflate(layoutInflater, containerCustom, false)
+
+            val archetype = resolveCustomSectionArchetype(section.sectionTitle)
+            val isHobbies = archetype == CustomSectionArchetype.HOBBIES
+            val isLanguages = archetype == CustomSectionArchetype.LANGUAGES
+
+            // 1. Spacing between sections: tighten to 20dp when entering or leaving compact sections (Languages, Hobbies)
             if (sectionIdx > 0) {
+                val prevSection = validSections[sectionIdx - 1]
+                val prevArchetype = resolveCustomSectionArchetype(prevSection.sectionTitle)
+                val prevIsCompact = prevArchetype == CustomSectionArchetype.LANGUAGES || prevArchetype == CustomSectionArchetype.HOBBIES
+                val currentIsCompact = isLanguages || isHobbies
+                val marginDp = if (currentIsCompact || prevIsCompact) 20 else 32
                 val params = android.widget.LinearLayout.LayoutParams(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                     android.view.ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    topMargin = (32 * resources.displayMetrics.density).toInt()
+                    topMargin = (marginDp * resources.displayMetrics.density).toInt()
                 }
                 sectionBinding.root.layoutParams = params
             }
+
+            // 2. Section Header Title & Thematic Icon
             sectionBinding.tvCustomSectionTitle.text = section.sectionTitle
             sectionBinding.sectionCustomRoot.contentDescription = getString(R.string.cd_custom_section_format, section.sectionTitle)
+
+            val headerIconRes = when (archetype) {
+                CustomSectionArchetype.CERTIFICATIONS -> R.drawable.ic_description_16
+                CustomSectionArchetype.OPEN_SOURCE -> R.drawable.ic_code_16
+                CustomSectionArchetype.LANGUAGES -> R.drawable.ic_globe_16
+                CustomSectionArchetype.PUBLICATIONS -> R.drawable.ic_description_16
+                else -> R.drawable.ic_star_badge_16
+            }
+            val headerIcon = ContextCompat.getDrawable(this, headerIconRes)?.mutate()?.apply {
+                setTint(getColor(R.color.summary_section_title))
+            }
+            sectionBinding.tvCustomSectionTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                headerIcon, null, null, null
+            )
+
+            // 3. Compact Header Margin Bottom for Languages and Hobbies (8dp instead of 20dp)
+            if (isLanguages || isHobbies) {
+                (sectionBinding.tvCustomSectionTitle.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                    lp.bottomMargin = (8 * resources.displayMetrics.density).toInt()
+                    sectionBinding.tvCustomSectionTitle.layoutParams = lp
+                }
+            }
+
+            // 4. Distinct Thematic Watermark Artwork per Custom Section
+            val watermarkRes = when (archetype) {
+                CustomSectionArchetype.CERTIFICATIONS -> R.drawable.bg_watermark_certifications
+                CustomSectionArchetype.AWARDS -> R.drawable.bg_watermark_awards
+                CustomSectionArchetype.VOLUNTEER -> R.drawable.bg_watermark_volunteer
+                CustomSectionArchetype.PUBLICATIONS -> R.drawable.bg_watermark_publications
+                CustomSectionArchetype.OPEN_SOURCE -> R.drawable.bg_watermark_opensource
+                CustomSectionArchetype.LANGUAGES -> R.drawable.bg_watermark_languages
+                CustomSectionArchetype.HOBBIES -> R.drawable.bg_watermark_hobbies
+                CustomSectionArchetype.ACHIEVEMENTS, CustomSectionArchetype.GENERIC -> R.drawable.bg_watermark_custom
+            }
+            sectionBinding.ivCustomWatermark.setImageResource(watermarkRes)
+
+            if (isLanguages || isHobbies) {
+                val compactSize = (100 * resources.displayMetrics.density).toInt()
+                sectionBinding.ivCustomWatermark.updateLayoutParams<FrameLayout.LayoutParams> {
+                    width = compactSize
+                    height = compactSize
+                }
+            }
 
             val itemsContainer = sectionBinding.containerCustomItems
             itemsContainer.removeAllViews()
 
-            section.items.forEachIndexed { index, item ->
+            if (isLanguages) {
+                // Languages: Render all language bullets together in a single compact container
+                val allBullets = section.items.flatMap { item ->
+                    if (item.bulletPoints.isNotEmpty()) {
+                        item.bulletPoints.filter { it.isNotBlank() }
+                    } else if (item.description.isNotBlank()) {
+                        parseBulletsFromText(item.description)
+                    } else if (item.title.isNotBlank() && !item.title.equals("Languages", ignoreCase = true)) {
+                        listOf(item.title)
+                    } else {
+                        emptyList()
+                    }
+                }
+
                 val itemBinding = ItemVisualiserCustomEntryBinding.inflate(layoutInflater, itemsContainer, false)
+                itemBinding.tvEntryCustomTitle.visibility = View.GONE
+                itemBinding.layoutEntryCustomMetadataRow.visibility = View.GONE
+                itemBinding.tvEntryCustomPeriod.visibility = View.GONE
+                itemBinding.tvEntryCustomSubtitle.visibility = View.GONE
+                itemBinding.tvEntryCustomDescription.visibility = View.GONE
+                itemBinding.layoutCustomDeliverables.visibility = View.GONE
+                itemBinding.dividerCustomEntry.visibility = View.GONE
 
-                // 1. Item Title Headline (17sp Bold Inter #0F172A)
-                itemBinding.tvEntryCustomTitle.text = item.title
-
-                // 2. Date or Period (Remove "Active" status tag per user request; only show genuine date/period)
-                if (item.dateOrPeriod.isNotBlank() && !item.dateOrPeriod.equals("Active", ignoreCase = true)) {
-                    itemBinding.tvEntryCustomPeriod.visibility = View.VISIBLE
-                    itemBinding.tvEntryCustomPeriod.text = item.dateOrPeriod
-                } else {
-                    itemBinding.tvEntryCustomPeriod.visibility = View.GONE
+                itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
+                (itemBinding.containerEntryCustomBullets.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                    lp.topMargin = 0
+                    itemBinding.containerEntryCustomBullets.layoutParams = lp
                 }
+                itemBinding.containerEntryCustomBullets.removeAllViews()
 
-                // 3. Subtitle / Issuer / Authority (14sp Medium Royal Blue #2563EB)
-                // Remove the "Verified Contributor" tag when a published link is already provided
-                val isVerifiedContributor = item.subtitle.trim().contains("Verified Contributor", ignoreCase = true)
-                val hasPublishedLink = item.link.isNotBlank()
-
-                if (item.subtitle.isNotBlank() && !(isVerifiedContributor && hasPublishedLink)) {
-                    itemBinding.tvEntryCustomSubtitle.visibility = View.VISIBLE
-                    itemBinding.tvEntryCustomSubtitle.text = item.subtitle
-                } else {
-                    itemBinding.tvEntryCustomSubtitle.visibility = View.GONE
-                }
-
-                // 4. Bullet Points vs Description (Prevent text duplication matching Projects & Experience)
-                val bullets = if (item.bulletPoints.isNotEmpty()) {
-                    item.bulletPoints.filter { it.isNotBlank() }
-                } else {
-                    parseBulletsFromText(item.description)
-                }
-
-                if (bullets.isNotEmpty()) {
-                    itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
-                    itemBinding.containerEntryCustomBullets.removeAllViews()
-                    bullets.forEachIndexed { bulletIdx, bullet ->
-                        val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, itemBinding.containerEntryCustomBullets, false)
-                        bulletBinding.tvBulletText.text = bullet.trim()
-                        if (bulletIdx == bullets.lastIndex && item.link.isBlank()) {
-                            (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
-                                lp.bottomMargin = 0
-                                bulletBinding.root.layoutParams = lp
-                            }
-                        }
-                        itemBinding.containerEntryCustomBullets.addView(bulletBinding.root)
+                allBullets.forEachIndexed { bulletIdx, bullet ->
+                    val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, itemBinding.containerEntryCustomBullets, false)
+                    bulletBinding.tvBulletText.text = bullet.trim()
+                    (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                        lp.bottomMargin = if (bulletIdx == allBullets.lastIndex) 0 else (6 * resources.displayMetrics.density).toInt()
+                        bulletBinding.root.layoutParams = lp
                     }
-                    // Cleanly hide description when bullet representation is available
-                    itemBinding.tvEntryCustomDescription.visibility = View.GONE
-                } else if (item.description.isNotBlank()) {
-                    itemBinding.containerEntryCustomBullets.visibility = View.GONE
-                    itemBinding.tvEntryCustomDescription.visibility = View.VISIBLE
-                    itemBinding.tvEntryCustomDescription.text = item.description
-                } else {
-                    itemBinding.containerEntryCustomBullets.visibility = View.GONE
-                    itemBinding.tvEntryCustomDescription.visibility = View.GONE
+                    itemBinding.containerEntryCustomBullets.addView(bulletBinding.root)
                 }
-
-                // 5. Deliverable / Credential Link Pill Chip (Never repeats subtitle; uses specific source label)
-                if (item.link.isNotBlank()) {
-                    itemBinding.layoutCustomDeliverables.visibility = View.VISIBLE
-                    itemBinding.chipGroupCustomLinks.removeAllViews()
-
-                    val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, itemBinding.chipGroupCustomLinks, false)
-                    val chip = chipBinding.root
-
-                    val linkMeta = resolveProjectLinkMetadata(item.link)
-                    chip.chipIcon = ContextCompat.getDrawable(this, linkMeta.iconRes)
-                    chip.isChipIconVisible = true
-                    chip.chipIconSize = resources.displayMetrics.density * 15f
-                    chip.chipIconTint = ColorStateList.valueOf(getColor(R.color.exp_deliverable_chip_text))
-                    chip.iconStartPadding = resources.displayMetrics.density * 6f
-                    chip.iconEndPadding = resources.displayMetrics.density * 4f
-
-                    var label = getString(linkMeta.labelRes)
-                    if (label.equals(item.subtitle, ignoreCase = true)) {
-                        label = getString(R.string.project_link_web)
-                    }
-
-                    val spannable = SpannableStringBuilder().apply {
-                        append(label)
-                        append("  ↗")
-                        setSpan(
-                            ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_arrow)),
-                            length - 1, length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        setSpan(
-                            StyleSpan(Typeface.BOLD),
-                            length - 1, length,
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }
-                    chip.text = spannable
-                    chip.isClickable = true
-                    chip.setOnClickListener { openProfileUrl(item.link) }
-                    itemBinding.chipGroupCustomLinks.addView(chip)
-                } else {
-                    itemBinding.layoutCustomDeliverables.visibility = View.GONE
-                }
-
-                // 7. Hairline Divider between entries (hidden on last item)
-                if (index == section.items.lastIndex) {
-                    itemBinding.dividerCustomEntry.visibility = View.GONE
-                } else {
-                    itemBinding.dividerCustomEntry.visibility = View.VISIBLE
-                }
-
                 itemsContainer.addView(itemBinding.root)
+            } else if (isHobbies) {
+                // Hobbies: Simply comma-separated text or narrative, compact spacing directly below title
+                val allHobbies = section.items.mapNotNull { item ->
+                    if (item.description.isNotBlank()) {
+                        item.description.trim()
+                    } else if (item.bulletPoints.isNotEmpty()) {
+                        item.bulletPoints.filter { it.isNotBlank() }.joinToString(", ")
+                    } else if (item.title.isNotBlank() && !item.title.equals("Hobbies", ignoreCase = true)) {
+                        item.title.trim()
+                    } else {
+                        null
+                    }
+                }.filter { it.isNotBlank() }.joinToString(", ")
+
+                val itemBinding = ItemVisualiserCustomEntryBinding.inflate(layoutInflater, itemsContainer, false)
+                itemBinding.tvEntryCustomTitle.visibility = View.GONE
+                itemBinding.layoutEntryCustomMetadataRow.visibility = View.GONE
+                itemBinding.tvEntryCustomPeriod.visibility = View.GONE
+                itemBinding.tvEntryCustomSubtitle.visibility = View.GONE
+                itemBinding.containerEntryCustomBullets.visibility = View.GONE
+                itemBinding.layoutCustomDeliverables.visibility = View.GONE
+                itemBinding.dividerCustomEntry.visibility = View.GONE
+
+                itemBinding.tvEntryCustomDescription.visibility = View.VISIBLE
+                (itemBinding.tvEntryCustomDescription.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                    lp.topMargin = 0
+                    itemBinding.tvEntryCustomDescription.layoutParams = lp
+                }
+                itemBinding.tvEntryCustomDescription.text = allHobbies
+                itemsContainer.addView(itemBinding.root)
+            } else {
+                section.items.forEachIndexed { index, item ->
+                    val itemBinding = ItemVisualiserCustomEntryBinding.inflate(layoutInflater, itemsContainer, false)
+
+                    // 1. Item Title Headline (17sp Bold Inter #0F172A, full-width)
+                    itemBinding.tvEntryCustomTitle.visibility = View.VISIBLE
+                    itemBinding.tvEntryCustomTitle.text = item.title
+
+                    // 2. Metadata Sub-Header Row: Subtitle/Issuer on left, Duration/Period on right (matching Professional Experience)
+                    val isVerifiedContributor = item.subtitle.trim().contains("Verified Contributor", ignoreCase = true)
+                    val hasPublishedLink = item.link.isNotBlank()
+                    val showSubtitle = item.subtitle.isNotBlank() && !(isVerifiedContributor && hasPublishedLink)
+                    val showPeriod = item.dateOrPeriod.isNotBlank() && !item.dateOrPeriod.equals("Active", ignoreCase = true)
+
+                    if (showSubtitle || showPeriod) {
+                        itemBinding.layoutEntryCustomMetadataRow.visibility = View.VISIBLE
+
+                        if (showSubtitle) {
+                            itemBinding.tvEntryCustomSubtitle.visibility = View.VISIBLE
+                            itemBinding.tvEntryCustomSubtitle.text = item.subtitle
+                        } else {
+                            itemBinding.tvEntryCustomSubtitle.visibility = View.GONE
+                        }
+
+                        if (showPeriod) {
+                            itemBinding.tvEntryCustomPeriod.visibility = View.VISIBLE
+                            itemBinding.tvEntryCustomPeriod.text = item.dateOrPeriod
+                        } else {
+                            itemBinding.tvEntryCustomPeriod.visibility = View.GONE
+                        }
+                    } else {
+                        itemBinding.layoutEntryCustomMetadataRow.visibility = View.GONE
+                    }
+
+                    // 4. Bullet Points vs Description (Prevent text duplication matching Projects & Experience)
+                    val bullets = if (item.bulletPoints.isNotEmpty()) {
+                        item.bulletPoints.filter { it.isNotBlank() }
+                    } else if (item.description.isNotBlank()) {
+                        parseBulletsFromText(item.description)
+                    } else if (item.title.isNotBlank() && !item.title.equals("Languages", ignoreCase = true)) {
+                        listOf(item.title)
+                    } else {
+                        emptyList()
+                    }
+
+                    if (bullets.isNotEmpty()) {
+                        itemBinding.containerEntryCustomBullets.visibility = View.VISIBLE
+                        itemBinding.containerEntryCustomBullets.removeAllViews()
+                        bullets.forEachIndexed { bulletIdx, bullet ->
+                            val bulletBinding = ItemVisualiserBulletRowBinding.inflate(layoutInflater, itemBinding.containerEntryCustomBullets, false)
+                            bulletBinding.tvBulletText.text = bullet.trim()
+                            if (bulletIdx == bullets.lastIndex && item.link.isBlank()) {
+                                (bulletBinding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let { lp ->
+                                    lp.bottomMargin = 0
+                                    bulletBinding.root.layoutParams = lp
+                                }
+                            }
+                            itemBinding.containerEntryCustomBullets.addView(bulletBinding.root)
+                        }
+                        // Cleanly hide description when bullet representation is available
+                        itemBinding.tvEntryCustomDescription.visibility = View.GONE
+                    } else if (item.description.isNotBlank()) {
+                        itemBinding.containerEntryCustomBullets.visibility = View.GONE
+                        itemBinding.tvEntryCustomDescription.visibility = View.VISIBLE
+                        itemBinding.tvEntryCustomDescription.text = item.description
+                    } else {
+                        itemBinding.containerEntryCustomBullets.visibility = View.GONE
+                        itemBinding.tvEntryCustomDescription.visibility = View.GONE
+                    }
+
+                    // 5. Deliverable / Credential Link Pill Chip (Never repeats subtitle; uses specific source label)
+                    if (item.link.isNotBlank()) {
+                        itemBinding.layoutCustomDeliverables.visibility = View.VISIBLE
+                        itemBinding.chipGroupCustomLinks.removeAllViews()
+
+                        val chipBinding = ItemVisualiserDeliverableChipBinding.inflate(layoutInflater, itemBinding.chipGroupCustomLinks, false)
+                        val chip = chipBinding.root
+
+                        val linkMeta = resolveProjectLinkMetadata(item.link)
+                        chip.chipIcon = ContextCompat.getDrawable(this, linkMeta.iconRes)
+                        chip.isChipIconVisible = true
+                        chip.chipIconSize = resources.displayMetrics.density * 15f
+                        chip.chipIconTint = ColorStateList.valueOf(getColor(R.color.exp_deliverable_chip_text))
+                        chip.iconStartPadding = resources.displayMetrics.density * 6f
+                        chip.iconEndPadding = resources.displayMetrics.density * 4f
+
+                        var label = getString(linkMeta.labelRes)
+                        if (label.equals(item.subtitle, ignoreCase = true)) {
+                            label = getString(R.string.project_link_web)
+                        }
+
+                        val spannable = SpannableStringBuilder().apply {
+                            append(label)
+                            append("  ↗")
+                            setSpan(
+                                ForegroundColorSpan(getColor(R.color.exp_deliverable_chip_arrow)),
+                                length - 1, length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                            setSpan(
+                                StyleSpan(Typeface.BOLD),
+                                length - 1, length,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                        }
+                        chip.text = spannable
+                        chip.isClickable = true
+                        chip.setOnClickListener { openProfileUrl(item.link) }
+                        itemBinding.chipGroupCustomLinks.addView(chip)
+                    } else {
+                        itemBinding.layoutCustomDeliverables.visibility = View.GONE
+                    }
+
+                    // 7. Hairline Divider between entries (hidden on last item)
+                    itemBinding.dividerCustomEntry.visibility = if (index == section.items.lastIndex) View.GONE else View.VISIBLE
+                    itemsContainer.addView(itemBinding.root)
+                }
             }
 
             // Attach dedicated motion driver for this custom section

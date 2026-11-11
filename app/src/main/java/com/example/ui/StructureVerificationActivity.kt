@@ -3,6 +3,7 @@ package com.example.ui
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -24,9 +25,11 @@ import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.databinding.ActivityStructureVerificationBinding
 import com.example.model.ResumeProfile
+import com.example.ui.adapter.CustomSectionArchetype
 import com.example.ui.adapter.PaneTarget
 import com.example.ui.adapter.SectionType
 import com.example.ui.adapter.StructureSectionsAdapter
+import com.example.ui.adapter.resolveCustomSectionArchetype
 import com.example.ui.dialog.AddCustomSectionBottomSheet
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -49,6 +52,14 @@ class StructureVerificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Force fixed portrait orientation for mobile devices (< 600dp)
+        if (resources.configuration.smallestScreenWidthDp < 600) {
+            try {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } catch (_: Exception) {}
+        }
+
         binding = ActivityStructureVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -406,18 +417,69 @@ class StructureVerificationActivity : AppCompatActivity() {
         val allCustomSections = adapter.currentDynamicSections + (rightAdapter?.currentDynamicSections ?: emptyList())
         for ((sectionTitle, items) in allCustomSections) {
             if (items.isEmpty()) continue
+            val archetype = resolveCustomSectionArchetype(sectionTitle)
             for ((i, item) in items.withIndex()) {
-                if (item.title.isBlank()) {
-                    Toast.makeText(this, "$sectionTitle #${i + 1}: Title is required.", Toast.LENGTH_SHORT).show()
-                    return
-                }
-                if (item.bulletPoints.isEmpty() && item.description.isBlank()) {
-                    Toast.makeText(
-                        this,
-                        "$sectionTitle #${i + 1}: Details & Highlights are required.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
+                when (archetype) {
+                    CustomSectionArchetype.CERTIFICATIONS -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Certificate Name is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        if (item.subtitle.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Issuing Organization is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.VOLUNTEER -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Role / Title is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        if (item.subtitle.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Organization / Cause is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.AWARDS -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Award Name is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        if (item.subtitle.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Granting Organization / Issuer is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.PUBLICATIONS -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Paper / Article Title is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.OPEN_SOURCE -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Package / Repository Name is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.LANGUAGES -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Language & Proficiency is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    CustomSectionArchetype.HOBBIES -> {
+                        if (item.description.isBlank() && item.bulletPoints.isEmpty() && item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle: Please provide at least one hobby.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
+                    else -> {
+                        if (item.title.isBlank()) {
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Title is required.", Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                    }
                 }
                 if (item.link.isNotBlank() && !isValidUrl(item.link)) {
                     Toast.makeText(

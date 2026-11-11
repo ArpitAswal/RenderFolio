@@ -1,0 +1,109 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Git Commit Tree & Open Source Shield: -15 degree rotation around center (105, 95) -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Outer Open Source Shield Frame (Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 105,34 L 156,58 V 114 L 105,148 L 54,114 V 58 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="54"
+                    android:startY="34"
+                    android:endX="156"
+                    android:endY="148">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="0.5" android:color="#33FFFFFF" />
+                    <item android:offset="1.0" android:color="#08FFFFFF" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="54"
+                    android:startY="34"
+                    android:endX="156"
+                    android:endY="148">
+                    <item android:offset="0.0" android:color="#E6FFFFFF" />
+                    <item android:offset="0.4" android:color="#99FFFFFF" />
+                    <item android:offset="1.0" android:color="#33FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Main Git Trunk Line -->
+        <path
+            android:pathData="M 88,64 V 126"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="2.2" />
+
+        <!-- Feature Branch Arc Line Splitting and Merging -->
+        <path
+            android:pathData="M 88,88 C 88,102 122,96 122,108 V 118 C 122,126 98,124 90,126"
+            android:fillColor="#00000000"
+            android:strokeColor="#332563EB"
+            android:strokeWidth="2.0" />
+
+        <!-- Git Commit Node 1 (Root Commit) -->
+        <path
+            android:pathData="M 88,68 a 4.5,4.5 0 1 1 0,0.01"
+            android:fillColor="#332563EB"
+            android:strokeColor="#662563EB"
+            android:strokeWidth="1.2" />
+
+        <!-- Git Commit Node 2 (Branch Fork Point) -->
+        <path
+            android:pathData="M 88,94 a 4.5,4.5 0 1 1 0,0.01"
+            android:fillColor="#332563EB"
+            android:strokeColor="#662563EB"
+            android:strokeWidth="1.2" />
+
+        <!-- Git Commit Node 3 (Feature Branch Work) -->
+        <path
+            android:pathData="M 122,112 a 4.5,4.5 0 1 1 0,0.01"
+            android:fillColor="#332563EB"
+            android:strokeColor="#662563EB"
+            android:strokeWidth="1.2" />
+
+        <!-- Git Commit Node 4 (Merge to Main) -->
+        <path
+            android:pathData="M 88,124 a 4.5,4.5 0 1 1 0,0.01"
+            android:fillColor="#332563EB"
+            android:strokeColor="#662563EB"
+            android:strokeWidth="1.2" />
+
+        <!-- Floating Code Angle Bracket < -->
+        <path
+            android:pathData="M 80,48 L 72,54 L 80,60"
+            android:fillColor="#00000000"
+            android:strokeColor="#442563EB"
+            android:strokeWidth="1.8" />
+
+        <!-- Floating Code Slash / -->
+        <path
+            android:pathData="M 108,46 L 102,62"
+            android:fillColor="#00000000"
+            android:strokeColor="#442563EB"
+            android:strokeWidth="1.8" />
+
+        <!-- Floating Code Angle Bracket > -->
+        <path
+            android:pathData="M 130,48 L 138,54 L 130,60"
+            android:fillColor="#00000000"
+            android:strokeColor="#442563EB"
+            android:strokeWidth="1.8" />
+
+    </group>
+
+</vector>

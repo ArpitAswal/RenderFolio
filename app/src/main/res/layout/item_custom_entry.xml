@@ -58,7 +58,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_custom_title"
-        app:errorEnabled="true"
         app:startIconDrawable="@drawable/ic_work"
         app:startIconTint="@color/app_primary"
         app:startIconMinSize="44dp"
@@ -80,6 +79,64 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Subtitle / Organization / Authority / Context -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCustomSubtitle"
+        style="?attr/textInputOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="@string/hint_custom_subtitle"
+        app:startIconDrawable="@drawable/ic_business"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
+            android:textColor="@color/app_text_primary"
+            android:textSize="14sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Period / Date / Year -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCustomPeriod"
+        style="?attr/textInputOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="@string/hint_custom_period"
+        app:startIconDrawable="@drawable/ic_calendar"
+        app:startIconTint="@color/app_primary"
+        app:startIconMinSize="44dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomPeriod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:paddingStart="46dp"
+            android:paddingEnd="12dp"
+            android:textColor="@color/app_text_primary"
+            android:textSize="14sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- Link / URL Field (for Open Source package, repo, etc.) -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCustomLink"
@@ -88,7 +145,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_custom_link_optional"
-        app:errorEnabled="true"
         app:startIconDrawable="@drawable/ic_link_14"
         app:startIconTint="@color/app_primary"
         app:startIconMinSize="44dp"
@@ -110,48 +166,57 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Sub-Header Row: Details & Highlights and compact + Add Bullet -->
+    <!-- Details / Highlights Bullets Section Wrapper -->
     <LinearLayout
+        android:id="@+id/layoutCustomBulletsSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvCustomDetailsHeader"
-            android:layout_width="0dp"
+        <!-- Sub-Header Row: Details & Highlights and compact + Add Bullet -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/header_custom_details"
-            android:textColor="@color/app_text_muted"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddCustomBullet"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:paddingHorizontal="12dp"
-            android:text="@string/action_add_bullet"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:cornerRadius="8dp"
-            app:strokeColor="@color/app_primary" />
+            <TextView
+                android:id="@+id/tvCustomDetailsHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/header_custom_details"
+                android:textColor="@color/app_text_muted"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddCustomBullet"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="12dp"
+                android:text="@string/action_add_bullet"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/app_primary" />
+
+        </LinearLayout>
+
+        <!-- Container for dynamic tap-to-edit bullet rows (no nested scrollview) -->
+        <LinearLayout
+            android:id="@+id/llCustomBulletsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:layout_marginBottom="8dp" />
 
     </LinearLayout>
-
-    <!-- Container for dynamic tap-to-edit bullet rows (no nested scrollview) -->
-    <LinearLayout
-        android:id="@+id/llCustomBulletsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:layout_marginBottom="8dp" />
 
 </LinearLayout>
