@@ -6,8 +6,25 @@ description: Executes a 5-gate pre-completion verification check before marking 
 # Skill: Verification Loop
 
 ## The 5 Gates
-1. **Gate 1 — Diff Audit**: Inspect `git status` and `git diff`. Verify no debug logs, unintended changes, or committed secrets.
-2. **Gate 2 — Formatting & Codegen**: Run formatters and verify generated code is up to date.
-3. **Gate 3 — Static Analysis**: Run the platform analyzer/typechecker.
-4. **Gate 4 — Automated Tests**: Run unit and component test suites.
-5. **Gate 5 — Summary**: Report exact pass/fail results.
+
+### Gate 1 — Diff & Secrets Audit
+- Inspect `git status` and `git diff`.
+- Verify no debug logging statements (`Log.d`, `println`), unwanted temp files, or hardcoded secrets (`rules/common/security.md`).
+
+### Gate 2 — Compilation & KSP Codegen
+- Verify Kotlin compilation and Room / Moshi KSP code generation:
+  `./gradlew compileDebugKotlin`
+
+### Gate 3 — Static Analysis & Lint
+- Run Android Lint to catch XML/Compose errors, missing permissions, and memory hazards:
+  `./gradlew lintDebug`
+
+### Gate 4 — Automated Unit Tests
+- Execute all unit tests and Robolectric tests:
+  `./gradlew testDebugUnitTest`
+
+### Gate 5 — Handover Summary
+- Output a clear pass/fail summary detailing:
+  - Files modified or created
+  - Verification commands executed with exit status
+  - Any notes or follow-up recommendations

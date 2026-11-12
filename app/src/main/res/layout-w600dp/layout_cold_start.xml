@@ -42,7 +42,7 @@
             android:gravity="start|center_vertical"
             android:orientation="vertical">
 
-            <!-- Brand Badge: "ResumeShowcase" (18sp Medium to meet WCAG AA contrast threshold) -->
+            <!-- Brand Badge: "RenderFolio" (18sp Medium to meet WCAG AA contrast threshold) -->
             <LinearLayout
                 android:id="@+id/layout_brand_badge"
                 android:layout_width="wrap_content"

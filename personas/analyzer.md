@@ -16,7 +16,7 @@ When given a new requirement and input data, follow these steps exactly:
 
 1. **Context Gathering:** 
    - Inspect the current app architecture, state management, and data flow related to the requirement.
-   - Apply active platform rules (e.g., `rules/platforms/android-kotlin.md` or `rules/platforms/flutter-dart.md`).
+   - Apply active platform rules (e.g., `rules/platforms/android-kotlin.md`).
 
 2. **Architectural Report Generation:** Output a structured report using the exact headers below:
    - **Current State & Limitations:** Analyze how the app currently works and why it struggles or needs modification for the new requirement.

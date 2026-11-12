@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ResumeShowcase</string>
-    <string name="cold_start_app_title">ResumeShowcase</string>
+    <string name="app_name">RenderFolio</string>
+    <string name="cold_start_app_title">RenderFolio</string>
     <string name="cold_start_headline">Transform your resume</string>
     <string name="cold_start_subtitle">Convert your static PDF resume into an interactive digital portfolio.</string>
     <string name="cold_start_action_button">Upload Resume</string>
@@ -20,12 +20,12 @@
 
     <!-- Permission Dialog Strings -->
     <string name="permission_title">Storage Permission Required</string>
-    <string name="permission_rationale_message">ResumeShowcase needs storage access to browse and import your PDF resume from your device. Please grant permission to continue.</string>
+    <string name="permission_rationale_message">RenderFolio needs storage access to browse and import your PDF resume from your device. Please grant permission to continue.</string>
     <string name="permission_dialog_message">Storage permission is required to browse and select files from your device. You can grant access in App Settings or explore the demo showcase right now.</string>
     <string name="permission_grant_button">Grant Permission</string>
     <string name="permission_settings_button">App Settings</string>
     <string name="permission_demo_button">Try Demo Instead</string>
-    <string name="permission_granted_toast">Storage access granted for ResumeShowcase</string>
+    <string name="permission_granted_toast">Storage access granted for RenderFolio</string>
     <string name="permission_denied_toast">Storage access denied. You can enable it in App Settings or explore the demo showcase.</string>
 
     <!-- Structure Verification Common Actions & Dialogs -->

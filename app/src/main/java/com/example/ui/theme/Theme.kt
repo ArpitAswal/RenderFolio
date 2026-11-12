@@ -43,7 +43,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun ResumeShowcaseTheme(
+fun RenderFolioTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
@@ -58,3 +58,9 @@ fun ResumeShowcaseTheme(
         )
     }
 }
+
+@Composable
+fun ResumeShowcaseTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) = RenderFolioTheme(darkTheme = darkTheme, content = content)

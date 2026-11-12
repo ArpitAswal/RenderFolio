@@ -2,7 +2,7 @@
 
 ## 1. Core Engineering Principles
 1. **Plan Before Code**: For any non-trivial feature, architectural change, or multi-file refactor, produce a concise implementation plan (`personas/planner.md`) covering affected modules, data models, interface contracts, and edge cases before mutating source files.
-2. **Immutability by Default**: Prefer immutable data structures, value objects, and unidirectional data flow (`final`/`const` in Dart, `val` in Kotlin, `let` in Swift, `const`/readonly in React). Mutate state only behind explicit state holders.
+2. **Immutability by Default**: Prefer immutable data structures, value objects, and unidirectional data flow (`val` in Kotlin, immutable state data classes). Mutate state only behind explicit state holders (`ViewModel` + `StateFlow`).
 3. **Separation of Concerns**: Keep domain and business logic independent of UI frameworks, navigation routers, and platform SDKs. Match modularity to domain complexity without unnecessary boilerplate.
 4. **Minimal Diff Discipline**: Modify only the files and lines required for the task. Never perform drive-by formatting, unprompted dependency updates, or speculative abstractions.
 5. **Search & Inspect First**: Read existing project conventions, dependency manifests, and adjacent modules before introducing new patterns or libraries.
@@ -15,12 +15,20 @@
    - Implement the minimal code required to pass.
    - Refactor for clarity, immutability, and adherence to `rules/common/coding_style.md`.
 4. **Verify (`skills/verification-loop/SKILL.md`)**:
-   - Run the platform's native static analyzer, formatter, and test suite on affected modules.
+   - Run the platform's native static analyzer, formatter, and test suite on affected modules (`./gradlew testDebugUnitTest lintDebug`).
    - Review diffs against `personas/code-reviewer.md` and `rules/common/security.md`.
 
 ## 3. Personas (Roles)
-- **Analyzer**: `personas/analyzer.md` (Evaluates requirements, challenges assumptions, and outputs architectural trade-offs with pros/cons before code is written).
-- **Orchestrator**: `personas/orchestrator.md` (Routes the task and chains workflows).
+- **Orchestrator**: `personas/orchestrator.md` (Master task intake, routing, and workflow chaining).
+- **Analyzer**: `personas/analyzer.md` (Evaluates requirements, challenges assumptions, trade-offs with pros/cons).
+- **Architect**: `personas/architect.md` (Enforces modular design, separation of concerns, and clean boundaries).
+- **Planner**: `personas/planner.md` (Defines structured phased plans before any code changes).
+- **Adaptive Screen Agent**: `personas/android-adaptive-screen-agent.md` (Designs responsive UI across phone, foldable, and tablet).
+- **TDD Guide**: `personas/tdd-guide.md` (Coaches red-green-refactor test cycles).
+- **Code Reviewer**: `personas/code-reviewer.md` (Strict diff review for correctness, leaks, and regressions).
+- **Security Reviewer**: `personas/security-reviewer.md` (Audits manifests, storage, network, and secrets against `rules/common/security.md`).
+- **Build Error Resolver**: `personas/build-error-resolver.md` (Surgically fixes build and lint failures).
+- **Technical Writer**: `personas/technical-writer.md` (Generates framework-agnostic README, CHANGELOG, Architecture, and Context docs).
 
 ## 4. Baseline Standards
 Always apply the shared baseline rules:
@@ -28,11 +36,11 @@ Always apply the shared baseline rules:
 - `rules/common/security.md`
 - `rules/common/testing.md`
 - `rules/common/development_workflow.md`
+- `rules/common/adaptive-ui.md`
 
-## 5. Conditional Platform Extensions
-Load ONLY the platform rule matching your active workspace files:
-- Flutter/Dart: `rules/platforms/flutter-dart.md`
-- Android/Kotlin: `rules/platforms/android-kotlin.md`
-- iOS/Swift: `rules/platforms/ios-swift.md`
-- React/TypeScript: `rules/platforms/react-web.md`
-- Flutter Adaptive UI: `rules/platforms/flutter-adaptive-ui.md`
+## 5. Platform Extensions for This Project (Native Android)
+Load the platform rules matching this workspace:
+- Android & Kotlin & Compose: `rules/platforms/android-kotlin.md`
+- Android Adaptive UI: `rules/platforms/android-adaptive-ui.md`
+- Android Firebase: `rules/platforms/android-firebase.md`
+- Android Security Hardening: `rules/platforms/android-security.md`

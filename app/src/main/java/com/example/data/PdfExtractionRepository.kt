@@ -2353,12 +2353,26 @@ class PdfExtractionRepository(private val context: Context) {
             toTitleCase(sectionHeading)
         }
 
+        // Dynamically detect creator/maintainer/developer role from open source bullets and lines
+        val allTextToScan = (openSourceLines + bulletLines).joinToString(" ").lowercase()
+        val detectedRole = when {
+            allTextToScan.contains("independently") || allTextToScan.contains("solo") -> "Creator & Solo Developer"
+            allTextToScan.contains("creator") || allTextToScan.contains("author") -> "Creator & Lead Maintainer"
+            allTextToScan.contains("lead maintainer") -> "Lead Maintainer"
+            allTextToScan.contains("maintainer") -> "Maintainer"
+            allTextToScan.contains("core contributor") -> "Core Contributor"
+            allTextToScan.contains("contributor") -> "Contributor"
+            allTextToScan.contains("designed") && allTextToScan.contains("developed") -> "Creator & Developer"
+            allTextToScan.contains("developed") -> "Developer"
+            else -> "Verified Contributor"
+        }
+
         return DynamicSection(
             sectionTitle = normalizedTitle,
             items = listOf(
                 DynamicItem(
                     title = cleanedTitle,
-                    subtitle = "Verified Contributor",
+                    subtitle = detectedRole,
                     dateOrPeriod = "Active",
                     description = desc,
                     link = detectedLink,

@@ -1,5 +1,6 @@
 package com.example.ui
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -27,6 +28,12 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
     private var isCelebrationMode: Boolean = true
     private var qrBitmap: Bitmap? = null
     var onViewVisualiser: (() -> Unit)? = null
+    var onDismissCallback: (() -> Unit)? = null
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissCallback?.invoke()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +84,7 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
                 val result = QrCodeGenerator.saveBitmapToGallery(
                     context = requireContext(),
                     bitmap = bitmap,
-                    title = "ResumeShowcase_${candidateName.replace(" ", "_")}"
+                    title = "RenderFolio_${candidateName.replace(" ", "_")}"
                 )
                 if (result.isSuccess) {
                     Toast.makeText(requireContext(), R.string.toast_saved_to_gallery, Toast.LENGTH_SHORT).show()
@@ -101,8 +108,8 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
 
         // Primary Action: View Visualiser
         btnViewVisualiser.setOnClickListener {
-            dismiss()
             onViewVisualiser?.invoke()
+            dismiss()
         }
     }
 
@@ -125,12 +132,12 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
                 qrFile
             )
 
-            val shareText = "Scan to explore my interactive digital resume on ResumeShowcase:\n$shareUrl"
+            val shareText = "Scan to explore my interactive digital resume on RenderFolio:\n$shareUrl"
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "image/png"
                 putExtra(Intent.EXTRA_STREAM, contentUri)
                 putExtra(Intent.EXTRA_TEXT, shareText)
-                putExtra(Intent.EXTRA_SUBJECT, "$candidateName - Digital Resume Showcase QR")
+                putExtra(Intent.EXTRA_SUBJECT, "$candidateName - RenderFolio Digital Resume QR")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             startActivity(Intent.createChooser(shareIntent, getString(R.string.share_qr_chooser_title)))

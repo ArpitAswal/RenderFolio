@@ -2,7 +2,7 @@
 description: Deeply analyze a new requirement against the current architecture, evaluate edge cases, and propose solutions with pros and cons before writing any code.
 ---
 
-1. Load `personas/architect.md` and `personas/planner.md`. 
+1. Load `personas/analyzer.md`, `personas/architect.md`, and `personas/planner.md`. 
 2. Load the active platform rules from `rules/platforms/`.
 3. Read the user's requirement and any provided input data/samples. Do NOT generate production code.
 4. Critically evaluate the requirement against the current codebase architecture. Do not blindly accept the user's proposed approach; if it lacks scalability, breaks separation of concerns, or introduces heavy technical debt, challenge it and propose a better pattern.

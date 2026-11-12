@@ -46,7 +46,7 @@
             app:layout_constraintVertical_bias="0.5"
             app:layout_constraintWidth_max="380dp">
 
-            <!-- Brand Badge: "ResumeShowcase" (18sp Medium to meet WCAG AA contrast threshold) -->
+            <!-- Brand Badge: "RenderFolio" (18sp Medium to meet WCAG AA contrast threshold) -->
             <LinearLayout
                 android:id="@+id/layout_brand_badge"
                 android:layout_width="wrap_content"

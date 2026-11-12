@@ -31,7 +31,7 @@ import com.example.ui.ResumeVisualiserActivity
 import com.example.ui.ShowcaseQrBottomSheet
 import com.example.ui.StructureVerificationActivity
 import com.example.ui.TailoredShowcaseSelectorBottomSheet
-import com.example.ui.theme.ResumeShowcaseTheme
+import com.example.ui.theme.RenderFolioTheme
 import com.example.viewmodel.ResumeViewModel
 import com.example.viewmodel.UiState
 import kotlinx.coroutines.Job
@@ -130,10 +130,12 @@ class MainActivity : AppCompatActivity() {
         cloudSyncJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 cloudRepository.purgeExpiredResumes()
-                val cloudShowcases = cloudRepository.fetchUserShowcases().getOrNull()
-                if (!cloudShowcases.isNullOrEmpty()) {
-                    preferencesRepository.syncFromCloud(cloudShowcases)
-                }
+                // Use Result directly so we can distinguish:
+                //   failure (null)       → network/auth error; skip sync to avoid wiping local cache
+                //   success(emptyList()) → all cloud docs genuinely gone; wipe stale local entries
+                val fetchResult = cloudRepository.fetchUserShowcases()
+                val cloudShowcases = fetchResult.getOrNull() ?: return@launch
+                preferencesRepository.syncFromCloud(cloudShowcases)
             } catch (_: Exception) {
             }
         }
@@ -147,13 +149,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleDeepLinkIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        // Support HTTPS: https://lightweight-firebase-projects.web.app/r/{shareId} or https://resumeshowcase.web.app/r/{shareId}
+        // Support HTTPS: https://lightweight-firebase-projects.web.app/r/{shareId}, https://renderfolio.web.app/r/{shareId} or https://resumeshowcase.web.app/r/{shareId}
         val isHttpMatch = (uri.scheme == "https" || uri.scheme == "http") &&
-                (uri.host == "lightweight-firebase-projects.web.app" || uri.host == "resumeshowcase.web.app") &&
+                (uri.host == "lightweight-firebase-projects.web.app" || uri.host == "renderfolio.web.app" || uri.host == "resumeshowcase.web.app") &&
                 uri.path?.startsWith("/r/") == true
 
-        // Support Custom Scheme: resumeshowcase://r/{shareId}
-        val isCustomSchemeMatch = uri.scheme == "resumeshowcase" &&
+        // Support Custom Scheme: renderfolio://r/{shareId} or resumeshowcase://r/{shareId}
+        val isCustomSchemeMatch = (uri.scheme == "renderfolio" || uri.scheme == "resumeshowcase") &&
                 (uri.host == "r" || uri.path?.startsWith("/r/") == true)
 
         if (isHttpMatch || isCustomSchemeMatch) {
@@ -411,7 +413,7 @@ class MainActivity : AppCompatActivity() {
                             overlayProgress.visibility = View.GONE
                             composeView.visibility = View.VISIBLE
                             composeView.setContent {
-                                ResumeShowcaseTheme {
+                                RenderFolioTheme {
                                     PdfExtractionLoadingScreen(
                                         step = state.step,
                                         progress = state.progress,

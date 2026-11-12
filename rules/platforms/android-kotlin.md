@@ -18,7 +18,17 @@
 - **Main Safety**: Repositories and data sources must be main-safe. Switch dispatchers using an injected `CoroutineDispatcher` via `withContext(ioDispatcher)`.
 - **Preserve Cancellation**: When catching general `Exception` inside a coroutine, rethrow `CancellationException` (`if (e is CancellationException) throw e`) so structured cancellation works correctly.
 
-## 4. Verification Commands
+## 4. Room Database & Local Persistence
+- **DAOs**: Use Kotlin `Flow` for reactive queries and `suspend` functions for one-shot inserts/updates/deletes.
+- **Type Converters**: Provide explicit `@TypeConverter` functions for complex data types (e.g. lists, embedded models).
+- **Migrations**: Always define structured schema migrations or verify Room version updates without destroying user data.
+
+## 5. Serialization & Network (Moshi / Retrofit)
+- Use `@JsonClass(generateAdapter = true)` for Moshi-parsed models to avoid reflection overhead and leverage KSP code generation.
+- Map network responses to domain models inside repository implementations; do not expose Moshi DTOs directly to the UI layer.
+
+## 6. Verification Commands
 - Compile Check: `./gradlew compileDebugKotlin`
 - Lint: `./gradlew lintDebug`
 - Unit Tests: `./gradlew testDebugUnitTest`
+- Full Check: `./gradlew check`

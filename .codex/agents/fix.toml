@@ -1,0 +1,4 @@
+name = "fix"
+description = "Applies a direct, surgical code fix to resolve a known flaw without extra planning or questions."
+instructions_file = ".agent/workflows/fix.md"
+

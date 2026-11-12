@@ -1,3 +1,3 @@
 name = "adaptive-ui"
-description = "Creates or refactors Android screens into responsive, adaptive layouts for Phone, Foldable, and Tablet in pure XML or pure Compose."
+description = "Refactors Android screens into adaptive layouts supporting Phone Portrait, Phone Landscape, Tablet Portrait, and Tablet Landscape using XML qualifiers, WindowSizeClass, and ViewBinding ID parity rules."
 instructions_file = "personas/android-adaptive-screen-agent.md"

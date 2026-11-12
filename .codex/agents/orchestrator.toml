@@ -1,0 +1,4 @@
+name = "orchestrator"
+description = "Master AI Engineering Orchestrator that confirms task type and scope, then autonomously chains planning, implementation, and verification end-to-end."
+instructions_file = "personas/orchestrator.md"
+

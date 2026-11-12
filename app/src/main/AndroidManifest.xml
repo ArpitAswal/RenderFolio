@@ -32,7 +32,7 @@
         </activity>
         <activity
             android:name=".ui.StructureVerificationActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Structure Verification"
             android:theme="@style/Theme.MyApplication"
             android:windowSoftInputMode="adjustResize" />
@@ -52,15 +52,22 @@
                     android:pathPrefix="/r/" />
                 <data
                     android:scheme="https"
+                    android:host="renderfolio.web.app"
+                    android:pathPrefix="/r/" />
+                <data
+                    android:scheme="https"
                     android:host="resumeshowcase.web.app"
                     android:pathPrefix="/r/" />
             </intent-filter>
 
-            <!-- Custom URI Scheme: resumeshowcase://r/{id} -->
+            <!-- Custom URI Scheme: renderfolio://r/{id} and resumeshowcase://r/{id} -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="renderfolio"
+                    android:host="r" />
                 <data
                     android:scheme="resumeshowcase"
                     android:host="r" />

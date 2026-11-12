@@ -566,12 +566,20 @@ class StructureVerificationActivity : AppCompatActivity() {
                     candidateName = compiledProfile.hero.fullName,
                     isCelebration = true
                 )
+                var hasNavigatedToVisualiser = false
                 celebrationSheet.onViewVisualiser = {
+                    hasNavigatedToVisualiser = true
                     val returnIntent = Intent().apply {
                         putExtra(EXTRA_COMPILED_PROFILE, compiledProfile.toJson())
                     }
                     setResult(RESULT_OK, returnIntent)
                     finish()
+                }
+                celebrationSheet.onDismissCallback = {
+                    // When user dismisses celebration modal without viewing visualiser, finish cleanly to ColdStart screen
+                    if (!hasNavigatedToVisualiser && !isFinishing && !isDestroyed) {
+                        finish()
+                    }
                 }
                 celebrationSheet.isCancelable = true
                 celebrationSheet.showSafely(supportFragmentManager, ShowcaseQrBottomSheet.TAG)
@@ -598,7 +606,7 @@ class StructureVerificationActivity : AppCompatActivity() {
         if (loadingDialog?.isShowing == true) return
 
         try {
-            loadingDialog = Dialog(this, R.style.Theme_ResumeShowcase_GlassmorphicLoadingDialog).apply {
+            loadingDialog = Dialog(this, R.style.Theme_RenderFolio_GlassmorphicLoadingDialog).apply {
                 setContentView(R.layout.dialog_glassmorphic_loading)
                 window?.apply {
                     setBackgroundDrawable(Color.TRANSPARENT.toDrawable())

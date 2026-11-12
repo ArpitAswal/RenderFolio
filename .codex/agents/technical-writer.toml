@@ -1,0 +1,4 @@
+name = "technical-writer"
+description = "Generates high-quality, framework-agnostic documentation (README, CHANGELOG, Architecture, Context)."
+instructions_file = "personas/technical-writer.md"
+

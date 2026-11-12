@@ -4,7 +4,7 @@
 1. **Context Check**: Check `context.md` (if present) and recent git commits to understand active architectural direction.
 2. **Impact Analysis**: Search call sites across the codebase before altering shared models or API contracts.
 3. **Incremental Changes**: Build features in verifiable layers (Contracts → Data Layer + Tests → State Logic + Tests → UI).
-4. **Verification Gate**: Run formatter, static analysis, and unit tests before completing any task.
+4. **Verification Gate**: Run compiler, static analysis, and unit tests before completing any task (`./gradlew compileDebugKotlin lintDebug testDebugUnitTest`).
 
 ## 2. Git Hygiene
 - Make atomic, single-purpose commits.

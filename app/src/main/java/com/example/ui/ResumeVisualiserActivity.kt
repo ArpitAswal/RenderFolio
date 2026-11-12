@@ -206,7 +206,11 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             result.onSuccess { profile ->
                 bindProfileToVisualiser(profile)
                 binding.scrollView.visibility = View.VISIBLE
-            }.onFailure {
+            }.onFailure { error ->
+                // Self-heal: remove the stale local entry so it no longer appears in the bottom sheet
+                if (error is NoSuchElementException) {
+                    preferencesRepository.deleteShowcase(shareId)
+                }
                 Toast.makeText(this@ResumeVisualiserActivity, R.string.toast_showcase_expired, Toast.LENGTH_LONG).show()
                 finish()
             }
@@ -1326,9 +1330,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                     itemBinding.tvEntryCustomTitle.text = item.title
 
                     // 2. Metadata Sub-Header Row: Subtitle/Issuer on left, Duration/Period on right (matching Professional Experience)
-                    val isVerifiedContributor = item.subtitle.trim().contains("Verified Contributor", ignoreCase = true)
-                    val hasPublishedLink = item.link.isNotBlank()
-                    val showSubtitle = item.subtitle.isNotBlank() && !(isVerifiedContributor && hasPublishedLink)
+                    val showSubtitle = item.subtitle.isNotBlank()
                     val showPeriod = item.dateOrPeriod.isNotBlank() && !item.dateOrPeriod.equals("Active", ignoreCase = true)
 
                     if (showSubtitle || showPeriod) {

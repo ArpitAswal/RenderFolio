@@ -54,20 +54,20 @@ object QrCodeGenerator {
     }
 
     /**
-     * Saves the QR Bitmap directly to MediaStore (Pictures/ResumeShowcase) using Scoped Storage.
+     * Saves the QR Bitmap directly to MediaStore (Pictures/RenderFolio) using Scoped Storage.
      * Complies with Android 10+ scoped storage policy without requiring runtime permissions.
      */
     fun saveBitmapToGallery(
         context: Context,
         bitmap: Bitmap,
-        title: String = "ResumeShowcase_QR"
+        title: String = "RenderFolio_QR"
     ): Result<Uri> = runCatching {
         val filename = "${title}_${System.currentTimeMillis()}.png"
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, filename)
             put(MediaStore.Images.Media.MIME_TYPE, "image/png")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ResumeShowcase")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/RenderFolio")
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
         }

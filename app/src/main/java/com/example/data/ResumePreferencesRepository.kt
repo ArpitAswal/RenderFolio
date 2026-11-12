@@ -171,9 +171,13 @@ class ResumePreferencesRepository private constructor(context: Context) {
             .sortedBy { it.createdAtMillis }
 
         persistShowcases(deduplicated)
-        deduplicated.lastOrNull()?.let { latest ->
-            saveProfile(latest.profile)
-            saveActiveShareId(latest.shareId)
+        if (deduplicated.isEmpty()) {
+            clearProfile()
+        } else {
+            deduplicated.last().let { latest ->
+                saveProfile(latest.profile)
+                saveActiveShareId(latest.shareId)
+            }
         }
     }
 

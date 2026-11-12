@@ -1,0 +1,4 @@
+name = "security"
+description = "Runs a comprehensive pre-publish security audit and Git hygiene check before pushing to a public repository."
+instructions_file = ".agent/workflows/security.md"
+

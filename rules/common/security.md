@@ -1,21 +1,19 @@
-# Common Application Security Rules
+# Universal Security & Data Protection Rules
 
 ## 1. Secrets & Credentials
-- **Zero Hardcoded Secrets**: Never commit API keys, OAuth secrets, private keys, signing keystores (`.jks`, `.keystore`, `.p12`), or tokens into source files or version control.
-- Load secrets from untracked files (`.env`, `local.properties`) and verify they are listed in `.gitignore`.
-- Treat client-side binaries as public. Never store production master keys inside mobile/web code.
+- **Zero Secrets in Code**: Never hardcode API keys, service account JSONs, bearer tokens, passwords, or private keys in any source code, configuration, or Git commit history.
+- **Environment & Local Configuration**: Store sensitive credentials in local environment variables or untracked configuration files (e.g., `local.properties`, `.env`) that are strictly excluded via `.gitignore`.
+- **Public Key Scanning**: Before committing, scan diffs for common secret patterns (Google API keys starting with `AIzaSy`, AWS access keys, GitHub tokens, private keys `BEGIN PRIVATE KEY`).
 
-## 2. Secure Local Storage
-- Never store auth tokens, session tokens, or PII in plaintext storage (`SharedPreferences`, `UserDefaults`, `localStorage`, unencrypted SQLite).
-- Use platform-backed encrypted storage (`flutter_secure_storage`, Android Keystore / EncryptedDataStore, iOS Keychain).
+## 2. Git Hygiene & Tracked Files
+- **Verify Tracked Files**: Adding a file to `.gitignore` does not untrack files already stored in Git history. Always verify with `git ls-files` to confirm sensitive files are not tracked.
+- **Untrack Staged Secrets**: If a sensitive file is accidentally tracked, remove it from the index immediately using `git rm --cached <file>` before committing.
+- **Never Commit Test Credentials**: Never commit test accounts, mock API keys, or production database connection strings to public repositories.
 
-## 3. Safe Networking
-- Enforce HTTPS/TLS 1.2+ for all network traffic.
-- Never enable cleartext traffic in release builds.
-- Redact `Authorization` headers, passwords, and tokens from all console and crash logs.
-- Set explicit connect, read, and write timeouts on all network clients.
+## 3. Data Privacy & Logging
+- **PII Protection**: Personally Identifiable Information (real user names, email addresses, phone numbers, resumes, or financial details) must never be committed to public repositories.
+- **Logging Hygiene**: Remove or disable verbose debug logs (`println`, debug log statements) that print sensitive user data or authentication tokens in release builds.
 
-## 4. Input Validation & WebViews
-- Validate and sanitize all external inputs: deep links, push notification payloads, and intent extras.
-- Use parameterized queries for local databases (Drift, Sqflite, Room).
-- Restrict WebViews: disable unnecessary JavaScript, disable file scheme access, and validate navigation URLs.
+## 4. Agent Instructions & Workspace Notes
+- **Distinguish Documentation from Internal Notes**: Public project documentation (`README.md`, `CONTRIBUTING.md`, `docs/`) is intended for Git tracking.
+- **Protect Private AI Instructions**: If internal agent workflows, system prompts, or scratchpad markdown files contain proprietary logic or private workflows, ensure they are explicitly added to `.gitignore`.

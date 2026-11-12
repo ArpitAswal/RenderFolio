@@ -1,0 +1,4 @@
+name = "document"
+description = "Generates or updates core project documentation (README, CHANGELOG, architecture, context) dynamically."
+instructions_file = ".agent/workflows/document.md"
+

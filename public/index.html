@@ -1620,9 +1620,7 @@
           } else {
             // Standard Custom Section Items
             contentHtml = items.map((item, idx) => {
-              const isVerifiedContributor = (item.subtitle || "").toLowerCase().includes("verified contributor");
-              const hasPublishedLink = Boolean(item.link && item.link.trim());
-              const showSubtitle = item.subtitle && item.subtitle.trim() && !(isVerifiedContributor && hasPublishedLink);
+              const showSubtitle = Boolean(item.subtitle && item.subtitle.trim());
               const showPeriod = item.dateOrPeriod && item.dateOrPeriod.trim() && item.dateOrPeriod.toLowerCase() !== "active";
 
               const bullets = (item.bulletPoints && item.bulletPoints.length)
