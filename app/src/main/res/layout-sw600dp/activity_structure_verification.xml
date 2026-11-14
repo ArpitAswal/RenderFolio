@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Structure Verification Screen (Tablet Portrait Layout: sw600dp)
+    Paradigm: 100% Pure XML (Centered Single Column with Bounded Max Width)
+    Features:
+      - Centered column bounded to max-width 640dp
+      - Spacious tablet paddings and touch targets
+      - Single-pane mode with canonical section sequence and footer Add Custom Section
+      - Full ViewBinding ID parity
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -13,6 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/app_background"
+        android:fitsSystemWindows="true"
         android:stateListAnimator="@null"
         app:elevation="0dp"
         app:liftOnScroll="false">
@@ -33,77 +43,28 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nestedScrollSections"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="64dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSections"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="96dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="640dp"
+            tools:listitem="@layout/item_personal_info" />
 
-            <!-- Horizontal Dual-Pane Container -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <!-- Left Column: Foundations & Credentials + Dynamic Sections -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSectionsLeft"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="10dp"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_personal_info" />
-
-                <!-- Right Column: Experience & Portfolio + Dynamic Sections -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSectionsRight"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_work_experience" />
-
-            </LinearLayout>
-
-            <!-- Shared Add Custom Section Button Anchored Across Panes (Max width 320dp per Material Design) -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddCustomSection"
-                android:layout_width="wrap_content"
-                android:layout_height="52dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp"
-                android:maxWidth="320dp"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:background="@drawable/bg_dashed_button"
-                android:text="@string/action_add_custom_section"
-                android:textColor="@color/app_primary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:backgroundTint="@null"
-                app:elevation="0dp"
-                app:icon="@drawable/ic_add"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:iconTint="@color/app_primary" />
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

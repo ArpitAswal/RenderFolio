@@ -26,7 +26,7 @@ class ResumeCloudRepository {
     private val authMutex = Mutex()
 
     companion object {
-        const val BASE_DEEP_LINK_URL = "https://lightweight-firebase-projects.web.app/r"
+        const val BASE_DEEP_LINK_URL = "https://renderfolio-cv.web.app/r"
         private const val COLLECTION_RESUMES = "resumes"
         private const val TTL_DAYS_MILLIS = 7L * 24 * 60 * 60 * 1000 // 7-day TTL
 
@@ -185,7 +185,7 @@ class ResumeCloudRepository {
      * Deletes a specific resume document from Cloud Firestore.
      */
     suspend fun deleteResume(shareId: String): Result<Unit> = runCatchingNonCancellation {
-        if (shareId.isBlank()) return@runCatchingNonCancellation
+        if (shareId.isBlank() || shareId.startsWith("local")) return@runCatchingNonCancellation
         getOrSignInUser()
         firestore.collection(COLLECTION_RESUMES)
             .document(shareId)
@@ -194,6 +194,37 @@ class ResumeCloudRepository {
         Log.d("ResumeCloudRepository", "Deleted showcase from Cloud Firestore: $shareId")
     }.onFailure {
         Log.e("ResumeCloudRepository", "Delete failed for showcase $shareId: ${it.message}", it)
+    }
+
+    /**
+     * Uploads any pending offline/local showcases to Cloud Firestore.
+     * When upload succeeds, the local showcase is upgraded with the live cloud shareId/URL
+     * and isSyncPending is cleared.
+     */
+    suspend fun syncPendingShowcases(preferencesRepository: ResumePreferencesRepository): Int {
+        val pendingList = preferencesRepository.getShowcases().filter {
+            it.isSyncPending || it.shareId.startsWith("local")
+        }
+        if (pendingList.isEmpty()) return 0
+
+        var syncedCount = 0
+        for (pending in pendingList) {
+            val uploadResult = uploadResume(pending.profile)
+            val cloudShareUrl = uploadResult.getOrNull()
+            if (!cloudShareUrl.isNullOrBlank()) {
+                val cloudShareId = cloudShareUrl.substringAfterLast("/")
+                val upgraded = pending.copy(
+                    shareId = cloudShareId,
+                    shareUrl = cloudShareUrl,
+                    isSyncPending = false
+                )
+                preferencesRepository.deleteShowcase(pending.shareId)
+                preferencesRepository.saveShowcase(upgraded)
+                syncedCount++
+                Log.d("ResumeCloudRepository", "Upgraded offline showcase ${pending.shareId} -> $cloudShareId")
+            }
+        }
+        return syncedCount
     }
 
     /**
@@ -235,26 +266,31 @@ class ResumeCloudRepository {
      * Keeps the database clean without requiring a Google Cloud billing account.
      */
     suspend fun purgeExpiredResumes(): Result<Int> = runCatchingNonCancellation {
-        getOrSignInUser()
+        val user = getOrSignInUser()
 
-        val now = Timestamp.now()
         val snapshot = firestore.collection(COLLECTION_RESUMES)
-            .whereLessThan("expireAt", now)
+            .whereEqualTo("ownerUid", user.uid)
             .get()
             .await()
 
-        if (snapshot.isEmpty) {
+        val now = Timestamp.now()
+        val expiredDocs = snapshot.documents.filter { doc ->
+            val expireAt = doc.getTimestamp("expireAt")
+            expireAt != null && expireAt < now
+        }
+
+        if (expiredDocs.isEmpty()) {
             return@runCatchingNonCancellation 0
         }
 
         val batch = firestore.batch()
-        for (doc in snapshot.documents) {
+        for (doc in expiredDocs) {
             batch.delete(doc.reference)
         }
         batch.commit().await()
 
-        Log.d("ResumeCloudRepository", "Cleaned up ${snapshot.size()} expired resumes from Cloud Firestore.")
-        snapshot.size()
+        Log.d("ResumeCloudRepository", "Cleaned up ${expiredDocs.size} expired resumes from Cloud Firestore.")
+        expiredDocs.size
     }.onFailure {
         Log.w("ResumeCloudRepository", "Purge expired resumes skipped/failed: ${it.message}")
     }

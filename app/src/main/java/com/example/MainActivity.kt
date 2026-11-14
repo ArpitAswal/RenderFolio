@@ -27,6 +27,7 @@ import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.model.ResumeProfile
 import com.example.ui.PdfExtractionLoadingScreen
+import com.example.ui.tablet.PdfExtractionLoadingScreenTablet
 import com.example.ui.ResumeVisualiserActivity
 import com.example.ui.ShowcaseQrBottomSheet
 import com.example.ui.StructureVerificationActivity
@@ -53,24 +54,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvProgressStep: TextView
     private lateinit var pbHorizontal: ProgressBar
     private lateinit var tvProgressPercent: TextView
+    private var lastActionClickTime = 0L
+
+    private fun isDoubleTap(debounceMs: Long = 600L): Boolean {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastActionClickTime < debounceMs) return true
+        lastActionClickTime = now
+        return false
+    }
 
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             viewModel.processPdfResume(uri)
-        }
-    }
-
-    // Native Runtime Permission launcher with graceful handling for all user decisions
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // User Allowed -> Toast feedback and immediately launch PDF picker!
-            Toast.makeText(this, R.string.permission_granted_toast, Toast.LENGTH_SHORT).show()
-            launchPdfPicker()
-        } else {
-            // User Denied -> Graceful explanation dialog with retry, settings, or demo options
-            showPermissionDeniedDialog()
         }
     }
 
@@ -129,6 +124,9 @@ class MainActivity : AppCompatActivity() {
         if (cloudSyncJob?.isActive == true) return
         cloudSyncJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
+                // Upload any pending offline/local showcases to Cloud Firestore
+                cloudRepository.syncPendingShowcases(preferencesRepository)
+
                 cloudRepository.purgeExpiredResumes()
                 // Use Result directly so we can distinguish:
                 //   failure (null)       → network/auth error; skip sync to avoid wiping local cache
@@ -148,10 +146,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleDeepLinkIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra("test_extract", false) == true) {
+            loadBundledSamplePdf()
+            return
+        }
         val uri = intent?.data ?: return
-        // Support HTTPS: https://lightweight-firebase-projects.web.app/r/{shareId}, https://renderfolio.web.app/r/{shareId} or https://resumeshowcase.web.app/r/{shareId}
+        // Support HTTPS: https://renderfolio-cv.web.app/r/{shareId}, https://lightweight-firebase-projects.web.app/r/{shareId}
         val isHttpMatch = (uri.scheme == "https" || uri.scheme == "http") &&
-                (uri.host == "lightweight-firebase-projects.web.app" || uri.host == "renderfolio.web.app" || uri.host == "resumeshowcase.web.app") &&
+                (uri.host == "renderfolio-cv.web.app" || uri.host == "lightweight-firebase-projects.web.app" || uri.host == "renderfolio.web.app" || uri.host == "resumeshowcase.web.app") &&
                 uri.path?.startsWith("/r/") == true
 
         // Support Custom Scheme: renderfolio://r/{shareId} or resumeshowcase://r/{shareId}
@@ -174,19 +176,26 @@ class MainActivity : AppCompatActivity() {
         val btnViewActive = findViewById<View>(R.id.btn_view_active_visualiser)
         val btnShowQr = findViewById<View>(R.id.btn_show_active_qr)
 
-        // Only the dedicated Upload Resume button launches the file picker, guarded by runtime permissions
+        // Directly launch system document picker to select PDF resume
         btnSelectPdf?.setOnClickListener {
-            checkAndRequestPermission()
+            launchPdfPicker()
         }
 
         btnDemoPdf?.setOnClickListener {
+            if (isDoubleTap()) return@setOnClickListener
             // Directly launch the Visualiser with pre-defined demo showcase for first-time exploration
             val sample = ResumeProfile.sampleProfile()
             startActivity(ResumeVisualiserActivity.createIntent(this, sample))
         }
 
+        btnDemoPdf?.setOnLongClickListener {
+            loadBundledSamplePdf()
+            true
+        }
+
         // Visualiser Launch: Direct if 1 resume, dynamic selector sheet if multiple tailored resumes
         btnViewActive?.setOnClickListener {
+            if (isDoubleTap()) return@setOnClickListener
             val showcases = preferencesRepository.getShowcases()
             when {
                 showcases.isEmpty() -> {
@@ -247,92 +256,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Checks if storage permission is already granted.
-     * If granted -> launches PDF picker directly.
-     * If not granted -> requests runtime permission with user rationale handling.
-     */
-    private fun checkAndRequestPermission() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        when {
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-                // Permission already granted -> launch document picker immediately
-                launchPdfPicker()
-            }
-            shouldShowRequestPermissionRationale(permission) -> {
-                // User previously denied -> show rationale dialog before asking again
-                showPermissionRationaleDialog(permission)
-            }
-            else -> {
-                // First-time ask -> trigger native system permission dialog
-                requestPermissionLauncher.launch(permission)
-            }
-        }
-    }
-
     private fun launchPdfPicker() {
         try {
             filePickerLauncher.launch("application/pdf")
         } catch (e: Exception) {
             Toast.makeText(this, "Could not open file library: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /**
-     * Rationale Dialog shown when explaining why permission is required before re-asking.
-     */
-    private fun showPermissionRationaleDialog(permission: String) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.permission_title)
-            .setMessage(R.string.permission_rationale_message)
-            .setPositiveButton(R.string.permission_grant_button) { dialog, _ ->
-                dialog.dismiss()
-                requestPermissionLauncher.launch(permission)
-            }
-            .setNegativeButton(R.string.permission_demo_button) { dialog, _ ->
-                dialog.dismiss()
-                val sample = ResumeProfile.sampleProfile()
-                startActivity(ResumeVisualiserActivity.createIntent(this, sample))
-            }
-            .show()
-    }
-
-    /**
-     * Graceful fallback dialog when user denies permission with actionable paths (Settings, Demo, or Cancel).
-     */
-    private fun showPermissionDeniedDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.permission_title)
-            .setMessage(R.string.permission_dialog_message)
-            .setPositiveButton(R.string.permission_settings_button) { dialog, _ ->
-                dialog.dismiss()
-                openAppSettings()
-            }
-            .setNeutralButton(R.string.permission_demo_button) { dialog, _ ->
-                dialog.dismiss()
-                val sample = ResumeProfile.sampleProfile()
-                startActivity(ResumeVisualiserActivity.createIntent(this, sample))
-            }
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
-                dialog.dismiss()
-                Toast.makeText(this, R.string.permission_denied_toast, Toast.LENGTH_SHORT).show()
-            }
-            .show()
-    }
-
-    private fun openAppSettings() {
-        try {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", packageName, null)
-            }
-            startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Could not open app settings: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -414,12 +342,22 @@ class MainActivity : AppCompatActivity() {
                             composeView.visibility = View.VISIBLE
                             composeView.setContent {
                                 RenderFolioTheme {
-                                    PdfExtractionLoadingScreen(
-                                        step = state.step,
-                                        progress = state.progress,
-                                        activeIndex = state.activeIndex,
-                                        sections = state.sections
-                                    )
+                                    val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+                                    if (isTablet) {
+                                        PdfExtractionLoadingScreenTablet(
+                                            step = state.step,
+                                            progress = state.progress,
+                                            activeIndex = state.activeIndex,
+                                            sections = state.sections
+                                        )
+                                    } else {
+                                        PdfExtractionLoadingScreen(
+                                            step = state.step,
+                                            progress = state.progress,
+                                            activeIndex = state.activeIndex,
+                                            sections = state.sections
+                                        )
+                                    }
                                 }
                             }
                         }

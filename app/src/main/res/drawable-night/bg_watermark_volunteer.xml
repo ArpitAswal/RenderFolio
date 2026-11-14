@@ -1,0 +1,82 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Caring Hands & Community Heart (Night Mode): -15 degree rotation around center (105, 95), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Radiant Community Heart (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 105,74 C 105,74 84,48 66,64 C 50,78 60,102 105,130 C 150,102 160,78 144,64 C 126,48 105,74 105,74 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="54"
+                    android:startY="50"
+                    android:endX="156"
+                    android:endY="130">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.6" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="54"
+                    android:startY="50"
+                    android:endX="156"
+                    android:endY="130">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.4" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Inner Facet of Heart (Refraction Contour) -->
+        <path
+            android:pathData="M 105,82 C 105,82 88,62 74,74 C 64,84 72,100 105,120 C 138,100 146,84 136,74 C 122,62 105,82 105,82 Z"
+            android:fillColor="#263B82F6"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.8" />
+
+        <!-- Supportive Left Hand Palm Cradling Heart -->
+        <path
+            android:pathData="M 46,126 C 58,112 80,122 96,138 L 105,150"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="2.2" />
+
+        <!-- Supportive Right Hand Palm Cradling Heart -->
+        <path
+            android:pathData="M 164,126 C 152,112 130,122 114,138 L 105,150"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="2.2" />
+
+        <!-- Cupped Base Joining Line -->
+        <path
+            android:pathData="M 88,146 C 100,156 110,156 122,146"
+            android:fillColor="#00000000"
+            android:strokeColor="#663B82F6"
+            android:strokeWidth="1.2" />
+
+        <!-- Radiant Community Energy Sunrays above Heart -->
+        <path
+            android:pathData="M 105,34 V 44 M 82,42 L 89,49 M 128,42 L 121,49"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.2" />
+
+    </group>
+
+</vector>
+

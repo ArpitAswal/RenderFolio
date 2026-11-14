@@ -34,8 +34,8 @@
 
     <!-- Section 1 Hero Glassmorphism & Connect Tokens -->
     <color name="hero_avatar_text">#0F172A</color>
-    <color name="hero_avatar_glass_start">#F0F4FC</color>
-    <color name="hero_avatar_glass_end">#DCE6F8</color>
+    <color name="hero_avatar_glass_start">#FFFFFF</color>
+    <color name="hero_avatar_glass_end">#EBF2FB</color>
     <color name="hero_avatar_glass_stroke">#FFFFFF</color>
     <color name="hero_verified_badge_bg">#0066FF</color>
     <color name="hero_verified_badge_ring">#EBF2FB</color>

@@ -1,0 +1,103 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Multilingual Dialogue Globes (Night Mode): -15 degree rotation around center (105, 95), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Primary Large Dialogue Globe Bubble (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 94,42 a 38,38 0 0 1 38,38 c 0,14 -8,27 -20,33 l 5,16 l -16,-10 c -2.3,0.5 -4.6,0.8 -7,0.8 a 38,38 0 1 1 0,-76 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="56"
+                    android:startY="42"
+                    android:endX="132"
+                    android:endY="130">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.6" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="56"
+                    android:startY="42"
+                    android:endX="132"
+                    android:endY="130">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.4" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Globe Equator Line in Primary Bubble -->
+        <path
+            android:pathData="M 56,80 C 68,70 120,70 132,80 M 56,80 C 68,90 120,90 132,80"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.9" />
+
+        <!-- Globe Central Meridian Ellipse in Primary Bubble -->
+        <path
+            android:pathData="M 94,42 C 82,42 82,118 94,118 C 106,118 106,42 94,42"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.9" />
+
+        <!-- Secondary Dialogue Bubble Overlapping Upper Right -->
+        <path
+            android:pathData="M 126,52 a 24,24 0 0 1 24,24 c 0,9 -5,17 -13,21 l 4,10 l -10,-6 c -1.6,0.4 -3.3,0.6 -5,0.6 a 24,24 0 1 1 0,-48 Z"
+            android:strokeWidth="1.0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="102"
+                    android:startY="52"
+                    android:endX="150"
+                    android:endY="108">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="1.0" android:color="#203B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="102"
+                    android:startY="52"
+                    android:endX="150"
+                    android:endY="108">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="1.0" android:color="#593B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Sound / Modulation Wave Arcs Radiating Outward -->
+        <path
+            android:pathData="M 148,68 C 154,72 154,80 148,84 M 154,64 C 162,70 162,82 154,88"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.2" />
+
+        <!-- Stylized "A" Glyph in Primary Bubble -->
+        <path
+            android:pathData="M 94,66 L 88,86 M 94,66 L 100,86 M 90,80 h 8"
+            android:fillColor="#00000000"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="1.4" />
+
+    </group>
+
+</vector>
+

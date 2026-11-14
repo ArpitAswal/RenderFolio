@@ -37,9 +37,10 @@ Always format your output using these 4 distinct sections:
 - For each file, indicate its status: `[IGNORED]`, `[MISSING FROM .gitignore]`, or `[DANGER: CURRENTLY TRACKED IN GIT]`.
 - Provide the exact `git rm --cached` or `.gitignore` edit needed.
 
-### 3. Junk & Unused Files
-- List dead code, test artifacts, abandoned scripts, or OS clutter (`.DS_Store`, `Thumbs.db`).
-- Recommend safe cleanup actions.
+### 3. Junk & Orphaned Files Audit
+- **Tech-Stack Cleanup**: Identify any unused, unreferenced, or obsolete platform files (e.g. abandoned `*.kt` classes, unreferenced `*.xml` layouts or drawables, dead qualifier directories).
+- **Workspace Clutter**: List test artifacts, temporary scratch files, and OS junk (`.DS_Store`, `Thumbs.db`).
+- **Remediation**: Prescribe safe deletion of unneeded files so the public repository stays clean and maintainable.
 
 ### 4. Documentation & Agent Instructions Review
 - List public documentation (`README.md`).

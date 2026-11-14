@@ -1,7 +1,9 @@
 package com.example.ui
 
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +20,8 @@ import com.example.R
 import com.example.data.ResumeCloudRepository
 import com.example.data.ResumePreferencesRepository
 import com.example.model.SavedShowcase
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -97,6 +102,39 @@ class TailoredShowcaseSelectorBottomSheet : BottomSheetDialogFragment() {
             }
         )
         rvShowcases.adapter = adapter
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val d = dialog as? BottomSheetDialog ?: return
+        val bottomSheet = d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) ?: return
+        val behavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Fix 2: Immediately open fully expanded without initial small peek or requiring drag
+        behavior.skipCollapsed = true
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+        // Fix 3: On tablet landscape, constrain width to ~490dp (~60dp narrower) for elegant reading
+        val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isTablet) {
+            val density = resources.displayMetrics.density
+            val widthDp = if (isLandscape) 490 else 530
+            val widthPx = (widthDp * density).toInt()
+            val params = bottomSheet.layoutParams
+            if (params is CoordinatorLayout.LayoutParams) {
+                params.width = widthPx
+                params.gravity = Gravity.CENTER_HORIZONTAL
+                bottomSheet.layoutParams = params
+            } else if (params != null) {
+                params.width = widthPx
+                bottomSheet.layoutParams = params
+            }
+        }
+
+        bottomSheet.post {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        }
     }
 
     private fun showDeleteConfirmationDialog(item: SavedShowcase, onConfirm: () -> Unit) {

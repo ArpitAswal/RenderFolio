@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resume Showcase</title>
+  <title>RenderFolio</title>
   <meta name="description" content="Interactive digital resume showcase with Material 3 and Stitch design fidelity.">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0D111A" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,600;0,6..72,700;1,6..72,600&display=swap"
+    rel="stylesheet">
   <style>
     /* -------------------------------------------------------------
        1:1 Design Tokens matching Android ResumeVisualiserActivity
-       Supports Light and Dark (Obsidian) Themes
+       Light Theme (bg_canvas_ambient: #E0ECFA -> #EBF2FB -> #F4F8FD)
+       Dark Theme (Obsidian: #0D111A -> #10141F -> #121724)
        ------------------------------------------------------------- */
     :root {
-      --bg-canvas: #F8FAFC;
-      --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #F1F5F9 100%);
+      --bg-canvas: #F4F8FD;
+      --bg-canvas-gradient: linear-gradient(180deg, #E0ECFA 0%, #EBF2FB 38%, #F4F8FD 100%);
+      --bg-canvas-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 99, 235, 0.12), transparent);
       --text-primary: #0F172A;
       --text-secondary: #475569;
       --text-muted: #64748B;
@@ -23,145 +34,240 @@
       --brand-primary-hover: #1D4ED8;
       --brand-primary-light: #EFF6FF;
       --brand-accent-arrow: #2563EB;
-      
-      --card-bg: rgba(255, 255, 255, 0.75);
+
+      --card-bg: rgba(255, 255, 255, 0.85);
       --card-border: #E2E8F0;
-      
-      --avatar-bg: #FFFFFF;
-      --avatar-border: #E2E8F0;
+
+      --avatar-bg: linear-gradient(135deg, #FFFFFF 0%, #EBF2FB 100%);
+      --avatar-border: #FFFFFF;
       --avatar-text: #0F172A;
-      --avatar-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-      --verified-badge-bg: #2563EB; /* Blue in light theme */
-      
-      --location-pill-bg: rgba(255, 255, 255, 0.85);
-      --location-pill-border: #E2E8F0;
-      --location-pill-text: #475569;
-      
+      --avatar-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.16), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+      --verified-badge-bg: #2563EB;
+      /* Blue in light theme */
+
+      --location-pill-bg: #FFFFFF;
+      --location-pill-border: rgba(226, 232, 240, 0.85);
+      --location-pill-text: #334155;
+      --location-pill-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+
       --social-dock-bg: #FFFFFF;
       --social-dock-border: #E2E8F0;
       --social-dock-hover: #F1F5F9;
       --social-dock-icon: #0F172A;
-      
+      --social-dock-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+
       --chip-skill-bg: #FFFFFF;
-      --chip-skill-border: #E2E8F0;
-      --chip-skill-text: #1E293B;
-      
-      --deliverable-chip-bg: #EFF6FF;
-      --deliverable-chip-text: #1D4ED8;
+      --chip-skill-border: rgba(37, 99, 235, 0.2);
+      --chip-skill-text: #0F172A;
+
+      --project-tag-bg: #EFF6FF;
+      --project-tag-border: rgba(37, 99, 235, 0.18);
+      --project-tag-text: #1D4ED8;
+
+      --deliverable-chip-bg: #FFFFFF;
+      --deliverable-chip-border: rgba(37, 99, 235, 0.2);
+      --deliverable-chip-text: #0F172A;
       --deliverable-chip-arrow: #2563EB;
-      
+      --deliverable-chip-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      --deliverables-label-color: #737686;
+
       --bullet-dot: #2563EB;
-      --bullet-text: #334155;
-      
+      --bullet-text: #434655;
+
       --divider: #E2E8F0;
-      --top-banner-bg: rgba(248, 250, 252, 0.88);
-      --top-banner-border: rgba(226, 232, 240, 0.8);
+      --top-banner-bg: rgba(244, 248, 253, 0.85);
+      --top-banner-border: rgba(224, 236, 250, 0.8);
       --section-header-color: #2563EB;
       --duration-text: #334155;
-      --section-watermark-opacity: 0.22;
-      --section-watermark-invert: 0;
+      --section-watermark-opacity: 0.75;
+      --section-watermark-color: #2563EB;
+
+      /* Stitch 3D Frosted Glass Watermark Gradient Tokens (Light Porcelain Mode) */
+      --wm-fill-start: #FFFFFF;
+      --wm-fill-mid: #FFFFFF;
+      --wm-fill-end: #EFF6FF;
+      --wm-fill-opacity-start: 0.45;
+      --wm-fill-opacity-mid: 0.18;
+      --wm-fill-opacity-end: 0.04;
+
+      --wm-rim-start: #FFFFFF;
+      --wm-rim-end: #2563EB;
+      --wm-rim-opacity-start: 0.85;
+      --wm-rim-opacity-end: 0.35;
+
+      --wm-trace-color: #2563EB;
+      --wm-trace-opacity: 0.35;
+      --wm-trace-subtle: 0.20;
+      --wm-core-glow-start: #93C5FD;
+      --wm-core-glow-end: #2563EB;
+      --wm-inner-rect-fill: #EFF6FF;
+      --wm-glow-bg: rgba(37, 99, 235, 0.05);
     }
 
     /* Dark Theme Tokens (Obsidian Canvas matching Android values-night) */
     [data-theme="dark"],
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg-canvas: #0B0F19;
-        --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #151D2F 0%, #0B0F19 100%);
-        --text-primary: #F8FAFC;
-        --text-secondary: #94A3B8;
-        --text-muted: #64748B;
+        --bg-canvas: #0D111A;
+        --bg-canvas-gradient: linear-gradient(180deg, #0D111A 0%, #10141F 40%, #121724 100%);
+        --bg-canvas-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent);
+        --text-primary: #F3F4F6;
+        --text-secondary: #CBD5E1;
+        --text-muted: #9CA3AF;
         --brand-primary: #3B82F6;
         --brand-primary-hover: #60A5FA;
         --brand-primary-light: rgba(59, 130, 246, 0.15);
         --brand-accent-arrow: #60A5FA;
-        
-        --card-bg: rgba(22, 30, 49, 0.6);
-        --card-border: rgba(255, 255, 255, 0.08);
-        
-        --avatar-bg: #161F33;
-        --avatar-border: rgba(255, 255, 255, 0.12);
+
+        --card-bg: rgba(28, 32, 38, 0.75);
+        --card-border: #2E3642;
+
+        --avatar-bg: linear-gradient(135deg, #2A3548 0%, #18202C 100%);
+        --avatar-border: #3E4D64;
         --avatar-text: #F8FAFC;
-        --avatar-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.5);
-        --verified-badge-bg: #10B981; /* Green in dark theme per spec */
-        
-        --location-pill-bg: rgba(22, 30, 49, 0.85);
-        --location-pill-border: rgba(255, 255, 255, 0.1);
-        --location-pill-text: #94A3B8;
-        
-        --social-dock-bg: #161F33;
-        --social-dock-border: rgba(255, 255, 255, 0.08);
-        --social-dock-hover: #1E293B;
+        --avatar-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.6);
+        --verified-badge-bg: #10B981;
+        /* Green in dark theme per spec */
+
+        --location-pill-bg: #1E2530;
+        --location-pill-border: #2E3642;
+        --location-pill-text: #CBD5E1;
+        --location-pill-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
+        --social-dock-bg: #1C2026;
+        --social-dock-border: #2E3642;
+        --social-dock-hover: rgba(59, 130, 246, 0.15);
         --social-dock-icon: #F8FAFC;
-        
-        --chip-skill-bg: rgba(255, 255, 255, 0.05);
-        --chip-skill-border: rgba(255, 255, 255, 0.1);
-        --chip-skill-text: #E2E8F0;
-        
-        --deliverable-chip-bg: rgba(59, 130, 246, 0.15);
-        --deliverable-chip-text: #93C5FD;
-        --deliverable-chip-arrow: #60A5FA;
-        
+        --social-dock-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
+        --chip-skill-bg: #1E2530;
+        --chip-skill-border: rgba(59, 130, 246, 0.3);
+        --chip-skill-text: #F1F5F9;
+
+        --project-tag-bg: #1E293B;
+        --project-tag-border: rgba(59, 130, 246, 0.28);
+        --project-tag-text: #93C5FD;
+
+        --deliverable-chip-bg: #1E2530;
+        --deliverable-chip-border: rgba(59, 130, 246, 0.3);
+        --deliverable-chip-text: #F1F5F9;
+        --deliverable-chip-arrow: #3B82F6;
+        --deliverable-chip-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        --deliverables-label-color: #9CA3AF;
+
         --bullet-dot: #3B82F6;
         --bullet-text: #CBD5E1;
-        
-        --divider: rgba(255, 255, 255, 0.08);
-        --top-banner-bg: rgba(11, 15, 25, 0.88);
-        --top-banner-border: rgba(255, 255, 255, 0.06);
-        --section-header-color: #60A5FA;
+
+        --divider: #2E3642;
+        --top-banner-bg: rgba(13, 17, 26, 0.85);
+        --top-banner-border: rgba(255, 255, 255, 0.08);
+        --section-header-color: #3B82F6;
         --duration-text: #CBD5E1;
-        --section-watermark-opacity: 0.25;
-        --section-watermark-invert: 1;
+        --section-watermark-opacity: 0.75;
+        --section-watermark-color: #3B82F6;
+
+        /* Stitch 3D Frosted Glass Watermark Gradient Tokens (Dark Obsidian Mode) */
+        --wm-fill-start: #2A3548;
+        --wm-fill-mid: #18202C;
+        --wm-fill-end: #3B82F6;
+        --wm-fill-opacity-start: 0.50;
+        --wm-fill-opacity-mid: 0.25;
+        --wm-fill-opacity-end: 0.08;
+
+        --wm-rim-start: #FFFFFF;
+        --wm-rim-end: #3B82F6;
+        --wm-rim-opacity-start: 0.45;
+        --wm-rim-opacity-end: 0.40;
+
+        --wm-trace-color: #3B82F6;
+        --wm-trace-opacity: 0.40;
+        --wm-trace-subtle: 0.25;
+        --wm-core-glow-start: #60A5FA;
+        --wm-core-glow-end: #3B82F6;
+        --wm-inner-rect-fill: #18202C;
+        --wm-glow-bg: rgba(59, 130, 246, 0.10);
       }
     }
 
     [data-theme="dark"] {
-      --bg-canvas: #0B0F19;
-      --bg-canvas-gradient: radial-gradient(circle at 50% 0%, #151D2F 0%, #0B0F19 100%);
-      --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
+      --bg-canvas: #0D111A;
+      --bg-canvas-gradient: linear-gradient(180deg, #0D111A 0%, #10141F 40%, #121724 100%);
+      --bg-canvas-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent);
+      --text-primary: #F3F4F6;
+      --text-secondary: #CBD5E1;
+      --text-muted: #9CA3AF;
       --brand-primary: #3B82F6;
       --brand-primary-hover: #60A5FA;
       --brand-primary-light: rgba(59, 130, 246, 0.15);
       --brand-accent-arrow: #60A5FA;
-      
-      --card-bg: rgba(22, 30, 49, 0.6);
-      --card-border: rgba(255, 255, 255, 0.08);
-      
-      --avatar-bg: #161F33;
-      --avatar-border: rgba(255, 255, 255, 0.12);
+
+      --card-bg: rgba(28, 32, 38, 0.75);
+      --card-border: #2E3642;
+
+      --avatar-bg: linear-gradient(135deg, #2A3548 0%, #18202C 100%);
+      --avatar-border: #3E4D64;
       --avatar-text: #F8FAFC;
-      --avatar-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.5);
-      --verified-badge-bg: #10B981; /* Green in dark theme per spec */
-      
-      --location-pill-bg: rgba(22, 30, 49, 0.85);
-      --location-pill-border: rgba(255, 255, 255, 0.1);
-      --location-pill-text: #94A3B8;
-      
-      --social-dock-bg: #161F33;
-      --social-dock-border: rgba(255, 255, 255, 0.08);
-      --social-dock-hover: #1E293B;
+      --avatar-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.6);
+      --verified-badge-bg: #10B981;
+      /* Green in dark theme per spec */
+
+      --location-pill-bg: #1E2530;
+      --location-pill-border: #2E3642;
+      --location-pill-text: #CBD5E1;
+      --location-pill-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
+      --social-dock-bg: #1C2026;
+      --social-dock-border: #2E3642;
+      --social-dock-hover: rgba(59, 130, 246, 0.15);
       --social-dock-icon: #F8FAFC;
-      
-      --chip-skill-bg: rgba(255, 255, 255, 0.05);
-      --chip-skill-border: rgba(255, 255, 255, 0.1);
-      --chip-skill-text: #E2E8F0;
-      
-      --deliverable-chip-bg: rgba(59, 130, 246, 0.15);
-      --deliverable-chip-text: #93C5FD;
-      --deliverable-chip-arrow: #60A5FA;
-      
+      --social-dock-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
+      --chip-skill-bg: #1E2530;
+      --chip-skill-border: rgba(59, 130, 246, 0.3);
+      --chip-skill-text: #F1F5F9;
+
+      --project-tag-bg: #1E293B;
+      --project-tag-border: rgba(59, 130, 246, 0.28);
+      --project-tag-text: #93C5FD;
+
+      --deliverable-chip-bg: #1E2530;
+      --deliverable-chip-border: rgba(59, 130, 246, 0.3);
+      --deliverable-chip-text: #F1F5F9;
+      --deliverable-chip-arrow: #3B82F6;
+      --deliverable-chip-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      --deliverables-label-color: #9CA3AF;
+
       --bullet-dot: #3B82F6;
       --bullet-text: #CBD5E1;
-      
-      --divider: rgba(255, 255, 255, 0.08);
-      --top-banner-bg: rgba(11, 15, 25, 0.88);
-      --top-banner-border: rgba(255, 255, 255, 0.06);
-      --section-header-color: #60A5FA;
+
+      --divider: #2E3642;
+      --top-banner-bg: rgba(13, 17, 26, 0.85);
+      --top-banner-border: rgba(255, 255, 255, 0.08);
+      --section-header-color: #3B82F6;
       --duration-text: #CBD5E1;
-      --section-watermark-opacity: 0.25;
-      --section-watermark-invert: 1;
+      --section-watermark-opacity: 0.75;
+      --section-watermark-color: #3B82F6;
+
+      /* Stitch 3D Frosted Glass Watermark Gradient Tokens (Dark Obsidian Mode) */
+      --wm-fill-start: #2A3548;
+      --wm-fill-mid: #18202C;
+      --wm-fill-end: #3B82F6;
+      --wm-fill-opacity-start: 0.50;
+      --wm-fill-opacity-mid: 0.25;
+      --wm-fill-opacity-end: 0.08;
+
+      --wm-rim-start: #FFFFFF;
+      --wm-rim-end: #3B82F6;
+      --wm-rim-opacity-start: 0.45;
+      --wm-rim-opacity-end: 0.40;
+
+      --wm-trace-color: #3B82F6;
+      --wm-trace-opacity: 0.40;
+      --wm-trace-subtle: 0.25;
+      --wm-core-glow-start: #60A5FA;
+      --wm-core-glow-end: #3B82F6;
+      --wm-inner-rect-fill: #18202C;
+      --wm-glow-bg: rgba(59, 130, 246, 0.10);
     }
 
     * {
@@ -170,11 +276,18 @@
       padding: 0;
     }
 
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-canvas);
-      background-image: var(--bg-canvas-gradient);
+      background-color: var(--bg-canvas);
+      background-image: var(--bg-canvas-glow), var(--bg-canvas-gradient);
       background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
       color: var(--text-primary);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
@@ -183,15 +296,15 @@
     }
 
     /* -------------------------------------------------------------
-       Top Floating Navigation Bar with Theme Toggle
+       Top Floating Navigation Bar with Theme Toggle & Native App CTA
        ------------------------------------------------------------- */
     .top-banner {
       position: sticky;
       top: 0;
       z-index: 50;
       background: var(--top-banner-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--top-banner-border);
       padding: 12px 24px;
       display: flex;
@@ -206,21 +319,24 @@
       gap: 10px;
       font-weight: 800;
       color: var(--brand-primary);
-      font-size: 1.05rem;
-      letter-spacing: -0.01em;
+      font-size: 1.1rem;
+      letter-spacing: -0.015em;
       text-decoration: none;
+      flex-shrink: 0;
     }
 
-    .brand svg {
-      width: 22px;
-      height: 22px;
-      fill: var(--brand-primary);
+    .brand-logo {
+      width: 24px;
+      height: 24px;
+      color: var(--brand-primary);
+      flex-shrink: 0;
     }
 
     .banner-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     .btn-theme-toggle {
@@ -234,7 +350,9 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
     .btn-theme-toggle:hover {
@@ -251,36 +369,206 @@
     .btn-open-app {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 18px;
+      justify-content: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 16px;
       border-radius: 9999px;
-      font-size: 0.85rem;
+      font-size: 0.825rem;
       font-weight: 700;
       color: #FFFFFF;
       background: var(--brand-primary);
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn-open-app:hover {
       background: var(--brand-primary-hover);
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+      transform: translateY(-1px);
     }
 
     .btn-open-app:active {
       transform: scale(0.97);
     }
 
+    .btn-open-app svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 520px) {
+      .top-banner {
+        padding: 10px 14px;
+      }
+
+      .brand {
+        font-size: 1rem;
+        gap: 8px;
+      }
+
+      .brand-logo {
+        width: 21px;
+        height: 21px;
+      }
+
+      .banner-actions {
+        gap: 8px;
+      }
+
+      .btn-open-app {
+        height: 35px;
+        padding: 0 12px;
+        font-size: 0.775rem;
+        gap: 6px;
+      }
+
+      .btn-theme-toggle {
+        width: 35px;
+        height: 35px;
+      }
+    }
+
     /* -------------------------------------------------------------
-       Visualiser Outer Canvas (Matching Android maxWidth="680dp")
+       Visualiser Outer Canvas & Dual-Pane Adaptive Layout
+       Mobile: Fluid single column (max-width: 680px)
+       Tablet Landscape & Desktop: 50/50 Dual-Pane Split (max-width: 1140px)
+       1:1 Parity with Android layout-sw600dp-land/activity_resume_visualiser.xml
        ------------------------------------------------------------- */
     .visualiser-canvas {
+      width: 100%;
       max-width: 680px;
       margin: 0 auto;
-      padding: 40px 20px 96px;
+      padding: 36px 20px 96px;
+      transition: max-width 0.25s ease, padding 0.25s ease;
+    }
+
+    .visualiser-sections-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pane-column {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pane-right {
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .visualiser-canvas {
+        max-width: 1140px;
+        padding: 48px 32px 96px;
+      }
+
+      .visualiser-sections-container {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 40px;
+      }
+
+      .pane-column {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      .pane-right {
+        display: flex;
+      }
+
+      /* In dual-pane mode, remove top margin for the first element in each pane */
+      .pane-left> :first-child,
+      .pane-right> :first-child {
+        margin-top: 0 !important;
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Motion & Entrance Physics (1:1 Android MotionDriver Parity)
+       - Hero & Summary: Symmetrical Vertical Lift + Scale (1100ms Overshoot)
+       - Section 3..N: Alternating Lateral Slides (550ms Decelerate)
+       - Scroll-Driven Viewport Reactivity: IntersectionObserver
+       ------------------------------------------------------------- */
+    .motion-hero-pending {
+      opacity: 0 !important;
+      transform: translateY(48px) scale(0.85) !important;
+      will-change: transform, opacity;
+    }
+    .motion-hero-entered {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 1.1s cubic-bezier(0.16, 1, 0.3, 1.15);
+    }
+
+    .motion-summary-pending {
+      opacity: 0 !important;
+      transform: translateY(48px) scale(0.85) !important;
+      will-change: transform, opacity;
+    }
+    .motion-summary-entered {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.12s,
+                  transform 1.1s cubic-bezier(0.16, 1, 0.3, 1.15) 0.12s;
+    }
+
+    /* Adaptive Sections: Alternating Lateral Slides (550ms Decelerate) */
+    .motion-slide-left-pending {
+      opacity: 0 !important;
+      transform: translateX(-70px) !important;
+      will-change: transform, opacity;
+    }
+    .motion-slide-right-pending {
+      opacity: 0 !important;
+      transform: translateX(70px) !important;
+      will-change: transform, opacity;
+    }
+    .motion-slide-entered {
+      opacity: 1 !important;
+      transform: translateX(0) !important;
+      transition: opacity 0.55s cubic-bezier(0, 0, 0.2, 1),
+                  transform 0.55s cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    /* Avatar & Badge Pop */
+    @keyframes avatarPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.72) translateY(12px);
+      }
+      70% {
+        transform: scale(1.06) translateY(-2px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes rosettePop {
+      0% {
+        opacity: 0;
+        transform: scale(0) rotate(-45deg);
+      }
+      70% {
+        transform: scale(1.28) rotate(10deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
     }
 
     /* -------------------------------------------------------------
@@ -291,7 +579,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 36px;
+      margin-bottom: 0;
     }
 
     /* Floating Glass Avatar Unit with Rosette Verified Badge */
@@ -307,14 +595,16 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 16px;
+      animation: avatarPop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
       transition: all 0.25s ease;
     }
 
     .hero-initials {
+      font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
       font-size: 28px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--avatar-text);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       user-select: none;
     }
 
@@ -331,7 +621,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      animation: rosettePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
       transition: background 0.25s ease;
     }
 
@@ -342,18 +633,18 @@
     }
 
     .hero-name {
-      font-size: 2rem;
+      font-size: 1.85rem;
       font-weight: 800;
       color: var(--text-primary);
-      letter-spacing: -0.025em;
+      letter-spacing: -0.02em;
       line-height: 1.25;
       margin-bottom: 6px;
     }
 
     .hero-headline {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--brand-primary);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-secondary);
       line-height: 1.45;
       max-width: 520px;
       margin-bottom: 12px;
@@ -372,10 +663,10 @@
       color: var(--location-pill-text);
       font-size: 0.825rem;
       font-weight: 500;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       max-width: 100%;
       word-break: break-word;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      box-shadow: var(--location-pill-shadow);
     }
 
     .hero-location-pill svg {
@@ -393,7 +684,7 @@
       gap: 8px;
       width: 100%;
       max-width: 360px;
-      height: 50px;
+      height: 48px;
       border-radius: 14px;
       background: var(--brand-primary);
       color: #FFFFFF;
@@ -404,7 +695,7 @@
       box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
       cursor: pointer;
       transition: all 0.2s ease;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .btn-action-email:hover {
@@ -432,7 +723,7 @@
     .social-dock-btn {
       flex: 1;
       height: 46px;
-      border-radius: 12px;
+      border-radius: 14px;
       background: var(--social-dock-bg);
       border: 1px solid var(--social-dock-border);
       display: inline-flex;
@@ -441,7 +732,7 @@
       color: var(--social-dock-icon);
       text-decoration: none;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+      box-shadow: var(--social-dock-shadow);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -462,43 +753,122 @@
       fill: currentColor;
     }
 
+    .social-dock-btn.social-dock-linkedin svg {
+      fill: none;
+    }
+
     /* -------------------------------------------------------------
-       Section Blocks, Titles, & Editorial Watermarks
+       Section Blocks, Titles, & 3D Frosted Glass Watermarks (Stitch Spec)
        ------------------------------------------------------------- */
     .section-block {
-      margin-top: 36px;
+      margin-top: 32px;
       position: relative;
+    }
+
+    #watermark_summary,
+    #watermark_experience,
+    #watermark_projects,
+    #watermark_skills,
+    #watermark_education {
+      display: contents;
+    }
+
+    /* -------------------------------------------------------------
+       1:1 STITCH & ANDROID 3D FROSTED GLASS SECTION WATERMARKS
+       ------------------------------------------------------------- */
+    .section-watermark-wrapper {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 220px;
+      height: 220px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.20) 50%, rgba(0, 0, 0, 0) 80%);
+      -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.20) 50%, rgba(0, 0, 0, 0) 80%);
+    }
+
+    .section-watermark-wrapper.projects-wm {
+      width: 240px;
+      height: 220px;
+    }
+
+    .section-watermark-wrapper.compact {
+      width: 180px;
+      height: 180px;
+    }
+
+    .section-watermark-wrapper.compact-micro {
+      width: 140px;
+      height: 140px;
+    }
+
+    .section-watermark-glow {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 160px;
+      height: 160px;
+      border-radius: 9999px;
+      background-color: rgba(59, 130, 246, 0.10);
+      filter: blur(24px);
+      -webkit-filter: blur(24px);
+      pointer-events: none;
+    }
+
+    [data-theme="light"] .section-watermark-glow,
+    :root:not([data-theme="dark"]) .section-watermark-glow {
+      background-color: rgba(37, 99, 235, 0.06);
+    }
+
+    .section-watermark-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      transform: rotate(-15deg) translate(16px, -8px);
+    }
+
+    .section-watermark-svg.proj-3d {
+      transform: perspective(600px) rotateY(-18deg) rotateX(12deg) rotateZ(3deg) translate(16px, 0);
     }
 
     .section-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 800;
+      font-size: 0.95rem;
+      font-weight: 700;
       color: var(--section-header-color);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .section-header svg {
       width: 16px;
       height: 16px;
       fill: currentColor;
+      flex-shrink: 0;
     }
 
     /* SECTION 2: PROFESSIONAL SUMMARY */
     .summary-editorial-body {
-      color: var(--text-secondary);
-      font-size: 0.975rem;
+      color: var(--bullet-text);
+      font-size: 0.95rem;
       line-height: 1.7;
       white-space: pre-line;
+      position: relative;
+      z-index: 1;
     }
 
     /* SECTION 3: WORK EXPERIENCE */
     .experience-entry {
-      padding: 10px 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .exp-company-headline {
@@ -506,6 +876,7 @@
       font-weight: 700;
       color: var(--text-primary);
       line-height: 1.35;
+      letter-spacing: -0.015em;
     }
 
     .exp-role-row {
@@ -514,20 +885,20 @@
       align-items: flex-start;
       gap: 12px;
       margin-top: 4px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .exp-role-title {
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--brand-primary);
     }
 
     .exp-duration {
       font-size: 0.85rem;
       color: var(--duration-text);
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
       flex-shrink: 0;
       margin-top: 2px;
     }
@@ -537,24 +908,29 @@
       list-style: none;
       padding-left: 0;
       margin-top: 8px;
+      margin-bottom: 0;
     }
 
     .bullet-item {
       position: relative;
-      padding-left: 18px;
+      padding-left: 16px;
       font-size: 0.915rem;
       color: var(--bullet-text);
       line-height: 1.65;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+    }
+
+    .bullet-item:last-child {
+      margin-bottom: 0;
     }
 
     .bullet-item::before {
       content: "";
       position: absolute;
       left: 2px;
-      top: 10px;
-      width: 5px;
-      height: 5px;
+      top: 9px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--bullet-dot);
     }
@@ -567,7 +943,7 @@
     .deliverables-label {
       font-size: 0.775rem;
       font-weight: 800;
-      color: var(--text-muted);
+      color: var(--deliverables-label-color, var(--text-muted));
       letter-spacing: 0.05em;
       text-transform: uppercase;
       margin-bottom: 8px;
@@ -590,7 +966,8 @@
       padding: 5px 12px;
       border-radius: 9999px;
       text-decoration: none;
-      border: 1px solid rgba(37, 99, 235, 0.15);
+      border: 1px solid var(--deliverable-chip-border);
+      box-shadow: var(--deliverable-chip-shadow);
       transition: all 0.2s;
     }
 
@@ -615,58 +992,66 @@
     .entry-divider {
       height: 1px;
       background: var(--divider);
-      margin: 22px 0;
+      margin: 24px 0;
+    }
+
+    .education-entry .entry-divider,
+    .custom-item-entry .entry-divider {
+      margin: 20px 0;
     }
 
     /* SECTION 4: FEATURED PROJECTS */
     .project-entry {
-      padding: 10px 0;
-    }
-
-    .project-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 8px;
+      padding: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .project-title {
-      font-size: 1.1rem;
+      font-size: 1.125rem;
       font-weight: 700;
       color: var(--text-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      margin-bottom: 0;
     }
 
-    .project-link-badge {
+    .project-tech-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+
+    .project-tech-chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 13px;
-      border-radius: 9999px;
-      background: var(--deliverable-chip-bg);
-      color: var(--deliverable-chip-text);
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: var(--project-tag-bg);
+      color: var(--project-tag-text);
       font-size: 0.8rem;
       font-weight: 600;
-      text-decoration: none;
-      border: 1px solid rgba(37, 99, 235, 0.2);
-      flex-shrink: 0;
-      transition: all 0.2s;
+      line-height: 1.25;
+      border: 1px solid var(--project-tag-border);
+      user-select: none;
+      transition: all 0.2s ease;
     }
 
-    .project-link-badge:hover {
-      border-color: var(--brand-primary);
-      transform: translateY(-1px);
-    }
-
-    .project-link-badge svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
+    /* Backward compatibility fallback */
+    .project-header-row {
+      display: block;
+      margin-bottom: 0;
     }
 
     /* SECTION 5: TECHNICAL SKILLS (Stitch Pill Chips Matrix) */
     .skills-domain-block {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+    }
+
+    .skills-domain-block:last-child {
+      margin-bottom: 0;
     }
 
     .skills-domain-title {
@@ -675,7 +1060,7 @@
       color: var(--brand-primary);
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .skills-chip-group {
@@ -694,7 +1079,7 @@
       font-weight: 500;
       padding: 6px 14px;
       border-radius: 9999px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      box-shadow: var(--deliverable-chip-shadow);
       transition: all 0.2s ease;
       user-select: none;
     }
@@ -704,65 +1089,99 @@
       transform: translateY(-1px);
     }
 
-    /* SECTION 6: EDUCATION & ACADEMICS */
+    /* SECTION 6: EDUCATION */
     .education-entry {
-      padding: 10px 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .edu-degree {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.35;
     }
 
     .edu-institution {
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--brand-primary);
       margin-top: 3px;
     }
 
     .edu-details-line {
-      font-size: 0.825rem;
-      color: var(--text-muted);
-      font-family: 'JetBrains Mono', monospace;
-      margin-top: 4px;
+      font-size: 0.85rem;
+      color: var(--duration-text);
+      margin-top: 5px;
       font-weight: 500;
+      letter-spacing: -0.01em;
     }
 
     /* SECTION 7: DYNAMIC CUSTOM SECTIONS */
     .custom-section-block {
-      margin-top: 36px;
+      margin-top: 32px;
       position: relative;
     }
 
-    .section-watermark {
-      position: absolute;
-      top: -10px;
-      right: -8px;
-      width: 135px;
-      height: 135px;
-      pointer-events: none;
-      opacity: var(--section-watermark-opacity);
-      color: var(--brand-primary);
-      z-index: 0;
+    @media (prefers-reduced-motion: reduce) {
+      .motion-hero-pending,
+      .motion-summary-pending,
+      .motion-slide-left-pending,
+      .motion-slide-right-pending {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+      .hero-avatar-wrapper,
+      .hero-verified-badge {
+        animation: none !important;
+      }
     }
 
-    .section-watermark.compact {
-      width: 100px;
-      height: 100px;
+    /* Error & Not Found Card */
+    .error-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 44px 24px;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06);
+      max-width: 480px;
+      margin: 40px auto;
+      text-align: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .error-icon-wrapper {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--brand-primary-light);
+      color: var(--brand-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .error-icon-wrapper svg {
+      width: 28px;
+      height: 28px;
     }
 
     .custom-item-entry {
-      padding: 10px 0;
+      padding: 0;
       position: relative;
       z-index: 1;
     }
 
     .custom-item-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--text-primary);
+      letter-spacing: -0.01em;
       line-height: 1.35;
     }
 
@@ -777,7 +1196,7 @@
 
     .custom-item-subtitle {
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--brand-primary);
       flex: 1;
     }
@@ -785,7 +1204,7 @@
     /* States & Notifications */
     .state-container {
       text-align: center;
-      padding: 100px 20px;
+      padding: 60px 20px;
     }
 
     .loading-pulse {
@@ -800,7 +1219,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* In-Page Toast Notification */
@@ -834,24 +1255,46 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Top Floating Action Bar -->
   <header class="top-banner">
-    <a href="/" class="brand">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-      ResumeShowcase
+    <a href="javascript:void(0)" class="brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+      title="RenderFolio — Scroll to Top" role="button" aria-label="RenderFolio — Scroll to Top">
+      <svg class="brand-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H14l6 6v7.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11z"
+          fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <path d="M14 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M8 13h8M8 16.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span>RenderFolio</span>
     </a>
     <div class="banner-actions">
       <!-- Light / Dark Theme Switcher Button -->
-      <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
-        <svg id="themeIconSun" viewBox="0 0 24 24" style="display: none;"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
-        <svg id="themeIconMoon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 4.97 4.02 9 9 9 3.82 0 7.07-2.39 8.35-5.78-.37.05-.75.08-1.14.08-4.97 0-9-4.03-9-9 0-1.89.58-3.64 1.57-5.09C12.55 3.08 12.28 3 12 3z"/></svg>
+      <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme"
+        aria-label="Toggle theme">
+        <svg id="themeIconSun" viewBox="0 0 24 24" style="display: none;">
+          <path
+            d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+        </svg>
+        <svg id="themeIconMoon" viewBox="0 0 24 24">
+          <path
+            d="M12 3c-4.97 0-9 4.03-9 9 0 4.97 4.02 9 9 9 3.82 0 7.07-2.39 8.35-5.78-.37.05-.75.08-1.14.08-4.97 0-9-4.03-9-9 0-1.89.58-3.64 1.57-5.09C12.55 3.08 12.28 3 12 3z" />
+        </svg>
       </button>
 
       <!-- Open in Native App CTA -->
       <button id="btnOpenApp" class="btn-open-app" onclick="openNativeApp()">
-        📱 Open in App
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="3"></rect>
+          <path d="M12 18h.01"></path>
+          <path d="M10 8l2-2 2 2"></path>
+          <path d="M12 6v6"></path>
+        </svg>
+        <span>Open in App</span>
       </button>
     </div>
   </header>
@@ -866,89 +1309,138 @@
 
     <!-- Error / Expired State -->
     <div id="errorView" class="state-container" style="display: none;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Showcase Not Available</h2>
-      <p style="color: var(--text-muted); max-width: 440px; margin: 0 auto 24px; font-size: 0.925rem;">
-        This resume showcase has expired (7-day link limit) or is no longer available in Cloud Firestore.
-      </p>
-      <a href="/" class="btn-open-app" style="text-decoration: none; display: inline-flex;">Create Your Own Showcase</a>
+      <div class="error-card">
+        <div class="error-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: var(--text-primary);">Showcase Not Available</h2>
+        <p style="color: var(--text-muted); max-width: 440px; margin: 0 auto 24px; font-size: 0.925rem; line-height: 1.55;">
+          This resume showcase has expired (7-day link limit) or is no longer available in Cloud Firestore.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; width: 100%; max-width: 320px; margin: 0 auto;">
+          <button onclick="launchDemoShowcase()" class="btn-action-email" style="border: none; cursor: pointer; width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+            <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+            <span>Explore Live Demo Showcase</span>
+          </button>
+          <a href="https://github.com/ArpitAswal/RenderFolio/releases/download/v1.0.0/app-universal-release.apk" target="_blank" rel="noopener noreferrer" style="text-decoration: none; width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; background: var(--social-dock-bg); border: 1.5px solid var(--social-dock-border); color: var(--text-primary); transition: all 0.2s ease;">
+            <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            <span>Download Android App (APK)</span>
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Interactive Resume Visualiser Content -->
     <div id="visualiserContent" style="display: none;">
-      
-      <!-- Container for dynamically ordered sections -->
-      <div id="sectionsContainer">
-        <!-- SECTION 1: HERO CONTAINER (Alex Morgan / Arpit Aswal Spec) -->
-        <section id="section_personal_info" class="hero-container">
-          <!-- Glassmorphism Monogram Syllable Disc with Verified Badge -->
-          <div class="hero-avatar-wrapper">
-            <span id="heroInitials" class="hero-initials">AA</span>
-            <div id="heroVerifiedBadge" class="hero-verified-badge" title="Verified Showcase">
-              <svg viewBox="0 0 24 24"><path d="M12 2l2.4 3.7 4.4-.3 1.2 4.2 3.9 2-1.6 4.1 2.2 3.8-3.8 2.2-1.6 4.1-4.2-1.2-2.5 3.7-2.5-3.7-4.2 1.2-1.6-4.1-3.8-2.2 2.2-3.8-1.6-4.1 3.9-2 1.2-4.2 4.4.3L12 2zm-1.8 13.6l6-6-1.4-1.4-4.6 4.6-2.2-2.2-1.4 1.4 3.6 3.6z"/></svg>
+
+      <!-- Container for dynamically ordered sections: Dual-Pane on Wide Screens, Single-Column on Mobile -->
+      <div id="sectionsContainer" class="visualiser-sections-container">
+        <!-- Left Pane: Profile & Credentials (Hero, Summary, Skills, Education, Even Custom Sections) -->
+        <div id="paneLeft" class="pane-column pane-left">
+          <!-- SECTION 1: HERO CONTAINER (Alex Morgan / Arpit Aswal Spec) -->
+          <section id="section_personal_info" class="hero-container">
+            <!-- Glassmorphism Monogram Syllable Disc with Verified Badge -->
+            <div class="hero-avatar-wrapper">
+              <span id="heroInitials" class="hero-initials">AA</span>
+              <div id="heroVerifiedBadge" class="hero-verified-badge" title="Verified Showcase">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5 3.44 9.2 1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zM10.09 16.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" />
+                </svg>
+              </div>
             </div>
-          </div>
 
-          <h1 id="heroName" class="hero-name">Candidate Name</h1>
-          <div id="heroHeadline" class="hero-headline">Professional Headline</div>
-          <div id="heroLocationPill" class="hero-location-pill" style="display: none;"></div>
+            <h1 id="heroName" class="hero-name">Candidate Name</h1>
+            <div id="heroHeadline" class="hero-headline">Professional Headline</div>
+            <div id="heroLocationPill" class="hero-location-pill" style="display: none;"></div>
 
-          <!-- Primary Direct Outreach CTA ("Email {FirstName}") -->
-          <a id="btnHeroEmail" href="#" class="btn-action-email" style="display: none;">
-            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            <span id="btnHeroEmailText">Email Candidate</span>
-          </a>
+            <!-- Primary Direct Outreach CTA ("Email {FirstName}") -->
+            <a id="btnHeroEmail" href="#" class="btn-action-email" style="display: none;">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+              </svg>
+              <span id="btnHeroEmailText">Email Candidate</span>
+            </a>
 
-          <!-- Secondary Quick-Contact Dock (Call, GitHub, LinkedIn, Portfolio) -->
-          <div id="layoutSocialDock" class="social-dock" style="display: none;"></div>
-        </section>
+            <!-- Secondary Quick-Contact Dock (Call, GitHub, LinkedIn, Portfolio) -->
+            <div id="layoutSocialDock" class="social-dock" style="display: none;"></div>
+          </section>
 
-        <!-- SECTION 2: PROFESSIONAL SUMMARY -->
-        <section id="section_about_summary" class="section-block" style="display: none;">
-          <div class="section-header">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            <span>Professional Summary</span>
-          </div>
-          <p id="summaryBody" class="summary-editorial-body"></p>
-        </section>
+          <!-- SECTION 2: PROFESSIONAL SUMMARY -->
+          <section id="section_about_summary" class="section-block" style="display: none;">
+            <div id="watermark_summary"></div>
+            <div class="section-header">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+              <span>Professional Summary</span>
+            </div>
+            <p id="summaryBody" class="summary-editorial-body"></p>
+          </section>
 
-        <!-- SECTION 3: WORK EXPERIENCE -->
-        <section id="section_work_experience" class="section-block" style="display: none;">
-          <div class="section-header">
-            <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
-            <span>Work Experience</span>
-          </div>
-          <div id="experienceList"></div>
-        </section>
+          <!-- SECTION 3: PROFESSIONAL EXPERIENCE -->
+          <section id="section_work_experience" class="section-block" style="display: none;">
+            <div id="watermark_experience"></div>
+            <div class="section-header">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2zM20 19H4V8h16v11z" />
+              </svg>
+              <span>Professional Experience</span>
+            </div>
+            <div id="experienceList"></div>
+          </section>
 
-        <!-- SECTION 4: FEATURED PROJECTS -->
-        <section id="section_featured_projects" class="section-block" style="display: none;">
-          <div class="section-header">
-            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            <span>Featured Projects</span>
-          </div>
-          <div id="projectsList"></div>
-        </section>
+          <!-- SECTION 4: FEATURED PROJECTS -->
+          <section id="section_featured_projects" class="section-block" style="display: none;">
+            <div id="watermark_projects"></div>
+            <div class="section-header">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zM14.6 16.6l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+              </svg>
+              <span>Featured Projects</span>
+            </div>
+            <div id="projectsList"></div>
+          </section>
 
-        <!-- SECTION 5: TECHNICAL SKILLS (Semantic Domain Matrix) -->
-        <section id="section_technical_skills" class="section-block" style="display: none;">
-          <div class="section-header">
-            <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
-            <span id="skillsSectionTitle">Technical Skills</span>
-          </div>
-          <div id="skillsDomainsContainer"></div>
-        </section>
+          <!-- SECTION 5: TECHNICAL SKILLS (Semantic Domain Matrix) -->
+          <section id="section_technical_skills" class="section-block" style="display: none;">
+            <div id="watermark_skills"></div>
+            <div class="section-header">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-2-1h-6v-2h6v2zM7.5 14.67l3.17-3.17-3.17-3.17L8.91 7l4.59 4.5-4.59 4.5-1.41-1.33z" />
+              </svg>
+              <span id="skillsSectionTitle">Technical Skills</span>
+            </div>
+            <div id="skillsDomainsContainer"></div>
+          </section>
 
-        <!-- SECTION 6: EDUCATION & ACADEMICS -->
-        <section id="section_education_academics" class="section-block" style="display: none;">
-          <div class="section-header">
-            <svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
-            <span>Education & Academics</span>
-          </div>
-          <div id="educationList"></div>
-        </section>
+          <!-- SECTION 6: EDUCATION -->
+          <section id="section_education_academics" class="section-block" style="display: none;">
+            <div id="watermark_education"></div>
+            <div class="section-header">
+              <svg viewBox="0 0 24 24">
+                <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+              </svg>
+              <span>Education</span>
+            </div>
+            <div id="educationList"></div>
+          </section>
 
-        <!-- SECTION 7: DYNAMIC CUSTOM SECTIONS CONTAINER -->
-        <div id="customSectionsDynamicWrapper"></div>
+          <!-- SECTION 7: DYNAMIC CUSTOM SECTIONS CONTAINER -->
+          <div id="customSectionsDynamicWrapper"></div>
+        </div>
+
+        <!-- Right Pane: Career Feed & Deliverables (Work Experience, Featured Projects, Odd Custom Sections) -->
+        <div id="paneRight" class="pane-column pane-right"></div>
       </div>
 
     </div>
@@ -956,8 +1448,11 @@
 
   <!-- In-Page Toast for App Not Installed Notification -->
   <div id="toastBanner" class="toast-banner">
-    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #60A5FA; flex-shrink: 0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-    <span id="toastMessage">ResumeShowcase app is not installed. Enjoying full interactive showcase right here in your browser!</span>
+    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #60A5FA; flex-shrink: 0;">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+    </svg>
+    <span id="toastMessage">RenderFolio app is not installed on this device. You can enjoy the full interactive resume
+      right here!</span>
   </div>
 
   <!-- Firebase Modular JS SDK -->
@@ -983,17 +1478,17 @@
     // Theme Management (Light / Dark Toggle + System Preference Synced)
     // -----------------------------------------------------------------
     function initTheme() {
-      const savedTheme = localStorage.getItem("resumeshowcase_theme");
+      const savedTheme = localStorage.getItem("renderfolio_theme") || localStorage.getItem("resumeshowcase_theme");
       const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = savedTheme || (prefersDark ? "dark" : "light");
       applyTheme(theme);
     }
 
-    window.toggleTheme = function() {
+    window.toggleTheme = function () {
       const current = document.documentElement.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       const target = current === "dark" ? "light" : "dark";
       applyTheme(target);
-      localStorage.setItem("resumeshowcase_theme", target);
+      localStorage.setItem("renderfolio_theme", target);
     };
 
     function applyTheme(theme) {
@@ -1007,28 +1502,70 @@
         sun.style.display = "none";
         moon.style.display = "block";
       }
+      if (typeof updateAllWatermarks === "function") {
+        updateAllWatermarks();
+      }
     }
     initTheme();
+    if (window.matchMedia) {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        if (!localStorage.getItem("renderfolio_theme") && typeof updateAllWatermarks === "function") {
+          updateAllWatermarks();
+        }
+      });
+    }
+
 
     // -----------------------------------------------------------------
     // Deep Link & App Launch Handler
     // -----------------------------------------------------------------
+    const urlParams = new URLSearchParams(window.location.search);
     const pathParts = window.location.pathname.split("/").filter(Boolean);
-    let shareId = null;
-    const rIndex = pathParts.indexOf("r");
-    if (rIndex !== -1 && pathParts[rIndex + 1]) {
-      shareId = pathParts[rIndex + 1];
+    let shareId = urlParams.get("id") || urlParams.get("shareId") || null;
+    if (!shareId) {
+      const rIndex = pathParts.indexOf("r");
+      if (rIndex !== -1 && pathParts[rIndex + 1]) {
+        shareId = pathParts[rIndex + 1];
+      }
     }
 
-    window.openNativeApp = function() {
-      if (!shareId) return;
-      const appUrl = "resumeshowcase://r/" + shareId;
+    window.launchDemoShowcase = function () {
+      const errorView = document.getElementById("errorView");
+      if (errorView) errorView.style.display = "none";
+      const loadingView = document.getElementById("loadingView");
+      if (loadingView) loadingView.style.display = "none";
+      renderVisualiser(getDemoProfile());
+      const content = document.getElementById("visualiserContent");
+      if (content) content.style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    // Permanently suppress Chrome's automatic PWA mini-infobar / install banner
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+    });
+
+    window.openNativeApp = function () {
+      if (!shareId) {
+        window.open("https://github.com/ArpitAswal/RenderFolio/releases/download/v1.0.0/app-universal-release.apk", "_blank");
+        return;
+      }
+      const appUrl = "renderfolio://r/" + shareId;
+      const fallbackUrl = "resumeshowcase://r/" + shareId;
       const startTime = Date.now();
       window.location.href = appUrl;
 
       setTimeout(() => {
         if (!document.hidden && (Date.now() - startTime < 3500)) {
-          showToast("ResumeShowcase app is not installed on this device. You can enjoy the full interactive resume right here!");
+          // Fallback check to legacy scheme before showing prompt
+          window.location.href = fallbackUrl;
+          setTimeout(() => {
+            if (!document.hidden && (Date.now() - startTime < 4500)) {
+              if (confirm("RenderFolio native Android app is not installed on this device.\n\nWould you like to download the official Android APK directly?")) {
+                window.open("https://github.com/ArpitAswal/RenderFolio/releases/download/v1.0.0/app-universal-release.apk", "_blank");
+              }
+            }
+          }, 1000);
         }
       }, 1000);
     };
@@ -1149,116 +1686,666 @@
     }
 
     // -----------------------------------------------------------------
-    // Helper: Resolve Thematic Background Watermark Artwork SVG
+    // Helper: Resolve Thematic Background Watermark Artwork SVG (1:1 Stitch & Obsidian Spec)
     // -----------------------------------------------------------------
-    function getWatermarkSvg(archetype, isCompact) {
-      const cls = isCompact ? "section-watermark compact" : "section-watermark";
-      switch (archetype) {
-        case "CERTIFICATIONS":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M58 34h94a10 10 0 0 1 10 10v112a10 10 0 0 1-10 10H58a10 10 0 0 1-10-10V44a10 10 0 0 1 10-10z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M64 40h82a6 6 0 0 1 6 6v100a6 6 0 0 1-6 6H64a6 6 0 0 1-6-6V46a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.5"/>
-                <path d="M74 58h62M74 72h62M74 86h44" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-opacity="0.4"/>
-                <circle cx="128" cy="120" r="16" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M128 109l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8 2.4-4.8z" fill="currentColor"/>
-                <path d="M123 134l-5 22 10-6 4 6-1-22" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.2"/>
-              </g>
-            </svg>
-          `;
-        case "AWARDS":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M72 42h66c0 32-13 54-33 54s-33-22-33-54z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M68 36h74a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3H68a3 3 0 0 1-3-3v-3a3 3 0 0 1 3-3z" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M72 48C56 48 50 62 50 72c0 14 10 22 24 22M138 48c16 0 22 14 22 24 0 14-10 22-24 22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M100 96v26M90 122h30M82 136h46a4 4 0 0 1 4 4v10H78v-10a4 4 0 0 1 4-4z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M105 56l2.5 5 5.5.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8 2.5-5z" fill="currentColor"/>
-              </g>
-            </svg>
-          `;
-        case "ACHIEVEMENTS":
-        case "GENERIC":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M92 116l-18 54 18-12 10 12-4-50z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M112 120l-4 50 10-12 18 12-18-54z" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="105" cy="80" r="38" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <circle cx="105" cy="80" r="30" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
-                <path d="M105 60l4 12h13l-11 8 4 12-10-8-10 8 4-12-11-8h13l4-12z" fill="currentColor"/>
-              </g>
-            </svg>
-          `;
-        case "OPEN_SOURCE":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M105 34l51 24v56l-51 34-51-34V58z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M88 64v62" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                <circle cx="88" cy="68" r="5" fill="currentColor"/>
-                <circle cx="88" cy="122" r="5" fill="currentColor"/>
-                <path d="M88 88c0 10 34 10 34 22v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="122" cy="122" r="5" fill="currentColor"/>
-                <path d="M95 52l-14 14 14 14M115 52l14 14-14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </g>
-            </svg>
-          `;
-        case "PUBLICATIONS":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M54 44c18-6 38-4 51 8 13-12 33-14 51-8v104c-18-6-38-4-51 8-13-12-33-14-51-8V44z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M105 52v104" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M66 66h26M66 82h26M66 98h20M118 66h26M118 82h26M118 98h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.5"/>
-              </g>
-            </svg>
-          `;
-        case "VOLUNTEER":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <circle cx="105" cy="95" r="44" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M105 76c-4-8-16-10-22-4-8 8-4 20 6 28l16 14 16-14c10-8 14-20 6-28-6-6-18-4-22 4z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M64 126c12 14 26 22 41 22s29-8 41-22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </g>
-            </svg>
-          `;
-        case "LANGUAGES":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <path d="M94 42a38 38 0 0 1 38 38c0 14-8 27-20 33l5 16-16-10c-2.3.5-4.6.8-7 .8a38 38 0 1 1 0-76z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M56 80c12-10 64-10 76 0M56 80c12 10 64 10 76 0" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"/>
-                <path d="M94 42c-12 16-12 60 0 76" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.6"/>
-                <path d="M120 70a24 24 0 0 1 24 24c0 9-5 17-13 21l3 10-10-6a24 24 0 0 1-4 .4" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="1.4"/>
-              </g>
-            </svg>
-          `;
-        case "HOBBIES":
-          return `
-            <svg class="${cls}" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g transform="rotate(-15 105 95)">
-                <circle cx="105" cy="95" r="38" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M105 68l5 15h16l-13 10 5 15-13-10-13 10 5-15-13-10h16l5-15z" fill="currentColor"/>
-                <path d="M70 128c10 12 22 18 35 18s25-6 35-18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </g>
-            </svg>
-          `;
-        default:
-          return "";
-      }
+    function isDarkModeActive() {
+      const current = document.documentElement.getAttribute("data-theme");
+      if (current === "dark") return true;
+      if (current === "light") return false;
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
 
     // -----------------------------------------------------------------
-    // Core Showcase Loader from Cloud Firestore
+    // Helper: Resolve Thematic Background Watermark Artwork SVG (1:1 Stitch & Obsidian Spec)
     // -----------------------------------------------------------------
+    function getWatermarkSvg(archetype, isCompact) {
+      const isDark = isDarkModeActive();
+      const isProj = archetype === "PROJECTS";
+      const isMicro = archetype === "LANGUAGES" || archetype === "HOBBIES";
+
+      let wrapperCls = "section-watermark-wrapper";
+      if (isProj) wrapperCls += " projects-wm";
+      else if (isMicro) wrapperCls += " compact-micro";
+      else if (isCompact || archetype === "EDUCATION") wrapperCls += " compact";
+
+      const svgCls = isProj ? "section-watermark-svg proj-3d" : "section-watermark-svg";
+      const glowHtml = `<div class="section-watermark-glow"></div>`;
+
+      // Common Palette Stop Values
+      // Dark Mode (Obsidian Frosted Glass):
+      const darkBody0 = "#2A3548"; const darkBody0Op = "0.50";
+      const darkBody60 = "#18202C"; const darkBody60Op = "0.25";
+      const darkBody100 = "#3B82F6"; const darkBody100Op = "0.08";
+      const darkRim0 = "#FFFFFF"; const darkRim0Op = "0.45";
+      const darkRim50 = "#3B82F6"; const darkRim50Op = "0.40";
+      const darkRim100 = "#2A3548"; const darkRim100Op = "0.20";
+      const darkTrace = "#3B82F6";
+
+      // Light Mode (Porcelain Frosted Glass):
+      const lightBody0 = "#FFFFFF"; const lightBody0Op = "0.65";
+      const lightBody60 = "#EFF6FF"; const lightBody60Op = "0.35";
+      const lightBody100 = "#DBEAFE"; const lightBody100Op = "0.15";
+      const lightRim0 = "#FFFFFF"; const lightRim0Op = "0.90";
+      const lightRim50 = "#2563EB"; const lightRim50Op = "0.35";
+      const lightRim100 = "#EFF6FF"; const lightRim100Op = "0.20";
+      const lightTrace = "#2563EB";
+
+      const b0 = isDark ? darkBody0 : lightBody0;
+      const b0Op = isDark ? darkBody0Op : lightBody0Op;
+      const b60 = isDark ? darkBody60 : lightBody60;
+      const b60Op = isDark ? darkBody60Op : lightBody60Op;
+      const b100 = isDark ? darkBody100 : lightBody100;
+      const b100Op = isDark ? darkBody100Op : lightBody100Op;
+
+      const r0 = isDark ? darkRim0 : lightRim0;
+      const r0Op = isDark ? darkRim0Op : lightRim0Op;
+      const r50 = isDark ? darkRim50 : lightRim50;
+      const r50Op = isDark ? darkRim50Op : lightRim50Op;
+      const r100 = isDark ? darkRim100 : lightRim100;
+      const r100Op = isDark ? darkRim100Op : lightRim100Op;
+
+      const tr = isDark ? darkTrace : lightTrace;
+      const trOpPrimary = isDark ? "0.45" : "0.35";
+      const trOpSubtle = isDark ? "0.25" : "0.20";
+      const trOpFaint = isDark ? "0.15" : "0.12";
+
+      let innerSvg = "";
+      let viewBox = "0 0 220 220";
+
+      switch (archetype) {
+        case "SUMMARY":
+          viewBox = "0 0 220 220";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_sum_body" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="60%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+                <stop offset="100%" stop-color="${b100}" stop-opacity="${b100Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_sum_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="50%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+                <stop offset="100%" stop-color="${r100}" stop-opacity="${r100Op}"/>
+              </linearGradient>
+            </defs>
+            <rect x="30" y="20" width="130" height="190" rx="20" fill="url(#wm_sum_body)" stroke="url(#wm_sum_rim)" stroke-width="1.5"/>
+            <rect x="75" y="28" width="40" height="4" rx="2" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <rect x="38" y="38" width="114" height="156" rx="12" fill="none" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <rect x="46" y="52" width="98" height="34" rx="6" fill="${tr}" fill-opacity="${trOpFaint}" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="0.8"/>
+            <line x1="46" y1="98" x2="110" y2="98" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="2"/>
+            <line x1="46" y1="106" x2="130" y2="106" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.5"/>
+            <line x1="46" y1="114" x2="90" y2="114" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.5"/>
+            <rect x="70" y="184" width="50" height="3" rx="1.5" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+          `;
+          break;
+
+        case "EXPERIENCE":
+          viewBox = "0 0 220 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_exp_plate" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="60%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+                <stop offset="100%" stop-color="${b100}" stop-opacity="${b100Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_exp_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 115 L140 70 L190 95 L100 140 Z" fill="url(#wm_exp_plate)" stroke="url(#wm_exp_rim)" stroke-width="1.5"/>
+            <path d="M50 90 L140 45 L190 70 L100 115 Z" fill="url(#wm_exp_plate)" stroke="url(#wm_exp_rim)" stroke-width="1.5"/>
+            <path d="M50 65 L140 20 L190 45 L100 90 Z" fill="url(#wm_exp_plate)" stroke="url(#wm_exp_rim)" stroke-width="1.5"/>
+            <line x1="75" y1="52" x2="135" y2="78" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="85" y1="62" x2="155" y2="92" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <circle cx="150" cy="55" r="4" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+          `;
+          break;
+
+        case "PROJECTS":
+          viewBox = "0 0 220 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_proj_win" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="60%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+                <stop offset="100%" stop-color="${b100}" stop-opacity="${b100Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_proj_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <rect x="20" y="20" width="180" height="150" rx="16" fill="url(#wm_proj_win)" stroke="url(#wm_proj_rim)" stroke-width="1.5"/>
+            <line x1="20" y1="48" x2="200" y2="48" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <circle cx="36" cy="34" r="3.5" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <circle cx="48" cy="34" r="3.5" fill="${tr}" fill-opacity="${trOpSubtle}"/>
+            <circle cx="60" cy="34" r="3.5" fill="${tr}" fill-opacity="${trOpFaint}"/>
+            <path d="M165 30 L158 34 L165 38" fill="none" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.2"/>
+            <path d="M172 30 L179 34 L172 38" fill="none" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.2"/>
+            <rect x="36" y="62" width="40" height="7" rx="2" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <line x1="36" y1="80" x2="110" y2="80" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="2"/>
+            <line x1="36" y1="90" x2="150" y2="90" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.5"/>
+            <line x1="36" y1="100" x2="130" y2="100" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.5"/>
+            <rect x="36" y="115" width="144" height="40" rx="8" fill="${tr}" fill-opacity="${trOpFaint}" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+            <path d="M85 135 L108 135" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="2"/>
+            <path d="M120 135 L145 135" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="2"/>
+          `;
+          break;
+
+        case "SKILLS":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_chip_body" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_chip_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+              <radialGradient id="wm_core_glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="${tr}" stop-opacity="${isDark ? '0.70' : '0.50'}"/>
+                <stop offset="100%" stop-color="${isDark ? '#1D4ED8' : '#60A5FA'}" stop-opacity="0.10"/>
+              </radialGradient>
+            </defs>
+            <!-- Top / Bottom Bus Pins -->
+            <line x1="60" y1="35" x2="60" y2="50" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="75" y1="35" x2="75" y2="50" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="90" y1="35" x2="90" y2="50" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="105" y1="35" x2="105" y2="50" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="120" y1="35" x2="120" y2="50" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="60" y1="150" x2="60" y2="165" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="75" y1="150" x2="75" y2="165" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="90" y1="150" x2="90" y2="165" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="105" y1="150" x2="105" y2="165" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="120" y1="150" x2="120" y2="165" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <!-- Left / Right Bus Pins -->
+            <line x1="20" y1="65" x2="35" y2="65" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="20" y1="80" x2="35" y2="80" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="20" y1="95" x2="35" y2="95" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="20" y1="110" x2="35" y2="110" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="20" y1="125" x2="35" y2="125" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="135" y1="65" x2="150" y2="65" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="135" y1="80" x2="150" y2="80" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="135" y1="95" x2="150" y2="95" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="135" y1="110" x2="150" y2="110" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="135" y1="125" x2="150" y2="125" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <!-- Silicon Package & Core -->
+            <rect x="35" y="50" width="100" height="100" rx="14" fill="url(#wm_chip_body)" stroke="url(#wm_chip_rim)" stroke-width="1.5"/>
+            <rect x="50" y="65" width="70" height="70" rx="8" fill="${isDark ? '#18202C' : '#FFFFFF'}" fill-opacity="0.4" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+            <rect x="68" y="83" width="34" height="34" rx="4" fill="url(#wm_core_glow)" stroke="${r0}" stroke-opacity="${isDark ? '0.4' : '0.8'}" stroke-width="1"/>
+            <line x1="50" y1="65" x2="68" y2="83" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+            <line x1="120" y1="65" x2="102" y2="83" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+            <line x1="50" y1="135" x2="68" y2="117" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+            <line x1="120" y1="135" x2="102" y2="117" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+          `;
+          break;
+
+        case "EDUCATION":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_edu_cap" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_edu_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M100 35 L170 70 L100 105 L30 70 Z" fill="url(#wm_edu_cap)" stroke="url(#wm_edu_rim)" stroke-width="1.5"/>
+            <path d="M62 86 L62 120 C62 138 138 138 138 120 L138 86" fill="url(#wm_edu_cap)" fill-opacity="0.3" stroke="url(#wm_edu_rim)" stroke-width="1.2"/>
+            <path d="M100 70 Q145 75 155 110 L158 132" fill="none" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <circle cx="100" cy="70" r="3" fill="${r0}" fill-opacity="0.5"/>
+            <rect x="154" y="132" width="7" height="12" rx="1.5" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+          `;
+          break;
+
+        case "OPEN_SOURCE":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_os_badge" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_os_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M100 25 L160 55 L160 115 L100 155 L40 115 L40 55 Z" fill="url(#wm_os_badge)" stroke="url(#wm_os_rim)" stroke-width="1.5"/>
+            <path d="M100 38 L148 62 L148 108 L100 140 L52 108 L52 62 Z" fill="none" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <line x1="80" y1="120" x2="80" y2="65" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <path d="M80 92 Q80 80 96 80 L115 80" fill="none" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <circle cx="80" cy="65" r="4" fill="${tr}" fill-opacity="${isDark ? '0.5' : '0.6'}"/>
+            <circle cx="80" cy="115" r="4" fill="${tr}" fill-opacity="${isDark ? '0.5' : '0.6'}"/>
+            <circle cx="115" cy="80" r="4" fill="${tr}" fill-opacity="${isDark ? '0.5' : '0.6'}"/>
+            <path d="M90 98 L98 106 L112 90" fill="none" stroke="${isDark ? '#FFFFFF' : tr}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${isDark ? '0.75' : '0.90'}" stroke-width="2"/>
+          `;
+          break;
+
+        case "CERTIFICATIONS":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_cert_doc" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_cert_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <rect x="42" y="32" width="116" height="136" rx="14" fill="url(#wm_cert_doc)" stroke="url(#wm_cert_rim)" stroke-width="1.5"/>
+            <rect x="52" y="44" width="96" height="18" rx="4" fill="${tr}" fill-opacity="${trOpFaint}"/>
+            <line x1="52" y1="74" x2="120" y2="74" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="52" y1="84" x2="148" y2="84" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+            <line x1="52" y1="94" x2="135" y2="94" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+            <circle cx="100" cy="132" r="18" fill="url(#wm_cert_doc)" stroke="${tr}" stroke-width="1.5"/>
+            <circle cx="100" cy="132" r="13" fill="none" stroke="${r0}" stroke-opacity="${isDark ? '0.4' : '0.8'}" stroke-width="0.8"/>
+            <path d="M96 132 L99 135 L105 129" fill="none" stroke="${tr}" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+          `;
+          break;
+
+        case "AWARDS":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_award_cup" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_award_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M70 42 H130 V85 C130 102 116 116 100 116 C84 116 70 102 70 85 Z" fill="url(#wm_award_cup)" stroke="url(#wm_award_rim)" stroke-width="1.5"/>
+            <path d="M70 52 C52 52 52 78 70 78" fill="none" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <path d="M130 52 C148 52 148 78 130 78" fill="none" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <path d="M96 116 H104 V136 H96 Z" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <rect x="74" y="136" width="52" height="14" rx="4" fill="url(#wm_award_cup)" stroke="url(#wm_award_rim)" stroke-width="1.2"/>
+            <circle cx="100" cy="74" r="10" fill="${tr}" fill-opacity="${trOpFaint}"/>
+            <path d="M100 66 L102 72 L108 72 L103 76 L105 82 L100 78 L95 82 L97 76 L92 72 L98 72 Z" fill="${isDark ? '#FFFFFF' : tr}" fill-opacity="${isDark ? '0.75' : '0.90'}"/>
+          `;
+          break;
+
+        case "VOLUNTEER":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_vol_heart" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_vol_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M100 62 C85 38 48 48 48 80 C48 112 100 148 100 148 C100 148 152 112 152 80 C152 48 115 38 100 62 Z" fill="url(#wm_vol_heart)" stroke="url(#wm_vol_rim)" stroke-width="1.5"/>
+            <path d="M100 80 C90 62 64 70 64 92 C64 114 100 136 100 136 C100 136 136 114 136 92 C136 70 110 62 100 80 Z" fill="none" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <circle cx="100" cy="98" r="8" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+          `;
+          break;
+
+        case "PUBLICATIONS":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_pub_body" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_pub_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M45 45 C75 42 95 50 100 56 C105 50 125 42 155 45 V145 C125 142 105 150 100 156 C95 150 75 142 45 145 Z" fill="url(#wm_pub_body)" stroke="url(#wm_pub_rim)" stroke-width="1.5"/>
+            <line x1="100" y1="56" x2="100" y2="156" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="55" y1="65" x2="88" y2="65" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="55" y1="78" x2="88" y2="78" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+            <line x1="55" y1="91" x2="80" y2="91" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+            <line x1="112" y1="65" x2="145" y2="65" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpPrimary}" stroke-width="1.5"/>
+            <line x1="112" y1="78" x2="145" y2="78" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+            <line x1="112" y1="91" x2="137" y2="91" stroke="${tr}" stroke-linecap="round" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+          `;
+          break;
+
+        case "LANGUAGES":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_lang_globe" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_lang_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="54" fill="url(#wm_lang_globe)" stroke="url(#wm_lang_rim)" stroke-width="1.5"/>
+            <ellipse cx="100" cy="100" rx="26" ry="54" fill="none" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.2"/>
+            <line x1="46" y1="100" x2="154" y2="100" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.2"/>
+            <line x1="56" y1="76" x2="144" y2="76" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+            <line x1="56" y1="124" x2="144" y2="124" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1"/>
+          `;
+          break;
+
+        case "HOBBIES":
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_hob_pal" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_hob_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <path d="M100 40 C58 40 40 68 40 100 C40 134 66 160 100 160 C114 160 126 150 126 138 C126 132 122 126 122 120 C122 110 130 102 140 102 H148 C158 102 166 94 166 84 C166 56 136 40 100 40 Z" fill="url(#wm_hob_pal)" stroke="url(#wm_hob_rim)" stroke-width="1.5"/>
+            <circle cx="68" cy="80" r="7" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <circle cx="94" cy="65" r="7" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <circle cx="122" cy="72" r="7" fill="${tr}" fill-opacity="${trOpPrimary}"/>
+            <circle cx="144" cy="135" r="8" fill="none" stroke="${tr}" stroke-opacity="${trOpSubtle}" stroke-width="1.2"/>
+          `;
+          break;
+
+        case "ACHIEVEMENTS":
+        case "GENERIC":
+        default:
+          viewBox = "0 0 200 200";
+          innerSvg = `
+            <defs>
+              <linearGradient id="wm_gen_med" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${b0}" stop-opacity="${b0Op}"/>
+                <stop offset="100%" stop-color="${b60}" stop-opacity="${b60Op}"/>
+              </linearGradient>
+              <linearGradient id="wm_gen_rim" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${r0}" stop-opacity="${r0Op}"/>
+                <stop offset="100%" stop-color="${r50}" stop-opacity="${r50Op}"/>
+              </linearGradient>
+            </defs>
+            <!-- Ribbon Tails -->
+            <path d="M92 116 L74 170 L92 158 L102 170 L98 120 Z" fill="url(#wm_gen_med)" stroke="url(#wm_gen_rim)" stroke-width="1.2"/>
+            <path d="M112 120 L108 170 L118 158 L136 170 L118 116 Z" fill="url(#wm_gen_med)" stroke="url(#wm_gen_rim)" stroke-width="1.2"/>
+            <!-- Medallion Seal -->
+            <circle cx="105" cy="80" r="44" fill="url(#wm_gen_med)" stroke="url(#wm_gen_rim)" stroke-width="1.5"/>
+            <circle cx="105" cy="80" r="36" fill="none" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1.2"/>
+            <circle cx="105" cy="80" r="28" fill="none" stroke="${r0}" stroke-opacity="${isDark ? '0.4' : '0.8'}" stroke-width="0.8"/>
+            <!-- 5-Pointed Star -->
+            <path d="M105 58 L111 73 L126 73.5 L114 83 L118 98 L105 88 L92 98 L96 83 L84 73.5 L99 73 Z" fill="${tr}" fill-opacity="${trOpPrimary}" stroke="${tr}" stroke-opacity="${trOpPrimary}" stroke-width="1"/>
+          `;
+          break;
+      }
+
+      return `
+        <div class="${wrapperCls}">
+          ${glowHtml}
+          <svg class="${svgCls}" viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg">
+            ${innerSvg}
+          </svg>
+        </div>
+      `;
+    }
+
+    function updateAllWatermarks() {
+      const wmSummary = document.getElementById("watermark_summary");
+      if (wmSummary) wmSummary.innerHTML = getWatermarkSvg("SUMMARY");
+      const wmExperience = document.getElementById("watermark_experience");
+      if (wmExperience) wmExperience.innerHTML = getWatermarkSvg("EXPERIENCE");
+      const wmProjects = document.getElementById("watermark_projects");
+      if (wmProjects) wmProjects.innerHTML = getWatermarkSvg("PROJECTS");
+      const wmSkills = document.getElementById("watermark_skills");
+      if (wmSkills) wmSkills.innerHTML = getWatermarkSvg("SKILLS");
+      const wmEducation = document.getElementById("watermark_education");
+      if (wmEducation) wmEducation.innerHTML = getWatermarkSvg("EDUCATION", true);
+
+      document.querySelectorAll(".custom-section-watermark-container").forEach(el => {
+        const arch = el.dataset.archetype;
+        const compact = el.dataset.compact === "true";
+        if (arch) {
+          el.innerHTML = getWatermarkSvg(arch, compact);
+        }
+      });
+    }
+
+    
+    function getDemoProfile() {
+      return {
+      "hero": {
+            "fullName": "Alex Mercer",
+            "headlineTitle": "Staff Mobile Systems Architect | Android & Cross-Platform",
+            "location": "San Francisco, CA \u00b7 Remote",
+            "targetCompany": "",
+            "contactInfo": {
+                  "email": "alex.mercer.dev@example.com",
+                  "phone": "+1 (415) 555-0198",
+                  "linkedinUrl": "https://linkedin.com/in/alexmercer-dev",
+                  "githubUrl": "https://github.com/alexmercer",
+                  "websiteUrl": "https://alexmercer.design"
+            }
+      },
+      "coreSections": {
+            "profileSummary": "Product-minded Mobile Systems Architect with 8+ years architecting high-scale Android applications, reactive Kotlin Flow micro-features, and on-device ML pipelines. Specialized in fluid design systems, resilient offline data synchronization, and high-throughput modular architectures.",
+            "workExperience": [
+                  {
+                        "id": "exp-1",
+                        "companyName": "Apex Mobile Technologies",
+                        "roleTitle": "Staff Mobile Architect",
+                        "startDate": "Jan 2022",
+                        "endDate": "Present",
+                        "bulletPoints": [
+                              "Spearheaded modernization of multi-module Android architecture to Jetpack Compose and Coroutines Flow, reducing UI frame latency by 38%.",
+                              "Architected high-throughput offline-first synchronization engine supporting 1.5M daily active users with automatic conflict resolution.",
+                              "Established design system token architecture and automated visual regression testing pipeline across 12 distributed feature teams."
+                        ],
+                        "clientApps": [
+                              {
+                                    "name": "ApexPay",
+                                    "url": "https://play.google.com/store/apps"
+                              },
+                              {
+                                    "name": "ApexFlow",
+                                    "url": "https://play.google.com/store/apps"
+                              }
+                        ],
+                        "techStackTags": [
+                              "Kotlin",
+                              "Jetpack Compose",
+                              "Coroutines Flow",
+                              "Room",
+                              "Hilt"
+                        ]
+                  },
+                  {
+                        "id": "exp-2",
+                        "companyName": "CloudStream Systems",
+                        "roleTitle": "Senior Android Engineer",
+                        "startDate": "Jun 2019",
+                        "endDate": "Dec 2021",
+                        "bulletPoints": [
+                              "Designed resilient bi-directional WebSocket client layer with automated backoff retry, achieving 99.98% connection reliability.",
+                              "Optimized cold-start launch latency from 1.6s to 410ms through Android Baseline Profiles and modular dependency injection tuning."
+                        ],
+                        "clientApps": [
+                              {
+                                    "name": "CloudStream Sync",
+                                    "url": "https://play.google.com/store/apps"
+                              }
+                        ],
+                        "techStackTags": [
+                              "Kotlin",
+                              "Coroutines",
+                              "Room",
+                              "Hilt",
+                              "WebSockets",
+                              "CI/CD"
+                        ]
+                  }
+            ],
+            "projects": [
+                  {
+                        "id": "proj-1",
+                        "projectTitle": "NeuralDoc \u00b7 On-Device Document Intelligence",
+                        "description": "\u2022 Engineered privacy-first document scanning engine with CameraX and on-device ML Kit text recognition.\n\u2022 Built reactive local persistence pipeline utilizing encrypted Room database and Proto DataStore.\n\u2022 Published open-source library on GitHub with 1.8k+ stars and automated semantic versioning.",
+                        "techStackTags": [
+                              "Jetpack Compose",
+                              "ML Kit",
+                              "CameraX",
+                              "Room"
+                        ],
+                        "demoUrl": "https://github.com/alexmercer/neuraldoc",
+                        "codeUrl": "https://github.com/alexmercer/neuraldoc"
+                  },
+                  {
+                        "id": "proj-2",
+                        "projectTitle": "PulseSync \u00b7 Distributed Event Engine",
+                        "description": "\u2022 Built high-performance event stream aggregator capable of processing 40,000 live telemetry updates per second.\n\u2022 Implemented conflict-free replicated data types (CRDTs) to power peer-to-peer collaboration without central lock contention.",
+                        "techStackTags": [
+                              "Kotlin Multiplatform",
+                              "Ktor",
+                              "Flow",
+                              "SQLite"
+                        ],
+                        "demoUrl": "https://github.com/alexmercer/pulsesync",
+                        "codeUrl": "https://github.com/alexmercer/pulsesync"
+                  }
+            ],
+            "skills": {
+                  "sectionTitle": "TECHNICAL SKILLS",
+                  "languages": [
+                        "Kotlin",
+                        "Java",
+                        "Dart",
+                        "Rust",
+                        "SQL"
+                  ],
+                  "frameworks": [
+                        "Jetpack Compose",
+                        "Android SDK",
+                        "Coroutines & Flow",
+                        "Clean MVVM",
+                        "Hilt"
+                  ],
+                  "cloudDevOps": [
+                        "Firebase",
+                        "Google Cloud",
+                        "GitHub Actions",
+                        "Docker",
+                        "CI/CD"
+                  ],
+                  "toolsMethodologies": [
+                        "Clean Architecture",
+                        "MVI",
+                        "TDD & Robolectric",
+                        "Git"
+                  ],
+                  "categorizedDomains": {
+                        "Programming Languages": [
+                              "Kotlin",
+                              "Java",
+                              "Dart",
+                              "Rust",
+                              "SQL"
+                        ],
+                        "Mobile & Architecture": [
+                              "Jetpack Compose",
+                              "Android SDK",
+                              "Coroutines & Flow",
+                              "Clean MVVM",
+                              "Hilt"
+                        ],
+                        "Networking & Storage": [
+                              "Ktor",
+                              "Retrofit",
+                              "Room",
+                              "DataStore",
+                              "SQLite"
+                        ],
+                        "Cloud & DevOps": [
+                              "Firebase",
+                              "Google Cloud",
+                              "GitHub Actions",
+                              "Docker",
+                              "CI/CD"
+                        ]
+                  }
+            },
+            "education": [
+                  {
+                        "institution": "Stanford University",
+                        "degree": "Master of Science - Computer Science | Systems & Architecture Track",
+                        "graduationYear": "2017 \u2013 2019"
+                  },
+                  {
+                        "institution": "University of California, Berkeley",
+                        "degree": "Bachelor of Science - Electrical Engineering & Computer Sciences (EECS)",
+                        "graduationYear": "2013 \u2013 2017"
+                  }
+            ]
+      },
+      "dynamicSections": [
+            {
+                  "sectionTitle": "Open Source Contributions",
+                  "items": [
+                        {
+                              "title": "reactive_form_validator",
+                              "subtitle": "Creator & Lead Maintainer",
+                              "dateOrPeriod": "Active",
+                              "description": "\u2022 Designed, developed, and published a modular reactive form validation package featuring 100+ composable validation APIs.\n\u2022 Integrated synchronous, asynchronous, and dynamic cross-field validation rules with localized error formatting.",
+                              "bulletPoints": [
+                                    "Designed, developed, and published a modular reactive form validation package featuring 100+ composable validation APIs.",
+                                    "Integrated synchronous, asynchronous, and dynamic cross-field validation rules with localized error formatting."
+                              ],
+                              "link": "https://github.com/alexmercer/reactive_form_validator"
+                        }
+                  ]
+            },
+            {
+                  "sectionTitle": "Certifications",
+                  "items": [
+                        {
+                              "title": "AWS Certified Solutions Architect \u2013 Professional",
+                              "subtitle": "Amazon Web Services (AWS)",
+                              "dateOrPeriod": "2023 \u2013 2026",
+                              "description": "\u2022 Demonstrated advanced mastery in architecting secure, resilient, and elastic cloud infrastructure.",
+                              "bulletPoints": [
+                                    "Demonstrated advanced mastery in architecting secure, resilient, and elastic cloud infrastructure."
+                              ],
+                              "link": "https://aws.amazon.com/verification"
+                        },
+                        {
+                              "title": "Google Associate Android Developer",
+                              "subtitle": "Google Developers Certification",
+                              "dateOrPeriod": "2022 \u2013 Present",
+                              "description": "\u2022 Validated core competency in Android UI, Jetpack architectural components, and background threading.",
+                              "bulletPoints": [
+                                    "Validated core competency in Android UI, Jetpack architectural components, and background threading."
+                              ],
+                              "link": "https://developers.google.com/certification"
+                        }
+                  ]
+            }
+      ]
+};
+    }
+
     async function loadShowcase() {
-      if (!shareId) {
+      // Default to Interactive Demo Showcase when visiting root URL without an ID
+      if (!shareId || shareId.toLowerCase() === "demo") {
         document.getElementById("loadingView").style.display = "none";
-        document.getElementById("errorView").style.display = "block";
+        renderVisualiser(getDemoProfile());
+        document.getElementById("visualiserContent").style.display = "block";
         return;
       }
 
@@ -1266,7 +2353,7 @@
       if (/Android/i.test(navigator.userAgent)) {
         const iframe = document.createElement("iframe");
         iframe.style.display = "none";
-        iframe.src = "resumeshowcase://r/" + shareId;
+        iframe.src = "renderfolio://r/" + shareId;
         document.body.appendChild(iframe);
         setTimeout(() => iframe.remove(), 2000);
       }
@@ -1282,7 +2369,7 @@
 
         const data = docSnap.data();
         if (data.expireAt && data.expireAt.toDate() < new Date()) {
-          deleteDoc(docRef).catch(() => {});
+          deleteDoc(docRef).catch(() => { });
           throw new Error("Showcase has expired");
         }
 
@@ -1299,16 +2386,33 @@
       }
     }
 
-    // -----------------------------------------------------------------
+    // -------------------------------------------------------------
     // 1:1 Parity Visualiser Screen Renderer
-    // -----------------------------------------------------------------
+    // -------------------------------------------------------------
     function renderVisualiser(p) {
+      // Reset any previous motion states for fresh entrance
+      document.querySelectorAll(".motion-hero-entered, .motion-hero-pending, .motion-summary-entered, .motion-summary-pending, .motion-slide-entered, .motion-slide-left-pending, .motion-slide-right-pending").forEach(el => {
+        el.classList.remove("motion-hero-entered", "motion-hero-pending", "motion-summary-entered", "motion-summary-pending", "motion-slide-entered", "motion-slide-left-pending", "motion-slide-right-pending");
+      });
+
       const hero = p.hero || {};
       const core = p.coreSections || {};
       const customSections = p.dynamicSections || p.customSections || [];
 
       // 1. Browser Title
-      document.title = (hero.fullName || "Candidate") + " · Resume Showcase";
+      document.title = (hero.fullName || "Candidate") + " · RenderFolio";
+
+      // 1b. Inject Core Section Background Watermarks (1:1 with Android bg_watermark_*.xml vector assets)
+      const wmSummary = document.getElementById("watermark_summary");
+      if (wmSummary) wmSummary.innerHTML = getWatermarkSvg("SUMMARY");
+      const wmExperience = document.getElementById("watermark_experience");
+      if (wmExperience) wmExperience.innerHTML = getWatermarkSvg("EXPERIENCE");
+      const wmProjects = document.getElementById("watermark_projects");
+      if (wmProjects) wmProjects.innerHTML = getWatermarkSvg("PROJECTS");
+      const wmSkills = document.getElementById("watermark_skills");
+      if (wmSkills) wmSkills.innerHTML = getWatermarkSvg("SKILLS");
+      const wmEducation = document.getElementById("watermark_education");
+      if (wmEducation) wmEducation.innerHTML = getWatermarkSvg("EDUCATION", true);
 
       // 2. HERO: Monogram & Verified Badge
       document.getElementById("heroInitials").textContent = extractInitials(hero.fullName);
@@ -1353,8 +2457,13 @@
         </a>`;
       }
       if (contact.linkedinUrl && contact.linkedinUrl.trim()) {
-        dockButtons += `<a href="${contact.linkedinUrl.trim()}" target="_blank" class="social-dock-btn" title="LinkedIn Profile">
-          <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9h2.77v8.37H6.46v-8.37M7.85 6.4a1.63 1.63 0 1 0 0 3.26 1.63 1.63 0 0 0 0-3.26z"/></svg>
+        dockButtons += `<a href="${contact.linkedinUrl.trim()}" target="_blank" class="social-dock-btn social-dock-linkedin" title="LinkedIn Profile">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="3.5" fill="#0A66C2"/>
+            <path fill="#FFFFFF" d="M5.5 10.13h2.77V18.5H5.5z"/>
+            <circle cx="6.88" cy="6.88" r="1.68" fill="#FFFFFF"/>
+            <path fill="#FFFFFF" d="M10.13 10.13h2.79v1.11c.48-.78 1.47-1.3 2.32-1.3 1.8 0 3.26 1.46 3.26 3.26V18.5h-2.79v-4.93c0-.77-.62-1.4-1.39-1.4a1.4 1.4 0 0 0-1.4 1.4v4.93h-2.79v-8.37z"/>
+          </svg>
         </a>`;
       }
       if (contact.websiteUrl && contact.websiteUrl.trim()) {
@@ -1409,7 +2518,7 @@
               <!-- Client Apps & Deliverables / Technologies -->
               ${hasClientApps || hasTags ? `
                 <div class="deliverables-group">
-                  <div class="deliverables-label">${hasClientApps ? "Client Applications" : "Technologies"}</div>
+                  <div class="deliverables-label">${hasClientApps ? "Client Deliverables" : "Technologies"}</div>
                   <div class="deliverables-chips-row">
                     ${hasClientApps ? exp.clientApps.map(app => `
                       <a ${app.url ? `href="${app.url}" target="_blank"` : ""} class="deliverable-chip">
@@ -1438,33 +2547,56 @@
       if (projects.length > 0) {
         const projList = document.getElementById("projectsList");
         projList.innerHTML = projects.map((proj, idx) => {
-          const primaryUrl = proj.demoUrl || proj.codeUrl || "";
+          let primaryUrl = "";
+          if (proj.codeUrl && proj.demoUrl && proj.codeUrl === proj.demoUrl) {
+            primaryUrl = proj.codeUrl;
+          } else if (proj.codeUrl && !proj.demoUrl) {
+            primaryUrl = proj.codeUrl;
+          } else if (proj.demoUrl && !proj.codeUrl) {
+            primaryUrl = proj.demoUrl;
+          } else if (proj.demoUrl && proj.codeUrl) {
+            if (proj.demoUrl.toLowerCase().includes("github.com") && !proj.codeUrl.toLowerCase().includes("github.com")) {
+              primaryUrl = proj.codeUrl;
+            } else {
+              primaryUrl = proj.demoUrl;
+            }
+          }
+          primaryUrl = primaryUrl.trim();
           const linkMeta = primaryUrl ? resolveProjectLinkMetadata(primaryUrl) : null;
           const bullets = parseBullets(proj.description || "");
 
           return `
             <div class="project-entry">
-              <div class="project-header-row">
-                <span class="project-title">${proj.projectTitle || "Project"}</span>
-                ${linkMeta ? `
-                  <a href="${primaryUrl}" target="_blank" class="project-link-badge">
-                    ${linkMeta.icon}
-                    <span>${linkMeta.label} ↗</span>
-                  </a>
-                ` : ""}
-              </div>
+              <!-- Full-width Project Title Headline (Matching Android tv_entry_project_title) -->
+              <div class="project-title">${proj.projectTitle || "Project"}</div>
 
+              <!-- Tech Stack Tags directly below Title (Matching Android chip_group_project_tech: 8dp rounded rect, ice-blue) -->
               ${proj.techStackTags && proj.techStackTags.length ? `
-                <div class="deliverables-chips-row" style="margin-bottom: 8px;">
-                  ${proj.techStackTags.map(t => `<span class="deliverable-chip" style="font-size: 0.75rem;">${t}</span>`).join("")}
+                <div class="project-tech-tags-row">
+                  ${proj.techStackTags.map(t => `<span class="project-tech-chip">${t}</span>`).join("")}
                 </div>
               ` : ""}
 
-              ${bullets.length > 1 ? `
+              <!-- Bullet Points (Matching Android container_project_bullets) -->
+              ${bullets.length > 0 ? `
                 <ul class="bullet-list">
                   ${bullets.map(b => `<li class="bullet-item">${b}</li>`).join("")}
                 </ul>
               ` : (proj.description ? `<p class="summary-editorial-body">${proj.description}</p>` : "")}
+
+              <!-- Project Link & Deliverables Dock at the BOTTOM (Matching Android layout_project_deliverables) -->
+              ${linkMeta ? `
+                <div class="deliverables-group" style="margin-top: 14px;">
+                  <div class="deliverables-label">Project Link &amp; Deliverables</div>
+                  <div class="deliverables-chips-row">
+                    <a href="${primaryUrl}" target="_blank" class="deliverable-chip">
+                      ${linkMeta.icon}
+                      <span>${linkMeta.label}</span>
+                      <span class="deliverable-arrow">↗</span>
+                    </a>
+                  </div>
+                </div>
+              ` : ""}
 
               ${idx < projects.length - 1 ? `<div class="entry-divider"></div>` : ""}
             </div>
@@ -1571,13 +2703,13 @@
           const isHobbies = archetype === "HOBBIES";
           const isCompact = isLanguages || isHobbies;
 
-          // Margin-top between sections: 20px when entering or leaving compact sections, else 36px
-          const marginTop = (sIdx > 0 && (prevIsCompact || isCompact)) ? "20px" : "36px";
+          // Margin-top between sections: 20px when entering or leaving compact sections, else 32px
+          const marginTop = (sIdx > 0 && (prevIsCompact || isCompact)) ? "20px" : "32px";
           prevIsCompact = isCompact;
 
           const headerIconSvg = getHeaderIconSvg(archetype);
           const watermarkSvg = getWatermarkSvg(archetype, isCompact);
-          const headerMarginBottom = isCompact ? "8px" : "18px";
+          const headerMarginBottom = isCompact ? "8px" : "20px";
 
           let contentHtml = "";
 
@@ -1674,8 +2806,8 @@
           }
 
           dynamicHtml += `
-            <section id="custom_${sec.sectionTitle || sIdx}" class="custom-section-block" style="margin-top: ${marginTop};">
-              ${watermarkSvg}
+            <section id="custom_${sec.sectionTitle || sIdx}" class="custom-section-block" data-default-margin-top="${marginTop}" style="margin-top: ${marginTop};">
+              <div class="custom-section-watermark-container" data-archetype="${archetype}" data-compact="${isCompact ? 'true' : 'false'}">${watermarkSvg}</div>
               <div class="section-header" style="margin-bottom: ${headerMarginBottom}; position: relative; z-index: 1;">
                 ${headerIconSvg}
                 <span>${title}</span>
@@ -1689,65 +2821,287 @@
         dynamicWrapper.innerHTML = dynamicHtml;
       }
 
-      // 12. Dynamic Section Reordering (1:1 with Android applySectionOrder)
-      applyDynamicSectionOrder(p.sectionOrder, customSections);
+      // 12. Adaptive Dual-Pane vs Single-Column Layout (1:1 with Android Tablet Landscape layout-sw600dp-land)
+      updateAllWatermarks();
+      layoutShowcase(p);
     }
 
-    function applyDynamicSectionOrder(order, customSections) {
-      const container = document.getElementById("sectionsContainer");
-      if (!container) return;
+    // Cached profile for responsive resize re-layouts
+    let cachedProfile = null;
 
-      const defaultCore = [
-        "section_personal_info",
-        "section_about_summary",
-        "section_work_experience",
-        "section_featured_projects",
-        "section_technical_skills",
-        "section_education_academics"
-      ];
+    function layoutShowcase(profile) {
+      if (profile) cachedProfile = profile;
+      if (!cachedProfile) return;
 
-      const effectiveOrder = (order && order.length > 0) ? order : defaultCore;
-      const elementsMap = {
-        "section_personal_info": document.getElementById("section_personal_info"),
-        "section_about_summary": document.getElementById("section_about_summary"),
-        "section_work_experience": document.getElementById("section_work_experience"),
-        "section_featured_projects": document.getElementById("section_featured_projects"),
-        "section_technical_skills": document.getElementById("section_technical_skills"),
-        "section_education_academics": document.getElementById("section_education_academics"),
-      };
+      const isWide = window.matchMedia("(min-width: 900px)").matches;
+      const paneLeft = document.getElementById("paneLeft");
+      const paneRight = document.getElementById("paneRight");
+      if (!paneLeft || !paneRight) return;
 
-      const customWrapper = document.getElementById("customSectionsDynamicWrapper");
+      const secPersonal = document.getElementById("section_personal_info");
+      const secSummary = document.getElementById("section_about_summary");
+      const secExperience = document.getElementById("section_work_experience");
+      const secProjects = document.getElementById("section_featured_projects");
+      const secSkills = document.getElementById("section_technical_skills");
+      const secEducation = document.getElementById("section_education_academics");
 
-      // Detach and re-append in exact order
-      effectiveOrder.forEach(secId => {
-        if (elementsMap[secId]) {
-          container.appendChild(elementsMap[secId]);
-        } else if (secId.startsWith("custom_")) {
-          // If custom section matches ID
-          const customEl = document.getElementById(secId);
-          if (customEl) {
-            container.appendChild(customEl);
-          } else if (customWrapper && customWrapper.parentElement !== container) {
-            container.appendChild(customWrapper);
+      const customElements = Array.from(document.querySelectorAll(".custom-section-block"));
+
+      if (isWide) {
+        // =============================================================
+        // TABLET LANDSCAPE & DESKTOP DUAL-PANE MODE (>= 900px)
+        // Exact 1:1 match with Android layout-sw600dp-land/activity_resume_visualiser.xml
+        // =============================================================
+
+        // 1. LEFT PANE: Profile & Credentials (Hero, Summary, Skills, Education)
+        if (secPersonal) paneLeft.appendChild(secPersonal);
+        if (secSummary) paneLeft.appendChild(secSummary);
+        if (secSkills) paneLeft.appendChild(secSkills);
+        if (secEducation) paneLeft.appendChild(secEducation);
+
+        // 2. RIGHT PANE: Career Feed & Deliverables (Work Experience, Featured Projects)
+        if (secExperience) paneRight.appendChild(secExperience);
+        if (secProjects) paneRight.appendChild(secProjects);
+
+        // 3. Alternating Dynamic Custom Sections:
+        // Even indices (0, 2, 4...) -> Left Pane
+        // Odd indices (1, 3, 5...) -> Right Pane
+        customElements.forEach((el, idx) => {
+          if (idx % 2 === 0) {
+            paneLeft.appendChild(el);
+          } else {
+            paneRight.appendChild(el);
           }
-        }
-      });
+        });
 
-      // Append remaining core sections if not listed
-      Object.values(elementsMap).forEach(el => {
-        if (el && el.parentElement !== container) {
-          container.appendChild(el);
-        }
-      });
+        paneRight.style.display = "flex";
 
-      // Ensure custom wrapper is appended
-      if (customWrapper && customWrapper.parentElement !== container) {
-        container.appendChild(customWrapper);
+        // Reset margin-top on the first visible child of paneRight so it starts flush at the top
+        const firstVisibleRight = Array.from(paneRight.children).find(c => c.style.display !== "none");
+        if (firstVisibleRight) {
+          firstVisibleRight.style.marginTop = "0px";
+        }
+      } else {
+        // =============================================================
+        // MOBILE & TABLET PORTRAIT SINGLE-COLUMN MODE (< 900px)
+        // Sequential single-column flow
+        // =============================================================
+        const defaultOrder = [
+          "section_personal_info",
+          "section_about_summary",
+          "section_work_experience",
+          "section_featured_projects",
+          "section_technical_skills",
+          "section_education_academics"
+        ];
+        let effectiveOrder = (cachedProfile.sectionOrder && cachedProfile.sectionOrder.length > 0)
+          ? cachedProfile.sectionOrder
+          : defaultOrder;
+
+        // Detect dual-pane concatenation signature: skills & education before experience
+        const skillsIdx = effectiveOrder.indexOf("section_technical_skills");
+        const eduIdx = effectiveOrder.indexOf("section_education_academics");
+        const expIdx = effectiveOrder.indexOf("section_work_experience");
+        if (skillsIdx !== -1 && expIdx !== -1 && skillsIdx < expIdx && eduIdx !== -1 && eduIdx < expIdx) {
+          const sanitized = [];
+          if (effectiveOrder.includes("section_personal_info")) sanitized.push("section_personal_info");
+          if (effectiveOrder.includes("section_about_summary")) sanitized.push("section_about_summary");
+          if (effectiveOrder.includes("section_work_experience")) sanitized.push("section_work_experience");
+          if (effectiveOrder.includes("section_featured_projects")) sanitized.push("section_featured_projects");
+          if (effectiveOrder.includes("section_technical_skills")) sanitized.push("section_technical_skills");
+          if (effectiveOrder.includes("section_education_academics")) sanitized.push("section_education_academics");
+          effectiveOrder.filter(s => s.startsWith("custom_")).forEach(s => sanitized.push(s));
+          effectiveOrder = sanitized;
+        }
+
+        const elementsMap = {
+          "section_personal_info": secPersonal,
+          "section_about_summary": secSummary,
+          "section_work_experience": secExperience,
+          "section_featured_projects": secProjects,
+          "section_technical_skills": secSkills,
+          "section_education_academics": secEducation
+        };
+
+        // Reset inline margin overrides
+        if (secExperience) secExperience.style.marginTop = "";
+        if (secProjects) secProjects.style.marginTop = "";
+        customElements.forEach(el => {
+          if (el.dataset.defaultMarginTop) {
+            el.style.marginTop = el.dataset.defaultMarginTop;
+          } else {
+            el.style.marginTop = "";
+          }
+        });
+
+        // Append according to effectiveOrder
+        effectiveOrder.forEach(secId => {
+          if (elementsMap[secId]) {
+            paneLeft.appendChild(elementsMap[secId]);
+          } else if (secId.startsWith("custom_")) {
+            const customEl = document.getElementById(secId);
+            if (customEl) paneLeft.appendChild(customEl);
+          }
+        });
+
+        // Append any remaining core sections
+        Object.values(elementsMap).forEach(el => {
+          if (el && el.parentElement !== paneLeft) {
+            paneLeft.appendChild(el);
+          }
+        });
+
+        // Append any remaining custom sections
+        customElements.forEach(el => {
+          if (el.parentElement !== paneLeft) {
+            paneLeft.appendChild(el);
+          }
+        });
+
+        paneRight.style.display = "none";
       }
+
+      // Initialize or refresh section motion drivers (1:1 Android AdaptiveSectionMotionDriver)
+      setupSectionMotionDrivers();
+    }
+
+    // -------------------------------------------------------------
+    // Universal Adaptive Motion Drivers (1:1 Android Parity)
+    // - Hero & Summary: Symmetrical Vertical Lift + Scale (1100ms Overshoot)
+    // - Sections 3..N: Alternating Left / Right Slides (550ms Decelerate)
+    // - Viewport Threshold Reactivity: IntersectionObserver
+    // -------------------------------------------------------------
+    function setupSectionMotionDrivers() {
+      if (window._sectionMotionObserver) {
+        try { window._sectionMotionObserver.disconnect(); } catch (e) {}
+      }
+
+      const secPersonal = document.getElementById("section_personal_info");
+      const secSummary = document.getElementById("section_about_summary");
+
+      if (secPersonal && !secPersonal.classList.contains("motion-hero-entered")) {
+        secPersonal.classList.add("motion-hero-pending");
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            secPersonal.classList.remove("motion-hero-pending");
+            secPersonal.classList.add("motion-hero-entered");
+          }, 40);
+        });
+      }
+
+      if (secSummary && !secSummary.classList.contains("motion-summary-entered")) {
+        secSummary.classList.add("motion-summary-pending");
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            secSummary.classList.remove("motion-summary-pending");
+            secSummary.classList.add("motion-summary-entered");
+          }, 140);
+        });
+      }
+
+      const isWide = window.matchMedia("(min-width: 900px)").matches;
+      const paneLeft = document.getElementById("paneLeft");
+      const paneRight = document.getElementById("paneRight");
+      const sectionsToObserve = [];
+
+      if (isWide) {
+        // Dual-Pane (Desktop / Tablet Landscape):
+        // Left pane sections slide from LEFT, Right pane sections slide from RIGHT
+        if (paneLeft) {
+          Array.from(paneLeft.children).forEach(el => {
+            if (el.id !== "section_personal_info" && el.id !== "section_about_summary" && el.style.display !== "none") {
+              if (!el.classList.contains("motion-slide-entered")) {
+                el.classList.remove("motion-slide-right-pending");
+                el.classList.add("motion-slide-left-pending");
+                sectionsToObserve.push(el);
+              }
+            }
+          });
+        }
+        if (paneRight) {
+          Array.from(paneRight.children).forEach(el => {
+            if (el.style.display !== "none") {
+              if (!el.classList.contains("motion-slide-entered")) {
+                el.classList.remove("motion-slide-left-pending");
+                el.classList.add("motion-slide-right-pending");
+                sectionsToObserve.push(el);
+              }
+            }
+          });
+        }
+      } else {
+        // Single-Column (Mobile & Tablet Portrait):
+        // Strictly alternates: LEFT -> RIGHT -> LEFT -> RIGHT
+        if (paneLeft) {
+          let visibleIndex = 0;
+          Array.from(paneLeft.children).forEach(el => {
+            if (el.id !== "section_personal_info" && el.id !== "section_about_summary" && el.style.display !== "none") {
+              if (!el.classList.contains("motion-slide-entered")) {
+                el.classList.remove("motion-slide-left-pending", "motion-slide-right-pending");
+                if (visibleIndex % 2 === 0) {
+                  el.classList.add("motion-slide-left-pending");
+                } else {
+                  el.classList.add("motion-slide-right-pending");
+                }
+                sectionsToObserve.push(el);
+              }
+              visibleIndex++;
+            }
+          });
+        }
+      }
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const target = entry.target;
+              target.classList.add("motion-slide-entered");
+              obs.unobserve(target);
+            }
+          });
+        }, {
+          root: null,
+          rootMargin: "0px 0px -40px 0px",
+          threshold: 0.08
+        });
+
+        window._sectionMotionObserver = observer;
+
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        sectionsToObserve.forEach((sec, idx) => {
+          const rect = sec.getBoundingClientRect();
+          // If already in the visible viewport at load time, enter with smooth staggered delay
+          if (rect.top < viewportHeight - 50 && rect.bottom > 0) {
+            setTimeout(() => {
+              sec.classList.add("motion-slide-entered");
+            }, 180 + (idx * 110));
+          } else {
+            // Below the fold: wait for user to scroll to it
+            observer.observe(sec);
+          }
+        });
+      } else {
+        // Fallback for older browsers
+        sectionsToObserve.forEach(sec => sec.classList.add("motion-slide-entered"));
+      }
+    }
+
+    // Responsive listener for device rotation or browser resizing
+    try {
+      const wideMql = window.matchMedia("(min-width: 900px)");
+      if (wideMql.addEventListener) {
+        wideMql.addEventListener("change", () => layoutShowcase());
+      } else if (wideMql.addListener) {
+        wideMql.addListener(() => layoutShowcase());
+      }
+    } catch (e) {
+      console.warn("Could not register media query listener:", e);
     }
 
     // Start loading
     loadShowcase();
   </script>
 </body>
+
 </html>

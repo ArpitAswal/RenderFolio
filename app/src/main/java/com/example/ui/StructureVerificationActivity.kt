@@ -57,7 +57,8 @@ class StructureVerificationActivity : AppCompatActivity() {
         if (resources.configuration.smallestScreenWidthDp < 600) {
             try {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
 
         binding = ActivityStructureVerificationBinding.inflate(layoutInflater)
@@ -78,7 +79,19 @@ class StructureVerificationActivity : AppCompatActivity() {
 
         setupToolbar()
         setupKeyboardAndInsetsHandling()
-        loadProfileAndSetupRecyclerView()
+        val savedDraft = savedInstanceState?.getString(KEY_DRAFT_PROFILE)
+        loadProfileAndSetupRecyclerView(savedDraft)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        try {
+            if (::adapter.isInitialized) {
+                val draft = adapter.compileProfile(rightAdapter)
+                outState.putString(KEY_DRAFT_PROFILE, draft.toJson())
+            }
+        } catch (_: Exception) {
+        }
     }
 
     private fun setupKeyboardAndInsetsHandling() {
@@ -137,8 +150,8 @@ class StructureVerificationActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun loadProfileAndSetupRecyclerView() {
-        val jsonProfile = intent.getStringExtra(EXTRA_PROFILE_JSON)
+    private fun loadProfileAndSetupRecyclerView(savedDraftJson: String? = null) {
+        val jsonProfile = savedDraftJson ?: intent.getStringExtra(EXTRA_PROFILE_JSON)
 
         lifecycleScope.launch {
             val baseProfile = if (!jsonProfile.isNullOrBlank()) {
@@ -161,6 +174,40 @@ class StructureVerificationActivity : AppCompatActivity() {
         val isDualPane = rvLeft != null && rvRight != null
 
         if (isDualPane) {
+            // Dynamic placement: calculate which pane will receive the next custom section
+            // Alternates naturally: leftCount <= rightCount ? LEFT : RIGHT
+            fun updateCustomSectionButtonPlacement() {
+                val leftCount = adapter.sections.count { it.type == SectionType.CUSTOM }
+                val rightCount = rightAdapter?.sections?.count { it.type == SectionType.CUSTOM } ?: 0
+                val nextIsLeft = leftCount <= rightCount
+
+                binding.btnAddCustomSectionLeft?.visibility = if (nextIsLeft) View.VISIBLE else View.GONE
+                binding.btnAddCustomSectionRight?.visibility = if (!nextIsLeft) View.VISIBLE else View.GONE
+            }
+
+            fun openAddCustomSectionDialog(targetLeft: Boolean) {
+                val sheet = AddCustomSectionBottomSheet { title ->
+                    if (targetLeft) {
+                        adapter.addCustomSection(title)
+                        val leftPos = adapter.itemCount - 1
+                        if (leftPos >= 0) {
+                            binding.rvSectionsLeft?.smoothScrollToPosition(leftPos)
+                        }
+                    } else {
+                        rightAdapter?.addCustomSection(title)
+                        val rightPos = (rightAdapter?.itemCount ?: 1) - 1
+                        if (rightPos >= 0) {
+                            binding.rvSectionsRight?.smoothScrollToPosition(rightPos)
+                        }
+                    }
+                    updateCustomSectionButtonPlacement()
+                    binding.nestedScrollSections?.post {
+                        binding.nestedScrollSections?.fullScroll(View.FOCUS_DOWN)
+                    }
+                }
+                sheet.show(supportFragmentManager, AddCustomSectionBottomSheet.TAG)
+            }
+
             // Tablet Dual-Pane Architecture (Foundations & Credentials in Left, Experience & Portfolio in Right)
             adapter = StructureSectionsAdapter(
                 profile = profile,
@@ -169,7 +216,9 @@ class StructureVerificationActivity : AppCompatActivity() {
                 },
                 onAddCustomSectionClicked = {},
                 paneTarget = PaneTarget.LEFT
-            )
+            ).apply {
+                onCustomSectionsChanged = { updateCustomSectionButtonPlacement() }
+            }
 
             val targetRight = StructureSectionsAdapter(
                 profile = profile,
@@ -178,31 +227,25 @@ class StructureVerificationActivity : AppCompatActivity() {
                 },
                 onAddCustomSectionClicked = {},
                 paneTarget = PaneTarget.RIGHT
-            )
+            ).apply {
+                onCustomSectionsChanged = { updateCustomSectionButtonPlacement() }
+            }
             rightAdapter = targetRight
 
-            // Wire shared full-width Add Custom Section button across both panes
-            binding.btnAddCustomSection?.setOnClickListener {
-                val sheet = AddCustomSectionBottomSheet { title ->
-                    val leftCount = adapter.sections.count { it.type == SectionType.CUSTOM }
-                    val rightCount = rightAdapter?.sections?.count { it.type == SectionType.CUSTOM } ?: 0
-
-                    if (leftCount <= rightCount) {
-                        adapter.addCustomSection(title)
-                        binding.rvSectionsLeft?.smoothScrollToPosition(adapter.itemCount - 1)
-                    } else {
-                        rightAdapter?.addCustomSection(title)
-                        val rightPos = (rightAdapter?.itemCount ?: 1) - 1
-                        if (rightPos >= 0) {
-                            binding.rvSectionsRight?.smoothScrollToPosition(rightPos)
-                        }
-                    }
-                    binding.nestedScrollSections?.post {
-                        binding.nestedScrollSections?.fullScroll(View.FOCUS_DOWN)
-                    }
-                }
-                sheet.show(supportFragmentManager, AddCustomSectionBottomSheet.TAG)
+            // Wire dynamic Add Custom Section buttons anchored in each column
+            binding.btnAddCustomSectionLeft?.setOnClickListener {
+                openAddCustomSectionDialog(targetLeft = true)
             }
+            binding.btnAddCustomSectionRight?.setOnClickListener {
+                openAddCustomSectionDialog(targetLeft = false)
+            }
+            binding.btnAddCustomSection?.setOnClickListener {
+                val leftCount = adapter.sections.count { it.type == SectionType.CUSTOM }
+                val rightCount = rightAdapter?.sections?.count { it.type == SectionType.CUSTOM } ?: 0
+                openAddCustomSectionDialog(targetLeft = leftCount <= rightCount)
+            }
+
+            updateCustomSectionButtonPlacement()
 
             // Setup Left Column RecyclerView
             rvLeft.layoutManager = LinearLayoutManager(this)
@@ -422,61 +465,106 @@ class StructureVerificationActivity : AppCompatActivity() {
                 when (archetype) {
                     CustomSectionArchetype.CERTIFICATIONS -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Certificate Name is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Certificate Name is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                         if (item.subtitle.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Issuing Organization is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Issuing Organization is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.VOLUNTEER -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Role / Title is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Role / Title is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                         if (item.subtitle.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Organization / Cause is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Organization / Cause is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.AWARDS -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Award Name is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Award Name is required.", Toast.LENGTH_SHORT)
+                                .show()
                             return
                         }
                         if (item.subtitle.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Granting Organization / Issuer is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Granting Organization / Issuer is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.PUBLICATIONS -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Paper / Article Title is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Paper / Article Title is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.OPEN_SOURCE -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Package / Repository Name is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Package / Repository Name is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.LANGUAGES -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Language & Proficiency is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle #${i + 1}: Language & Proficiency is required.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     CustomSectionArchetype.HOBBIES -> {
                         if (item.description.isBlank() && item.bulletPoints.isEmpty() && item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle: Please provide at least one hobby.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "$sectionTitle: Please provide at least one hobby.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return
                         }
                     }
+
                     else -> {
                         if (item.title.isBlank()) {
-                            Toast.makeText(this, "$sectionTitle #${i + 1}: Title is required.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "$sectionTitle #${i + 1}: Title is required.", Toast.LENGTH_SHORT)
+                                .show()
                             return
                         }
                     }
@@ -535,7 +623,9 @@ class StructureVerificationActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                val shareUrl = uploadResult.getOrNull() ?: "${ResumeCloudRepository.BASE_DEEP_LINK_URL}/local"
+                val isOffline = uploadResult.isFailure
+                val uniqueLocalId = "local_${java.util.UUID.randomUUID().toString().take(8)}"
+                val shareUrl = uploadResult.getOrNull() ?: "${ResumeCloudRepository.BASE_DEEP_LINK_URL}/$uniqueLocalId"
                 val shareId = shareUrl.substringAfterLast("/")
 
                 val showcase = com.example.model.SavedShowcase(
@@ -544,12 +634,17 @@ class StructureVerificationActivity : AppCompatActivity() {
                     candidateName = compiledProfile.hero.fullName,
                     headline = compiledProfile.hero.headlineTitle.ifBlank { "Professional Resume" },
                     profile = compiledProfile,
-                    targetCompany = compiledProfile.hero.targetCompany.trim()
+                    targetCompany = compiledProfile.hero.targetCompany.trim(),
+                    isSyncPending = isOffline
                 )
                 preferencesRepository.saveShowcase(showcase)
 
                 if (uploadResult.isFailure && isActive && !isFinishing && !isDestroyed) {
-                    Toast.makeText(this@StructureVerificationActivity, R.string.toast_offline_sync_later, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@StructureVerificationActivity,
+                        R.string.toast_offline_sync_later,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 if (!isActive || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) {
@@ -587,7 +682,11 @@ class StructureVerificationActivity : AppCompatActivity() {
                 // Job was cancelled due to user navigating back. Clean exit.
             } catch (e: Exception) {
                 if (isActive && !isFinishing && !isDestroyed) {
-                    Toast.makeText(this@StructureVerificationActivity, "Generation failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@StructureVerificationActivity,
+                        "Generation failed: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } finally {
                 hideLoadingDialog()
@@ -624,7 +723,8 @@ class StructureVerificationActivity : AppCompatActivity() {
                 }
                 show()
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     private fun hideLoadingDialog() {
@@ -632,7 +732,8 @@ class StructureVerificationActivity : AppCompatActivity() {
             if (loadingDialog?.isShowing == true) {
                 loadingDialog?.dismiss()
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         loadingDialog = null
     }
 
@@ -679,6 +780,7 @@ class StructureVerificationActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val KEY_DRAFT_PROFILE = "key_draft_profile"
         const val EXTRA_PROFILE_JSON = "extra_profile_json"
         const val EXTRA_COMPILED_PROFILE = "extra_compiled_profile"
 

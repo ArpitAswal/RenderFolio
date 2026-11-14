@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Structure Verification Screen (Tablet Landscape Layout: sw600dp-land)
+    Paradigm: 100% Pure XML (Horizontal Dual-Pane Split)
+    Features:
+      - Left column (weight 1): Foundations & Credentials (Personal Info, Summary, Skills, Education, Even custom)
+      - Right column (weight 1): Experience & Portfolio (Work Experience, Projects, Odd custom)
+      - Shared dashed Add Custom Section button anchored below panes
+      - Full ViewBinding ID parity
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootCoordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/app_background"
+        android:fitsSystemWindows="true"
+        android:stateListAnimator="@null"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/transparent"
+            app:elevation="0dp"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:navigationContentDescription="Back"
+            app:title="Structure Verification"
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:contentInsetEnd="16dp"
+            app:contentInsetEndWithActions="16dp"
+            app:menu="@menu/menu_structure_verification" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollSections"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingStart="@dimen/screen_padding_horizontal"
+        android:paddingEnd="@dimen/screen_padding_horizontal"
+        android:paddingTop="12dp"
+        android:paddingBottom="64dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Horizontal Dual-Pane Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- Left Column: Foundations & Credentials + Dynamic Sections -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="12dp"
+                    android:orientation="vertical">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSectionsLeft"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        tools:listitem="@layout/item_personal_info" />
+
+                    <!-- Next Custom Section Button anchored in Left Column when targeted -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddCustomSectionLeft"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="40dp"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:background="@drawable/bg_dashed_button"
+                        android:text="@string/action_add_custom_section"
+                        android:textColor="@color/app_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:backgroundTint="@null"
+                        app:elevation="0dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconTint="@color/app_primary" />
+
+                </LinearLayout>
+
+                <!-- Right Column: Experience & Portfolio + Dynamic Sections -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSectionsRight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        tools:listitem="@layout/item_work_experience" />
+
+                    <!-- Next Custom Section Button anchored in Right Column when targeted -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddCustomSectionRight"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="40dp"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:background="@drawable/bg_dashed_button"
+                        android:text="@string/action_add_custom_section"
+                        android:textColor="@color/app_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:backgroundTint="@null"
+                        app:elevation="0dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconTint="@color/app_primary" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Hidden stub for backward-compatibility with generic binding -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddCustomSection"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

@@ -2,8 +2,10 @@ package com.example.ui
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +14,13 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentManager
 import com.example.R
 import com.example.util.QrCodeGenerator
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import java.io.File
@@ -64,11 +69,16 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
 
         // Always display the standardized showcase title - never show candidate/user name as the title
         tvTitle.text = getString(R.string.title_showcase_ready)
-        tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
+        val isOfflineShowcase = shareUrl.contains("/local") || shareUrl.substringAfterLast("/").startsWith("local")
+        if (isOfflineShowcase) {
+            tvSubtitle.text = "Showcase saved locally. Web QR sharing activates automatically when connected to the internet."
+        } else {
+            tvSubtitle.text = getString(R.string.subtitle_showcase_ready)
+        }
         btnViewVisualiser.visibility = if (isCelebrationMode) View.VISIBLE else View.GONE
 
         // Generate QR Code Bitmap in-memory
-        val qrTargetUrl = if (shareUrl.isNotBlank()) shareUrl else "https://lightweight-firebase-projects.web.app"
+        val qrTargetUrl = if (shareUrl.isNotBlank()) shareUrl else "https://renderfolio-cv.web.app"
         try {
             val bitmap = QrCodeGenerator.generateQrBitmap(content = qrTargetUrl, sizePx = 600)
             qrBitmap = bitmap
@@ -109,7 +119,40 @@ class ShowcaseQrBottomSheet : BottomSheetDialogFragment() {
         // Primary Action: View Visualiser
         btnViewVisualiser.setOnClickListener {
             onViewVisualiser?.invoke()
-            dismiss()
+            dismissAllowingStateLoss()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val d = dialog as? BottomSheetDialog ?: return
+        val bottomSheet = d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) ?: return
+        val behavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Fix 2: Immediately open fully expanded without initial small peek or requiring drag
+        behavior.skipCollapsed = true
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+        // Fix 3: On tablet landscape, constrain width to 460-480dp (~50-60dp narrower) for elegant framing
+        val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isTablet) {
+            val density = resources.displayMetrics.density
+            val widthDp = if (isLandscape) 470 else 520
+            val widthPx = (widthDp * density).toInt()
+            val params = bottomSheet.layoutParams
+            if (params is CoordinatorLayout.LayoutParams) {
+                params.width = widthPx
+                params.gravity = Gravity.CENTER_HORIZONTAL
+                bottomSheet.layoutParams = params
+            } else if (params != null) {
+                params.width = widthPx
+                bottomSheet.layoutParams = params
+            }
+        }
+
+        bottomSheet.post {
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 

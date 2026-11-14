@@ -1,14 +1,13 @@
 # Project Context (`context.md`)
 
 ## 1. Stack & Architecture
-- **Application Name**: RenderFolio (rebranded from ResumeShowcase)
-- **Platform**: Native Android (API 24 to 37)
-- **Language**: Kotlin 2.4.x (Coroutines, Flow, Serialization)
-- **UI Paradigm**: Jetpack Compose + Material 3 + View System Motion Drivers
-- **State Management**: Lifecycle ViewModel + StateFlow (Unidirectional Data Flow)
-- **Document Processing**: Apache PDFBox Android + Google MLKit Text Recognition
+- **Application**: RenderFolio (Android native resume showcase & visualizer)
+- **Version**: `1.0` (`versionCode = 1`) | Min SDK: 24 | Target/Compile SDK: 37
+- **Language**: Kotlin 2.4.x (Coroutines, StateFlow, Serialization)
+- **UI Engine**: Jetpack Compose (Material 3) + View System Motion Drivers
+- **Document Engine**: Apache PDFBox Android (local text) + Google ML Kit OCR (scanned fallback)
 - **Persistence**: Room Database (KSP) + DataStore Preferences
-- **Cloud & Sharing**: Firebase Firestore, Firebase Hosting, Firebase Auth, ZXing QR Code
+- **Cloud & Share**: Firebase Firestore (7-day TTL), Firebase Hosting (`renderfolio.web.app`), ZXing QR Code
 - **Networking**: Retrofit 3.0 + OkHttp 5.5 + Moshi (KSP Codegen)
 
 ---
@@ -17,25 +16,27 @@
 
 | ADR ID | Decision | Rationale |
 | :--- | :--- | :--- |
-| **ADR-001** | **On-Device Parsing Pipeline** | Process PDF files locally using PDFBox Android + MLKit OCR fallback to ensure 100% user privacy and offline capability. |
-| **ADR-002** | **Dedicated Motion Drivers** | Isolate View-level staggered animations into `*MotionDriver` classes to prevent bloated Activities and keep presentation concerns separated. |
-| **ADR-003** | **Stateless Web Companion** | Host a lightweight static HTML5/CSS/JS viewer (`public/index.html`) on Firebase Hosting so recruiters can review portfolios without installing the Android app. |
-| **ADR-004** | **Scoped Storage for QR Images** | Write generated QR codes to `MediaStore.Images.Media.RELATIVE_PATH` (`Pictures/RenderFolio`) to comply with Android 10+ without runtime storage permissions. |
-| **ADR-005** | **Automated Cloud TTL Expiry** | Apply a 7-day automated document expiration on Cloud Firestore portfolios to prevent indefinite retention of candidate PII. |
-| **ADR-006** | **Dual Deep Linking Schemes** | Support universal HTTPS links (`https://renderfolio.web.app/r/{id}`) and custom scheme (`renderfolio://r/{id}`) with legacy fallback. |
+| **ADR-001** | **On-Device Parsing Pipeline** | PDFBox Android + ML Kit OCR fallback ensures 100% privacy; raw resumes are never sent to external AI cloud APIs. |
+| **ADR-002** | **Dedicated Motion Drivers** | Staggered physics animations live in separate `*MotionDriver` classes to prevent bloated Activities. |
+| **ADR-003** | **Stateless Web Companion** | Hosted at `renderfolio.web.app` (`public/index.html`) so recruiters can view portfolios on any browser. |
+| **ADR-004** | **Scoped Storage for QR Codes** | Saves QR images to `Pictures/RenderFolio` via MediaStore Scoped Storage without requiring runtime permissions. |
+| **ADR-005** | **Automated Cloud TTL Expiry** | 7-day automatic Firestore document expiration protects candidate PII from indefinite storage. |
+| **ADR-006** | **Dual Deep Linking Schemes** | Supports universal HTTPS (`https://renderfolio.web.app/r/{id}`) and custom scheme (`renderfolio://r/{id}`). |
+| **ADR-007** | **3-Tier Adaptive UI System** | Phone (`layout/`), Tablet Portrait (`layout-sw600dp/` max-width 600dp), and Tablet Landscape (`layout-sw600dp-land/` dual-pane). |
 
 ---
 
 ## 3. Active Conventions & Invariants
-- **Immutability by Default**: All models (`ResumeModel`, `SavedShowcase`) are immutable Kotlin data classes.
+- **Immutability by Default**: Models (`ResumeProfile`, `SavedShowcase`) are immutable Kotlin data classes.
 - **Main Safety**: Repositories must switch to `Dispatchers.IO` for file I/O, parsing, or network calls.
-- **Zero Hardcoded Secrets**: Secrets must reside in `local.properties` or environment variables; never commit API keys or keystores.
-- **Pure Compose or Pure XML per Screen**: Never mix hybrid rendering paradigms within the same screen layout.
+- **Zero Hardcoded Secrets**: Secrets live in `.env` / `local.properties`; never commit keystores or tokens.
+- **ViewBinding ID Parity**: All view IDs accessed in Kotlin code must exist across all layout qualifiers (`layout/`, `layout-sw600dp/`).
+- **Rotation Safety**: Activities declare `configChanges` in the manifest to prevent state wipeout on device rotation.
 
 ---
 
-## 4. Primary Verification Commands
+## 4. Current Milestone & Verification
+- **Current Milestone**: Production Release `v1.0.0` (Ready for Code Review & Final Verification).
 - **Compilation Check**: `./gradlew compileDebugKotlin`
 - **Lint Check**: `./gradlew lintDebug`
 - **Unit & Robolectric Tests**: `./gradlew testDebugUnitTest`
-

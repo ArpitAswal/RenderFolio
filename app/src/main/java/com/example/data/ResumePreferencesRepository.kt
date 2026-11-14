@@ -70,12 +70,11 @@ class ResumePreferencesRepository private constructor(context: Context) {
             emptyList()
         }
 
-        // Filter out expired items, demo profiles, and dummy placeholders ("showcase_1", "local")
+        // Filter out expired items, demo profiles, and dummy placeholders ("showcase_1")
         val validList = list.filter {
             !it.isExpired &&
             !it.candidateName.equals("Alex Mercer", ignoreCase = true) &&
-            it.shareId != "showcase_1" &&
-            it.shareId != "local"
+            it.shareId != "showcase_1"
         }
 
         // Deduplicate: If multiple items share the same candidate and target company,
@@ -118,7 +117,7 @@ class ResumePreferencesRepository private constructor(context: Context) {
         }
 
         // Deduplicate against existing showcases:
-        // 1. Remove dummy IDs ("showcase_1", "local")
+        // 1. Remove dummy IDs ("showcase_1")
         // 2. Remove identical shareId
         // 3. If a showcase already exists for the same candidate and target company,
         //    replace it with this newly compiled version rather than creating duplicate cards.
@@ -126,7 +125,6 @@ class ResumePreferencesRepository private constructor(context: Context) {
             !it.isExpired &&
             it.shareId != showcase.shareId &&
             it.shareId != "showcase_1" &&
-            it.shareId != "local" &&
             !(it.candidateName.equals(showcase.candidateName, ignoreCase = true) &&
               ((showcase.targetCompany.isNotBlank() && it.targetCompany.trim().equals(showcase.targetCompany.trim(), ignoreCase = true)) ||
                (showcase.targetCompany.isBlank() && it.headline.trim().equals(showcase.headline.trim(), ignoreCase = true))))
@@ -143,17 +141,26 @@ class ResumePreferencesRepository private constructor(context: Context) {
 
     /**
      * Reconciles and synchronizes local storage with verified cloud showcases from Cloud Firestore.
+     * Preserves pending local showcases that have not yet uploaded to Firestore.
      * Purges orphaned local entries that do not exist in the cloud.
      */
     fun syncFromCloud(cloudShowcases: List<SavedShowcase>) {
-        val validList = cloudShowcases.filter {
+        val validCloud = cloudShowcases.filter {
             !it.isExpired &&
             !it.candidateName.equals("Alex Mercer", ignoreCase = true) &&
-            it.shareId != "showcase_1" &&
-            it.shareId != "local"
+            it.shareId != "showcase_1"
         }
 
-        val deduplicated = validList
+        // Preserve local showcases that are pending cloud sync or marked local-only
+        val pendingLocal = loadSavedShowcases().filter {
+            !it.isExpired &&
+            !it.candidateName.equals("Alex Mercer", ignoreCase = true) &&
+            (it.isSyncPending || it.shareId.startsWith("local"))
+        }
+
+        val combined = validCloud + pendingLocal
+
+        val deduplicated = combined
             .groupBy {
                 val keyCompany = it.targetCompany.trim().lowercase()
                 val keyHeadline = it.headline.trim().lowercase()

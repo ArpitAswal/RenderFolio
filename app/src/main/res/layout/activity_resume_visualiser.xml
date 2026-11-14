@@ -46,7 +46,6 @@
                 android:id="@+id/hero_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
 
@@ -56,6 +55,10 @@
                     android:layout_width="84dp"
                     android:layout_height="84dp"
                     android:background="@drawable/bg_hero_avatar_glass"
+                    android:elevation="6dp"
+                    android:outlineProvider="background"
+                    android:outlineSpotShadowColor="#260F172A"
+                    android:outlineAmbientShadowColor="#262563EB"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
@@ -77,6 +80,7 @@
                         android:layout_gravity="bottom|end"
                         android:layout_marginEnd="1dp"
                         android:layout_marginBottom="1dp"
+                        android:elevation="7dp"
                         android:background="@drawable/bg_hero_verified_badge">
 
                         <ImageView
@@ -261,7 +265,6 @@
                 android:id="@+id/wrapper_section_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
@@ -278,7 +281,6 @@
                 android:id="@+id/wrapper_section_experience"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
@@ -293,7 +295,6 @@
                 android:id="@+id/wrapper_section_projects"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
@@ -308,7 +309,6 @@
                 android:id="@+id/wrapper_section_skills"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
@@ -324,7 +324,6 @@
                 android:id="@+id/wrapper_section_education"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp">
@@ -340,7 +339,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:maxWidth="680dp"
                 android:layout_marginTop="32dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp" />

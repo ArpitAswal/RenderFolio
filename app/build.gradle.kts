@@ -42,7 +42,8 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       // Do not remove or modify this signingConfig assignment. It is necessary for Android apps in
       // AI Studio.
@@ -52,6 +53,16 @@ android {
       // Do not remove or modify this signingConfig assignment. It is necessary for Android apps in
       // AI Studio.
       signingConfig = signingConfigs.getByName("debug")
+    }
+  }
+  splits {
+    abi {
+      // Note: Google Play App Bundles (.aab) split ABIs automatically in the Play Store cloud.
+      // Disabling splits for bundle tasks prevents AGP issue #402800800 when resource shrinking is active.
+      isEnable = !gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
+      reset()
+      include("armeabi-v7a", "arm64-v8a", "x86_64")
+      isUniversalApk = true
     }
   }
   compileOptions {

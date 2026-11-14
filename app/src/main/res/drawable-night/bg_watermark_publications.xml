@@ -1,0 +1,105 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Open Book / Academic Journal (Night Mode): -15 degree rotation around center (105, 95), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Open Book Left Page (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 105,142 C 86,132 64,134 46,140 V 56 C 64,50 86,48 105,58 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46"
+                    android:startY="50"
+                    android:endX="105"
+                    android:endY="142">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.6" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46"
+                    android:startY="50"
+                    android:endX="105"
+                    android:endY="142">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.4" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Open Book Right Page (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 105,142 C 124,132 146,134 164,140 V 56 C 146,50 124,48 105,58 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="105"
+                    android:startY="48"
+                    android:endX="164"
+                    android:endY="140">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.6" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="105"
+                    android:startY="48"
+                    android:endX="164"
+                    android:endY="140">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.4" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Book Spine Center Crease -->
+        <path
+            android:pathData="M 105,58 V 144"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="1.5" />
+
+        <!-- Academic Research Article Lines on Left Page -->
+        <path
+            android:pathData="M 58,74 C 72,70 86,70 96,75 M 58,86 C 72,82 86,82 96,87 M 58,98 C 72,94 86,94 96,99 M 58,110 C 72,106 86,106 96,111"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.9" />
+
+        <!-- Academic Research Article Lines on Right Page -->
+        <path
+            android:pathData="M 114,75 C 124,70 138,70 152,74 M 114,87 C 124,82 138,82 152,86 M 114,99 C 124,94 138,94 152,98 M 114,111 C 124,106 138,106 152,110"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.9" />
+
+        <!-- Silk Bookmark Ribbon Draping Down Spine -->
+        <path
+            android:pathData="M 102,56 V 104 L 105,100 L 108,104 V 56 Z"
+            android:fillColor="#593B82F6"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="0.8" />
+
+    </group>
+
+</vector>
+

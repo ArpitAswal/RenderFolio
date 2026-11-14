@@ -1,0 +1,125 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Isometric Adventure Mountain Summits & Compass (Night Mode): -15 degree rotation around center (105, 95), dark obsidian frosted glass with electric blue rim -->
+    <group
+        android:pivotX="105"
+        android:pivotY="95"
+        android:rotation="-15">
+
+        <!-- Background Mountain Ridge Summit (Dark Obsidian Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 116,48 L 166,136 H 66 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="66"
+                    android:startY="48"
+                    android:endX="166"
+                    android:endY="136">
+                    <item android:offset="0.0" android:color="#502A3548" />
+                    <item android:offset="0.6" android:color="#2018202C" />
+                    <item android:offset="1.0" android:color="#0A3B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="66"
+                    android:startY="48"
+                    android:endX="166"
+                    android:endY="136">
+                    <item android:offset="0.0" android:color="#59FFFFFF" />
+                    <item android:offset="1.0" android:color="#333B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Foreground Majestic Alpine Mountain Peak (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 88,66 L 140,146 H 36 Z"
+            android:strokeWidth="1.2">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="36"
+                    android:startY="66"
+                    android:endX="140"
+                    android:endY="146">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="0.5" android:color="#4018202C" />
+                    <item android:offset="1.0" android:color="#143B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="36"
+                    android:startY="66"
+                    android:endX="140"
+                    android:endY="146">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="0.4" android:color="#663B82F6" />
+                    <item android:offset="1.0" android:color="#332A3548" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Alpine Snowcap Crest on Foreground Mountain -->
+        <path
+            android:pathData="M 88,66 L 102,90 L 95,94 L 88,88 L 81,94 L 74,90 Z"
+            android:fillColor="#333B82F6"
+            android:strokeColor="#663B82F6"
+            android:strokeWidth="0.9" />
+
+        <!-- Peak Mountain Spine Crease -->
+        <path
+            android:pathData="M 88,66 V 146"
+            android:fillColor="#00000000"
+            android:strokeColor="#403B82F6"
+            android:strokeWidth="1.0" />
+
+        <!-- 4-Point Adventure Compass Star in Sky -->
+        <path
+            android:pathData="M 144,34 L 147.5,47 L 160,50 L 147.5,53 L 144,66 L 140.5,53 L 128,50 L 140.5,47 Z"
+            android:strokeWidth="1.0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="128"
+                    android:startY="34"
+                    android:endX="160"
+                    android:endY="66">
+                    <item android:offset="0.0" android:color="#662A3548" />
+                    <item android:offset="1.0" android:color="#333B82F6" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="128"
+                    android:startY="34"
+                    android:endX="160"
+                    android:endY="66">
+                    <item android:offset="0.0" android:color="#80FFFFFF" />
+                    <item android:offset="1.0" android:color="#803B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Compass Ring Around Star -->
+        <path
+            android:pathData="M 144,42 a 8,8 0 1 1 0,16 a 8,8 0 1 1 0,-16"
+            android:fillColor="#00000000"
+            android:strokeColor="#593B82F6"
+            android:strokeWidth="0.8" />
+
+    </group>
+
+</vector>
+

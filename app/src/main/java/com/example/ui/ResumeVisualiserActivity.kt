@@ -15,6 +15,7 @@ import android.util.Patterns
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -56,13 +57,10 @@ import com.example.model.SkillCategories
 import com.example.model.WorkExperienceItem
 import com.example.ui.adapter.CustomSectionArchetype
 import com.example.ui.adapter.resolveCustomSectionArchetype
-import com.example.ui.motion.CustomSectionMotionDriver
-import com.example.ui.motion.EducationMotionDriver
+import com.example.ui.motion.AdaptiveSectionMotionDriver
 import com.example.ui.motion.HeroSectionMotionDriver
-import com.example.ui.motion.ProjectsMotionDriver
+import com.example.ui.motion.SlideDirection
 import com.example.ui.motion.SummarySectionMotionDriver
-import com.example.ui.motion.TechnicalSkillsMotionDriver
-import com.example.ui.motion.WorkExperienceMotionDriver
 import com.example.viewmodel.ResumeViewModel
 import com.example.viewmodel.UiState
 import com.google.android.material.chip.Chip
@@ -87,11 +85,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
     private val viewModel: ResumeViewModel by viewModels()
     private lateinit var motionDriver: HeroSectionMotionDriver
     private lateinit var summaryMotionDriver: SummarySectionMotionDriver
-    private lateinit var experienceMotionDriver: WorkExperienceMotionDriver
-    private lateinit var projectsMotionDriver: ProjectsMotionDriver
-    private lateinit var skillsMotionDriver: TechnicalSkillsMotionDriver
-    private lateinit var educationMotionDriver: EducationMotionDriver
-    private val customSectionMotionDrivers = mutableListOf<CustomSectionMotionDriver>()
+    private val sectionMotionDrivers = mutableListOf<AdaptiveSectionMotionDriver>()
     private lateinit var preferencesRepository: ResumePreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,19 +118,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             if (::summaryMotionDriver.isInitialized) {
                 summaryMotionDriver.onScrollChanged(scrollY, binding.scrollView.height)
             }
-            if (::experienceMotionDriver.isInitialized) {
-                experienceMotionDriver.onScrollChanged(binding.scrollView)
-            }
-            if (::projectsMotionDriver.isInitialized) {
-                projectsMotionDriver.onScrollChanged(binding.scrollView)
-            }
-            if (::skillsMotionDriver.isInitialized) {
-                skillsMotionDriver.onScrollChanged(binding.scrollView)
-            }
-            if (::educationMotionDriver.isInitialized) {
-                educationMotionDriver.onScrollChanged(binding.scrollView)
-            }
-            customSectionMotionDrivers.forEach { driver ->
+            sectionMotionDrivers.forEach { driver ->
                 driver.onScrollChanged(binding.scrollView)
             }
         }
@@ -233,6 +215,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         setupSection5(profile.coreSections.skills)
         setupSection6(profile.coreSections.education)
         setupSection7(profile.dynamicSections)
+        setupMotionChoreography()
         binding.pbVisualiserLoading?.visibility = View.GONE
         binding.scrollView.visibility = View.VISIBLE
     }
@@ -245,7 +228,28 @@ class ResumeVisualiserActivity : AppCompatActivity() {
         val parent = binding.layoutVisualiserSections ?: return
 
         val effectiveOrder = if (order.isNotEmpty()) {
-            order
+            val skillsIdx = order.indexOf(ResumeSectionConstants.SECTION_SKILLS)
+            val eduIdx = order.indexOf(ResumeSectionConstants.SECTION_EDUCATION)
+            val expIdx = order.indexOf(ResumeSectionConstants.SECTION_EXPERIENCE)
+
+            // Detect if order was corrupted by dual-pane left+right concatenation (both Skills and Education preceding Experience)
+            if (skillsIdx != -1 && expIdx != -1 && skillsIdx < expIdx && eduIdx != -1 && eduIdx < expIdx) {
+                val sanitized = mutableListOf<String>()
+                // 1. Personal Info & Summary
+                if (order.contains(ResumeSectionConstants.SECTION_PERSONAL)) sanitized.add(ResumeSectionConstants.SECTION_PERSONAL)
+                if (order.contains(ResumeSectionConstants.SECTION_SUMMARY)) sanitized.add(ResumeSectionConstants.SECTION_SUMMARY)
+                // 2. Career Items (Experience & Projects)
+                if (order.contains(ResumeSectionConstants.SECTION_EXPERIENCE)) sanitized.add(ResumeSectionConstants.SECTION_EXPERIENCE)
+                if (order.contains(ResumeSectionConstants.SECTION_PROJECTS)) sanitized.add(ResumeSectionConstants.SECTION_PROJECTS)
+                // 3. Credential Items (Skills & Education)
+                if (order.contains(ResumeSectionConstants.SECTION_SKILLS)) sanitized.add(ResumeSectionConstants.SECTION_SKILLS)
+                if (order.contains(ResumeSectionConstants.SECTION_EDUCATION)) sanitized.add(ResumeSectionConstants.SECTION_EDUCATION)
+                // 4. Custom Sections
+                order.filter { it.startsWith(ResumeSectionConstants.CUSTOM_PREFIX) }.forEach { sanitized.add(it) }
+                sanitized
+            } else {
+                order
+            }
         } else {
             ResumeSectionConstants.DEFAULT_CORE_ORDER + customSections.map { "${ResumeSectionConstants.CUSTOM_PREFIX}${it.sectionTitle}" }
         }
@@ -669,14 +673,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
             container.addView(entryBinding.itemExperienceEntryRoot)
         }
-
-        // Initialize motion driver targeting the whole section container
-        experienceMotionDriver = WorkExperienceMotionDriver(expLayout.sectionExperienceRoot, binding.scrollView)
-
-        // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Section 1 and Section 2)
-        expLayout.sectionExperienceRoot.doOnPreDraw {
-            experienceMotionDriver.playInitialEntrance()
-        }
     }
 
     /**
@@ -814,14 +810,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             }
 
             container.addView(entryBinding.itemProjectEntryRoot)
-        }
-
-        // Initialize motion driver targeting the whole section container
-        projectsMotionDriver = ProjectsMotionDriver(projectsLayout.sectionProjectsRoot, binding.scrollView)
-
-        // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..3)
-        projectsLayout.sectionProjectsRoot.doOnPreDraw {
-            projectsMotionDriver.playInitialEntrance()
         }
     }
 
@@ -1019,14 +1007,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 container.addView(rowBinding.itemSkillDomainRoot)
             }
         }
-
-        // Initialize motion driver targeting the whole section container
-        skillsMotionDriver = TechnicalSkillsMotionDriver(skillsLayout.sectionSkillsRoot, binding.scrollView)
-
-        // Trigger Phase 1 initial entrance once layout pass is complete (synchronized with Sections 1..4)
-        skillsLayout.sectionSkillsRoot.doOnPreDraw {
-            skillsMotionDriver.playInitialEntrance()
-        }
     }
 
     private data class FormattedEducation(
@@ -1140,8 +1120,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
             container.addView(entryBinding.root)
         }
 
-        educationMotionDriver = EducationMotionDriver(eduLayout.sectionEducationRoot, binding.scrollView)
-
         eduLayout.sectionEducationRoot.doOnPreDraw {
             // Clamp watermark height so it never exceeds content height and never introduces extra bottom space
             val contentBottom = eduLayout.containerEducationEntries.bottom
@@ -1151,7 +1129,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                     height = (height - overflow).coerceAtLeast(0)
                 }
             }
-            educationMotionDriver.playInitialEntrance()
         }
     }
 
@@ -1167,19 +1144,46 @@ class ResumeVisualiserActivity : AppCompatActivity() {
      */
     private fun setupSection7(customSections: List<DynamicSection>) {
         val containerCustom = binding.containerCustomSections
+        val containerCustomLeft = binding.containerCustomSectionsLeft
         containerCustom.removeAllViews()
-        customSectionMotionDrivers.clear()
+        containerCustomLeft?.removeAllViews()
 
         val validSections = customSections.filter { it.sectionTitle.isNotBlank() && it.items.isNotEmpty() }
         if (validSections.isEmpty()) {
             containerCustom.visibility = View.GONE
+            containerCustomLeft?.visibility = View.GONE
             return
         }
 
-        containerCustom.visibility = View.VISIBLE
+        if (containerCustomLeft != null) {
+            // Tablet Landscape Dual-Column Mode:
+            // Match Structure Verification screen distribution:
+            // Even dynamic sections (index % 2 == 0) go to Left Pane, Odd dynamic sections (index % 2 != 0) go to Right Pane.
+            val leftSections = mutableListOf<DynamicSection>()
+            val rightSections = mutableListOf<DynamicSection>()
+            validSections.forEachIndexed { index, section ->
+                if (index % 2 == 0) {
+                    leftSections.add(section)
+                } else {
+                    rightSections.add(section)
+                }
+            }
 
-        validSections.forEachIndexed { sectionIdx, section ->
-            val sectionBinding = LayoutSectionCustomDynamicBinding.inflate(layoutInflater, containerCustom, false)
+            containerCustomLeft.visibility = if (leftSections.isNotEmpty()) View.VISIBLE else View.GONE
+            containerCustom.visibility = if (rightSections.isNotEmpty()) View.VISIBLE else View.GONE
+
+            populateCustomSectionsInto(containerCustomLeft, leftSections)
+            populateCustomSectionsInto(containerCustom, rightSections)
+        } else {
+            // Single-Column Mode (Mobile & Tablet Portrait)
+            containerCustom.visibility = View.VISIBLE
+            populateCustomSectionsInto(containerCustom, validSections)
+        }
+    }
+
+    private fun populateCustomSectionsInto(targetContainer: LinearLayout, sectionsToRender: List<DynamicSection>) {
+        sectionsToRender.forEachIndexed { sectionIdx, section ->
+            val sectionBinding = LayoutSectionCustomDynamicBinding.inflate(layoutInflater, targetContainer, false)
 
             val archetype = resolveCustomSectionArchetype(section.sectionTitle)
             val isHobbies = archetype == CustomSectionArchetype.HOBBIES
@@ -1187,7 +1191,7 @@ class ResumeVisualiserActivity : AppCompatActivity() {
 
             // 1. Spacing between sections: tighten to 20dp when entering or leaving compact sections (Languages, Hobbies)
             if (sectionIdx > 0) {
-                val prevSection = validSections[sectionIdx - 1]
+                val prevSection = sectionsToRender[sectionIdx - 1]
                 val prevArchetype = resolveCustomSectionArchetype(prevSection.sectionTitle)
                 val prevIsCompact = prevArchetype == CustomSectionArchetype.LANGUAGES || prevArchetype == CustomSectionArchetype.HOBBIES
                 val currentIsCompact = isLanguages || isHobbies
@@ -1438,10 +1442,6 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                 }
             }
 
-            // Attach dedicated motion driver for this custom section
-            val driver = CustomSectionMotionDriver(sectionBinding.sectionCustomRoot, binding.scrollView)
-            customSectionMotionDrivers.add(driver)
-
             sectionBinding.sectionCustomRoot.doOnPreDraw {
                 // Clamp watermark height so it never exceeds content height and never introduces extra bottom space
                 val contentBottom = sectionBinding.containerCustomItems.bottom
@@ -1451,10 +1451,174 @@ class ResumeVisualiserActivity : AppCompatActivity() {
                         height = (height - overflow).coerceAtLeast(0)
                     }
                 }
-                driver.playInitialEntrance()
             }
 
-            containerCustom.addView(sectionBinding.root)
+            targetContainer.addView(sectionBinding.root)
+        }
+    }
+
+    /**
+     * Sets up adaptive position-based motion choreography:
+     * - Single-Column (Mobile & Tablet Portrait):
+     *   Alternates lateral slide based on visual sequence order after summary:
+     *   1st visible section: FROM_LEFT (100ms)
+     *   2nd visible section: FROM_RIGHT (200ms)
+     *   3rd visible section: FROM_LEFT (300ms)
+     *   4th visible section: FROM_RIGHT (400ms)
+     *   Strict Left -> Right -> Left -> Right visual rhythm.
+     * - Dual-Pane (Tablet Landscape):
+     *   Left Pane sections slide FROM_LEFT (bounded to pane, never crosses center gutter).
+     *   Right Pane sections slide FROM_RIGHT (bounded to pane, never crosses center gutter).
+     */
+    private fun setupMotionChoreography() {
+        sectionMotionDrivers.clear()
+
+        val isTabletLandscape = binding.paneLeftColumn != null && binding.paneRightColumn != null
+
+        if (isTabletLandscape) {
+            // Dual-Pane Mode (Tablet Landscape >= 600dp-land)
+            val leftSections = mutableListOf<View>()
+            if (binding.wrapperSectionSkills?.visibility == View.VISIBLE && binding.includedSectionSkills.sectionSkillsRoot.visibility == View.VISIBLE) {
+                leftSections.add(binding.includedSectionSkills.sectionSkillsRoot)
+            }
+            if (binding.wrapperSectionEducation?.visibility == View.VISIBLE && binding.includedSectionEducation.sectionEducationRoot.visibility == View.VISIBLE) {
+                leftSections.add(binding.includedSectionEducation.sectionEducationRoot)
+            }
+            binding.containerCustomSectionsLeft?.let { customLeft ->
+                if (customLeft.visibility == View.VISIBLE) {
+                    for (i in 0 until customLeft.childCount) {
+                        val child = customLeft.getChildAt(i)
+                        if (child.visibility == View.VISIBLE) {
+                            leftSections.add(child)
+                        }
+                    }
+                }
+            }
+
+            leftSections.forEachIndexed { index, view ->
+                val delay = (index + 1) * 100L
+                sectionMotionDrivers.add(
+                    AdaptiveSectionMotionDriver(
+                        sectionContainer = view,
+                        scrollView = binding.scrollView,
+                        direction = SlideDirection.FROM_LEFT,
+                        startDelayMs = delay,
+                        boundToPane = true
+                    )
+                )
+            }
+
+            val rightSections = mutableListOf<View>()
+            if (binding.wrapperSectionExperience?.visibility == View.VISIBLE && binding.includedSectionExperience.sectionExperienceRoot.visibility == View.VISIBLE) {
+                rightSections.add(binding.includedSectionExperience.sectionExperienceRoot)
+            }
+            if (binding.wrapperSectionProjects?.visibility == View.VISIBLE && binding.includedSectionProjects.sectionProjectsRoot.visibility == View.VISIBLE) {
+                rightSections.add(binding.includedSectionProjects.sectionProjectsRoot)
+            }
+            if (binding.containerCustomSections.visibility == View.VISIBLE) {
+                for (i in 0 until binding.containerCustomSections.childCount) {
+                    val child = binding.containerCustomSections.getChildAt(i)
+                    if (child.visibility == View.VISIBLE) {
+                        rightSections.add(child)
+                    }
+                }
+            }
+
+            rightSections.forEachIndexed { index, view ->
+                val delay = (index + 1) * 100L
+                sectionMotionDrivers.add(
+                    AdaptiveSectionMotionDriver(
+                        sectionContainer = view,
+                        scrollView = binding.scrollView,
+                        direction = SlideDirection.FROM_RIGHT,
+                        startDelayMs = delay,
+                        boundToPane = true
+                    )
+                )
+            }
+        } else {
+            // Single-Column Mode (Mobile & Tablet Portrait)
+            val singleColumnSections = mutableListOf<View>()
+            val parent = binding.layoutVisualiserSections
+
+            if (parent != null) {
+                for (i in 0 until parent.childCount) {
+                    val child = parent.getChildAt(i)
+                    if (child == binding.heroContainer) continue
+                    if (child == binding.wrapperSectionSummary) continue
+                    if (child.visibility != View.VISIBLE) continue
+
+                    when (child) {
+                        binding.wrapperSectionExperience -> {
+                            if (binding.includedSectionExperience.sectionExperienceRoot.visibility == View.VISIBLE) {
+                                singleColumnSections.add(binding.includedSectionExperience.sectionExperienceRoot)
+                            }
+                        }
+                        binding.wrapperSectionProjects -> {
+                            if (binding.includedSectionProjects.sectionProjectsRoot.visibility == View.VISIBLE) {
+                                singleColumnSections.add(binding.includedSectionProjects.sectionProjectsRoot)
+                            }
+                        }
+                        binding.wrapperSectionSkills -> {
+                            if (binding.includedSectionSkills.sectionSkillsRoot.visibility == View.VISIBLE) {
+                                singleColumnSections.add(binding.includedSectionSkills.sectionSkillsRoot)
+                            }
+                        }
+                        binding.wrapperSectionEducation -> {
+                            if (binding.includedSectionEducation.sectionEducationRoot.visibility == View.VISIBLE) {
+                                singleColumnSections.add(binding.includedSectionEducation.sectionEducationRoot)
+                            }
+                        }
+                        binding.containerCustomSections -> {
+                            for (j in 0 until binding.containerCustomSections.childCount) {
+                                val customChild = binding.containerCustomSections.getChildAt(j)
+                                if (customChild.visibility == View.VISIBLE) {
+                                    singleColumnSections.add(customChild)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (binding.wrapperSectionExperience?.visibility == View.VISIBLE && binding.includedSectionExperience.sectionExperienceRoot.visibility == View.VISIBLE) {
+                    singleColumnSections.add(binding.includedSectionExperience.sectionExperienceRoot)
+                }
+                if (binding.wrapperSectionProjects?.visibility == View.VISIBLE && binding.includedSectionProjects.sectionProjectsRoot.visibility == View.VISIBLE) {
+                    singleColumnSections.add(binding.includedSectionProjects.sectionProjectsRoot)
+                }
+                if (binding.wrapperSectionSkills?.visibility == View.VISIBLE && binding.includedSectionSkills.sectionSkillsRoot.visibility == View.VISIBLE) {
+                    singleColumnSections.add(binding.includedSectionSkills.sectionSkillsRoot)
+                }
+                if (binding.wrapperSectionEducation?.visibility == View.VISIBLE && binding.includedSectionEducation.sectionEducationRoot.visibility == View.VISIBLE) {
+                    singleColumnSections.add(binding.includedSectionEducation.sectionEducationRoot)
+                }
+                for (j in 0 until binding.containerCustomSections.childCount) {
+                    val customChild = binding.containerCustomSections.getChildAt(j)
+                    if (customChild.visibility == View.VISIBLE) {
+                        singleColumnSections.add(customChild)
+                    }
+                }
+            }
+
+            singleColumnSections.forEachIndexed { index, view ->
+                val direction = if (index % 2 == 0) SlideDirection.FROM_LEFT else SlideDirection.FROM_RIGHT
+                val delay = (index + 1) * 100L
+                sectionMotionDrivers.add(
+                    AdaptiveSectionMotionDriver(
+                        sectionContainer = view,
+                        scrollView = binding.scrollView,
+                        direction = direction,
+                        startDelayMs = delay,
+                        boundToPane = false
+                    )
+                )
+            }
+        }
+
+        binding.scrollView.doOnPreDraw {
+            sectionMotionDrivers.forEach { driver ->
+                driver.playInitialEntrance()
+            }
         }
     }
 

@@ -133,6 +133,7 @@ class StructureSectionsAdapter(
         get() = sections.filter { it.type == SectionType.CUSTOM }.mapNotNull { it.customSection }
 
     val profileLinks = mutableListOf<String>()
+    var onCustomSectionsChanged: (() -> Unit)? = null
 
     init {
         val initialLinks = mutableListOf<String>()
@@ -263,12 +264,14 @@ class StructureSectionsAdapter(
         val insertIndex = if (footerIndex != -1) footerIndex else sections.size
         sections.add(insertIndex, SectionItem(SectionType.CUSTOM, newSection))
         notifyItemInserted(insertIndex)
+        onCustomSectionsChanged?.invoke()
     }
 
     fun removeCustomSection(position: Int) {
         if (position in sections.indices) {
             sections.removeAt(position)
             notifyItemRemoved(position)
+            onCustomSectionsChanged?.invoke()
         }
     }
 
@@ -499,6 +502,13 @@ class StructureSectionsAdapter(
     inner class PersonalInfoViewHolder(val binding: ItemPersonalInfoBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        private var fullNameWatcher: TextWatcher? = null
+        private var jobTitleWatcher: TextWatcher? = null
+        private var targetCompanyWatcher: TextWatcher? = null
+        private var phoneWatcher: TextWatcher? = null
+        private var emailWatcher: TextWatcher? = null
+        private var locationWatcher: TextWatcher? = null
+
         @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
         fun bind() {
             binding.ivDragHandle.setOnTouchListener { _, event ->
@@ -518,6 +528,14 @@ class StructureSectionsAdapter(
             binding.tilEmail.setRequiredHint(R.string.hint_email)
             binding.tilLocation.setRequiredHint(R.string.hint_location)
 
+            // Remove previous watchers before setting text to prevent spurious triggers during re-binding
+            fullNameWatcher?.let { binding.etFullName.removeTextChangedListener(it) }
+            jobTitleWatcher?.let { binding.etJobTitle.removeTextChangedListener(it) }
+            targetCompanyWatcher?.let { binding.etTargetCompany.removeTextChangedListener(it) }
+            phoneWatcher?.let { binding.etPhone.removeTextChangedListener(it) }
+            emailWatcher?.let { binding.etEmail.removeTextChangedListener(it) }
+            locationWatcher?.let { binding.etLocation.removeTextChangedListener(it) }
+
             binding.etFullName.setText(currentHero.fullName)
             binding.etJobTitle.setText(currentHero.headlineTitle)
             binding.etTargetCompany.setText(currentHero.targetCompany)
@@ -525,28 +543,33 @@ class StructureSectionsAdapter(
             binding.etEmail.setText(currentHero.contactInfo.email)
             binding.etLocation.setText(currentHero.location)
 
-            binding.etFullName.addTextChangedListener(SimpleTextWatcher {
+            fullNameWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(fullName = it)
-            })
-            binding.etJobTitle.addTextChangedListener(SimpleTextWatcher {
+            }.also { binding.etFullName.addTextChangedListener(it) }
+
+            jobTitleWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(headlineTitle = it)
-            })
-            binding.etTargetCompany.addTextChangedListener(SimpleTextWatcher {
+            }.also { binding.etJobTitle.addTextChangedListener(it) }
+
+            targetCompanyWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(targetCompany = it)
-            })
-            binding.etPhone.addTextChangedListener(SimpleTextWatcher {
+            }.also { binding.etTargetCompany.addTextChangedListener(it) }
+
+            phoneWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(
                     contactInfo = currentHero.contactInfo.copy(phone = it)
                 )
-            })
-            binding.etEmail.addTextChangedListener(SimpleTextWatcher {
+            }.also { binding.etPhone.addTextChangedListener(it) }
+
+            emailWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(
                     contactInfo = currentHero.contactInfo.copy(email = it)
                 )
-            })
-            binding.etLocation.addTextChangedListener(SimpleTextWatcher {
+            }.also { binding.etEmail.addTextChangedListener(it) }
+
+            locationWatcher = SimpleTextWatcher {
                 currentHero = currentHero.copy(location = it)
-            })
+            }.also { binding.etLocation.addTextChangedListener(it) }
 
             binding.etLocation.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
@@ -693,6 +716,8 @@ class StructureSectionsAdapter(
     inner class AboutSummaryViewHolder(val binding: ItemAboutSummaryBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        private var summaryWatcher: TextWatcher? = null
+
         @SuppressLint("ClickableViewAccessibility", "SetTextI18n")
         fun bind() {
             binding.ivDragHandle.setOnTouchListener { _, event ->
@@ -703,6 +728,8 @@ class StructureSectionsAdapter(
                     false
                 }
             }
+
+            summaryWatcher?.let { binding.etSummary.removeTextChangedListener(it) }
 
             binding.tilSummary.setRequiredHint(R.string.hint_profile_summary)
             if (binding.etSummary.text?.toString() != currentSummary) {
@@ -730,10 +757,10 @@ class StructureSectionsAdapter(
 
             validateSummaryLength(currentSummary.length)
 
-            binding.etSummary.addTextChangedListener(SimpleTextWatcher(trim = false) {
+            summaryWatcher = SimpleTextWatcher(trim = false) {
                 currentSummary = it
                 validateSummaryLength(it.length)
-            })
+            }.also { binding.etSummary.addTextChangedListener(it) }
 
             binding.etSummary.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
@@ -3028,8 +3055,26 @@ class StructureSectionsAdapter(
             }
 
         val allSectionsForOrder = if (rightAdapter != null && rightAdapter !== this) {
-            sections.filter { it.type != SectionType.FOOTER } + rightAdapter.sections.filter { it.type != SectionType.FOOTER }
+            // Tablet Landscape Dual-Pane Compilation:
+            // Interleave sections into the canonical single-column reading order:
+            // 1. Personal Info & Summary (from left pane)
+            // 2. Work Experience & Projects (from right pane)
+            // 3. Technical Skills & Education (from left pane)
+            // 4. Custom Sections (from left and right panes)
+            val leftNonCustom = sections.filter { it.type != SectionType.FOOTER && it.type != SectionType.CUSTOM }
+            val rightNonCustom = rightAdapter.sections.filter { it.type != SectionType.FOOTER && it.type != SectionType.CUSTOM }
+
+            val personalAndSummary = leftNonCustom.filter { it.type == SectionType.PERSONAL_INFO || it.type == SectionType.ABOUT_SUMMARY }
+            val careerItems = rightNonCustom.filter { it.type == SectionType.WORK_EXPERIENCE || it.type == SectionType.PROJECTS }
+            val credentialItems = leftNonCustom.filter { it.type == SectionType.TECHNICAL_SKILLS || it.type == SectionType.EDUCATION }
+
+            val leftCustom = sections.filter { it.type == SectionType.CUSTOM }
+            val rightCustom = rightAdapter.sections.filter { it.type == SectionType.CUSTOM }
+
+            personalAndSummary + careerItems + credentialItems + leftCustom + rightCustom
         } else {
+            // Single-Column Mode (Mobile & Tablet Portrait):
+            // Exactly preserves the single-column list / drag order
             sections.filter { it.type != SectionType.FOOTER }
         }
 
@@ -3062,10 +3107,10 @@ class StructureSectionsAdapter(
 }
 
 class SimpleTextWatcher(
-    private val trim: Boolean = true,
+    private val trim: Boolean = false,
     private val afterChanged: (String) -> Unit
 ) : TextWatcher {
-    constructor(afterChanged: (String) -> Unit) : this(trim = true, afterChanged = afterChanged)
+    constructor(afterChanged: (String) -> Unit) : this(trim = false, afterChanged = afterChanged)
 
     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}

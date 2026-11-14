@@ -1,0 +1,4 @@
+name = "code-review"
+description = "Universal code reviewer that audits code diffs, specific screens, or full projects for critical bugs, logic flaws, UI stretching, and edge cases."
+instructions_file = "personas/code-reviewer.md"
+

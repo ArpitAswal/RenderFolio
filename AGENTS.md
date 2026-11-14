@@ -6,6 +6,7 @@
 3. **Separation of Concerns**: Keep domain and business logic independent of UI frameworks, navigation routers, and platform SDKs. Match modularity to domain complexity without unnecessary boilerplate.
 4. **Minimal Diff Discipline**: Modify only the files and lines required for the task. Never perform drive-by formatting, unprompted dependency updates, or speculative abstractions.
 5. **Search & Inspect First**: Read existing project conventions, dependency manifests, and adjacent modules before introducing new patterns or libraries.
+6. **Dead File & Orphan Elimination**: Before completing verification or pushing code, scan for and remove obsolete or unreferenced tech-stack files (unused `*.kt` classes, unreferenced `*.xml` layouts or drawables, dead qualifier folders).
 
 ## 2. Standard Execution Workflow
 1. **Understand & Scope**: Read relevant files and inspect `context.md` (if present).
@@ -25,7 +26,7 @@
 - **Planner**: `personas/planner.md` (Defines structured phased plans before any code changes).
 - **Adaptive Screen Agent**: `personas/android-adaptive-screen-agent.md` (Designs responsive UI across phone, foldable, and tablet).
 - **TDD Guide**: `personas/tdd-guide.md` (Coaches red-green-refactor test cycles).
-- **Code Reviewer**: `personas/code-reviewer.md` (Strict diff review for correctness, leaks, and regressions).
+- **Code Reviewer**: `personas/code-reviewer.md` (Audits code diffs, specific screens, or full projects for critical bugs, logic flaws, UI stretching, and edge cases).
 - **Security Reviewer**: `personas/security-reviewer.md` (Audits manifests, storage, network, and secrets against `rules/common/security.md`).
 - **Build Error Resolver**: `personas/build-error-resolver.md` (Surgically fixes build and lint failures).
 - **Technical Writer**: `personas/technical-writer.md` (Generates framework-agnostic README, CHANGELOG, Architecture, and Context docs).

@@ -6,8 +6,6 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission
-        android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- Network permissions for Firebase Cloud Sync and Deep Link verification -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,30 +32,32 @@
             android:name=".ui.StructureVerificationActivity"
             android:exported="false"
             android:label="Structure Verification"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
             android:theme="@style/Theme.MyApplication"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.ResumeVisualiserActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:label="Resume Visualiser"
             android:theme="@style/Theme.ResumeVisualiser">
-            <!-- Web Deep Link: https://lightweight-firebase-projects.web.app/r/{id} -->
-            <intent-filter>
+            <!-- Web Deep Link: https://renderfolio-cv.web.app/r/{id} -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="lightweight-firebase-projects.web.app"
-                    android:pathPrefix="/r/" />
-                <data
-                    android:scheme="https"
-                    android:host="renderfolio.web.app"
-                    android:pathPrefix="/r/" />
-                <data
-                    android:scheme="https"
-                    android:host="resumeshowcase.web.app"
-                    android:pathPrefix="/r/" />
+                <data android:scheme="https" />
+                <data android:host="renderfolio-cv.web.app" />
+                <data android:pathPrefix="/r/" />
+                <data android:scheme="https" />
+                <data android:host="lightweight-firebase-projects.web.app" />
+                <data android:pathPrefix="/r/" />
+                <data android:scheme="https" />
+                <data android:host="renderfolio.web.app" />
+                <data android:pathPrefix="/r/" />
+                <data android:scheme="https" />
+                <data android:host="resumeshowcase.web.app" />
+                <data android:pathPrefix="/r/" />
             </intent-filter>
 
             <!-- Custom URI Scheme: renderfolio://r/{id} and resumeshowcase://r/{id} -->
@@ -65,12 +65,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="renderfolio"
-                    android:host="r" />
-                <data
-                    android:scheme="resumeshowcase"
-                    android:host="r" />
+                <data android:scheme="renderfolio" />
+                <data android:host="r" />
+                <data android:scheme="resumeshowcase" />
+                <data android:host="r" />
             </intent-filter>
         </activity>
 

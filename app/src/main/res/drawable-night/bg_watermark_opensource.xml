@@ -1,0 +1,87 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- 3D Frosted Glass Open Source Hexagonal Shield & Git Tree (Night Mode - Stitch Design Parity) -->
+    <group
+        android:pivotX="100"
+        android:pivotY="90"
+        android:rotation="-15">
+
+        <!-- Outer Hexagonal Badge Frame (Dark Frosted Glass Fill + Specular Rim) -->
+        <path
+            android:pathData="M 100,25 L 160,55 L 160,115 L 100,155 L 40,115 L 40,55 Z"
+            android:strokeWidth="1.5">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="100"
+                    android:startY="25"
+                    android:endX="100"
+                    android:endY="155">
+                    <item android:offset="0.0" android:color="#802A3548" />
+                    <item android:offset="1.0" android:color="#4018202C" />
+                </gradient>
+            </aapt:attr>
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="100"
+                    android:startY="25"
+                    android:endX="100"
+                    android:endY="155">
+                    <item android:offset="0.0" android:color="#73FFFFFF" />
+                    <item android:offset="1.0" android:color="#663B82F6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Inner Inset Hexagon Facet Line -->
+        <path
+            android:pathData="M 100,38 L 148,62 L 148,108 L 100,140 L 52,108 L 52,62 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#403B82F6"
+            android:strokeWidth="1.0" />
+
+        <!-- Git Main Trunk Line -->
+        <path
+            android:pathData="M 80,120 L 80,65"
+            android:fillColor="#00000000"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="1.5" />
+
+        <!-- Git Feature Branch Curve -->
+        <path
+            android:pathData="M 80,92 Q 80,80 96,80 L 115,80"
+            android:fillColor="#00000000"
+            android:strokeColor="#733B82F6"
+            android:strokeWidth="1.5" />
+
+        <!-- Git Commit Nodes -->
+        <path
+            android:pathData="M 80,61 a 4,4 0 1 1 0,8 a 4,4 0 1 1 0,-8 Z"
+            android:fillColor="#803B82F6" />
+
+        <path
+            android:pathData="M 80,111 a 4,4 0 1 1 0,8 a 4,4 0 1 1 0,-8 Z"
+            android:fillColor="#803B82F6" />
+
+        <path
+            android:pathData="M 115,76 a 4,4 0 1 1 0,8 a 4,4 0 1 1 0,-8 Z"
+            android:fillColor="#803B82F6" />
+
+        <!-- Verified Release Checkmark -->
+        <path
+            android:pathData="M 90,98 L 98,106 L 112,90"
+            android:fillColor="#00000000"
+            android:strokeColor="#BFFFFFFF"
+            android:strokeWidth="2.0"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+
+    </group>
+
+</vector>

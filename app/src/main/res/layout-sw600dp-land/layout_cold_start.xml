@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Cold-Start PDF Attachment Screen (Tablet / Wide Landscape Layout: w600dp)
+    Cold-Start PDF Attachment Screen (Tablet Landscape Layout: sw600dp-land)
     Paradigm: 100% Pure XML (Two-Column Horizontal Split)
     Features:
       - Left column (52%): Brand Badge, Display Headline (28sp), Subtitle (18sp), Privacy Badge & Format Note
@@ -21,17 +21,17 @@
     android:fillViewport="true"
     android:overScrollMode="ifContentScrolls">
 
-    <!-- Root two-column container for tablet / wide screens (w600dp) -->
+    <!-- Root two-column container for tablet landscape (sw600dp-land) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="48dp"
-        android:paddingTop="36dp"
-        android:paddingEnd="48dp"
-        android:paddingBottom="36dp">
+        android:paddingStart="@dimen/screen_padding_horizontal"
+        android:paddingTop="@dimen/screen_padding_vertical"
+        android:paddingEnd="@dimen/screen_padding_horizontal"
+        android:paddingBottom="@dimen/screen_padding_vertical">
 
         <!-- Left Column (52%): Brand Badge, Display Headline, Value Sub-copy, Privacy & Format Notes -->
         <LinearLayout
@@ -329,3 +329,4 @@
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
+

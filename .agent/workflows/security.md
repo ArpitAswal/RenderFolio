@@ -9,7 +9,10 @@ description: Run a comprehensive pre-publish security audit and Git hygiene chec
    - Insecure exported components (`android:exported="true"` without permission).
    - Cleartext traffic or insecure network configurations.
 4. Audit `.gitignore` coverage for sensitive files, credentials, and OS junk (`.DS_Store`). If a sensitive file is currently tracked, specify the required `git rm --cached` command.
-5. Review Markdown files:
+5. **Orphaned & Dead Code Elimination**:
+   - Scan for abandoned, unused, or obsolete tech-stack files (e.g. unreferenced `*.kt` classes, obsolete `*.xml` layouts or drawables, dead qualifier directories like old `layout-w600dp`).
+   - Remove or list them for safe deletion before pushing to keep the repository lean and clean.
+6. Review Markdown files:
    - Keep public documentation (`README.md`, `CONTRIBUTING.md`) tracked.
    - List internal agent instructions (`.agent/`, `personas/`, `skills/`, `.codex/`) and ask the user whether these should remain tracked or be added to `.gitignore`.
 6. Output the structured 4-part **Public Readiness Report** defined in `personas/security-reviewer.md`.

@@ -243,50 +243,54 @@ class PdfExtractionRepository(private val context: Context) {
         return text.split(" ")
             .filter { it.isNotBlank() }
             .joinToString(" ") { word ->
-                val cleanWord = word.replace(Regex("[,.:;|•·]+$"), "")
-                val suffix = word.substring(cleanWord.length)
-                when {
-                    word == "|" -> "|"
-                    word == "·" -> "·"
-                    word == "•" -> "•"
-                    word.equals("Node.js", ignoreCase = true) -> "Node.js"
-                    word.equals("PostgreSQL", ignoreCase = true) -> "PostgreSQL"
-                    word.equals("TypeScript", ignoreCase = true) -> "TypeScript"
-                    cleanWord.equals("AKTU", ignoreCase = true) -> "AKTU$suffix"
-                    cleanWord.equals("CSE", ignoreCase = true) -> "CSE$suffix"
-                    cleanWord.equals("UP", ignoreCase = true) -> "UP$suffix"
-                    cleanWord.equals("B.Tech", ignoreCase = true) -> "B.Tech$suffix"
-                    cleanWord.equals("M.Tech", ignoreCase = true) -> "M.Tech$suffix"
-                    cleanWord.equals("B.E.", ignoreCase = true) -> "B.E.$suffix"
-                    cleanWord.equals("M.E.", ignoreCase = true) -> "M.E.$suffix"
-                    cleanWord.equals("BCA", ignoreCase = true) -> "BCA$suffix"
-                    cleanWord.equals("MCA", ignoreCase = true) -> "MCA$suffix"
-                    cleanWord.equals("A.K.T.U.", ignoreCase = true) -> "A.K.T.U.$suffix"
-                    cleanWord.equals("R.D.", ignoreCase = true) -> "R.D.$suffix"
-                    word.matches(Regex("^(?:[A-Za-z]\\.)+[A-Za-z]?$")) -> word.uppercase()
-                    word.equals("CGPA", ignoreCase = true) || word.startsWith("CGPA:", ignoreCase = true) -> word.replace(Regex("(?i)cgpa"), "CGPA")
-                    word.equals("GPA", ignoreCase = true) || word.startsWith("GPA:", ignoreCase = true) -> word.replace(Regex("(?i)gpa"), "GPA")
-                    word.equals("AI", ignoreCase = true) -> "AI"
-                    word.equals("ML", ignoreCase = true) -> "ML"
-                    word.equals("iOS", ignoreCase = true) -> "iOS"
-                    word.equals("UI", ignoreCase = true) -> "UI"
-                    word.equals("UX", ignoreCase = true) -> "UX"
-                    word.equals("API", ignoreCase = true) -> "API"
-                    word.equals("APIs", ignoreCase = true) -> "APIs"
-                    word.equals("SDK", ignoreCase = true) -> "SDK"
-                    word.equals("SDKs", ignoreCase = true) -> "SDKs"
-                    word.equals("REST", ignoreCase = true) -> "REST"
-                    word.equals("MVVM", ignoreCase = true) -> "MVVM"
-                    word.equals("BLoC", ignoreCase = true) || word.equals("Bloc", ignoreCase = true) -> "BLoC"
-                    word.equals("IT", ignoreCase = true) -> "IT"
-                    word.equals("IIT", ignoreCase = true) -> "IIT"
-                    word.equals("NIT", ignoreCase = true) -> "NIT"
-                    word.equals("IIIT", ignoreCase = true) -> "IIIT"
-                    cleanWord.equals("ECE", ignoreCase = true) -> "ECE$suffix"
-                    cleanWord.equals("AWS", ignoreCase = true) -> "AWS$suffix"
-                    cleanWord.equals("GCP", ignoreCase = true) -> "GCP$suffix"
-                    else -> word.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                if (word == "|" || word == "·" || word == "•") return@joinToString word
+                val prefix = word.takeWhile { it in "([{\"'“‘<" }
+                val suffix = word.takeLastWhile { it in ")]}\"'”’>,.:;|•·" }
+                val coreWord = if (word.length >= prefix.length + suffix.length) {
+                    word.substring(prefix.length, word.length - suffix.length)
+                } else {
+                    word
                 }
+                val transformed = when {
+                    coreWord.equals("Node.js", ignoreCase = true) -> "Node.js"
+                    coreWord.equals("PostgreSQL", ignoreCase = true) -> "PostgreSQL"
+                    coreWord.equals("TypeScript", ignoreCase = true) -> "TypeScript"
+                    coreWord.equals("AKTU", ignoreCase = true) -> "AKTU"
+                    coreWord.equals("CSE", ignoreCase = true) -> "CSE"
+                    coreWord.equals("UP", ignoreCase = true) -> "UP"
+                    coreWord.equals("B.Tech", ignoreCase = true) -> "B.Tech"
+                    coreWord.equals("M.Tech", ignoreCase = true) -> "M.Tech"
+                    coreWord.equals("B.E.", ignoreCase = true) -> "B.E."
+                    coreWord.equals("M.E.", ignoreCase = true) -> "M.E."
+                    coreWord.equals("BCA", ignoreCase = true) -> "BCA"
+                    coreWord.equals("MCA", ignoreCase = true) -> "MCA"
+                    coreWord.equals("A.K.T.U.", ignoreCase = true) -> "A.K.T.U."
+                    coreWord.equals("R.D.", ignoreCase = true) -> "R.D."
+                    coreWord.matches(Regex("^(?:[A-Za-z]\\.)+[A-Za-z]?$")) -> coreWord.uppercase()
+                    coreWord.equals("CGPA", ignoreCase = true) || coreWord.startsWith("CGPA:", ignoreCase = true) -> coreWord.replace(Regex("(?i)cgpa"), "CGPA")
+                    coreWord.equals("GPA", ignoreCase = true) || coreWord.startsWith("GPA:", ignoreCase = true) -> coreWord.replace(Regex("(?i)gpa"), "GPA")
+                    coreWord.equals("AI", ignoreCase = true) -> "AI"
+                    coreWord.equals("ML", ignoreCase = true) -> "ML"
+                    coreWord.equals("iOS", ignoreCase = true) -> "iOS"
+                    coreWord.equals("UI", ignoreCase = true) -> "UI"
+                    coreWord.equals("UX", ignoreCase = true) -> "UX"
+                    coreWord.equals("API", ignoreCase = true) -> "API"
+                    coreWord.equals("APIs", ignoreCase = true) -> "APIs"
+                    coreWord.equals("SDK", ignoreCase = true) -> "SDK"
+                    coreWord.equals("SDKs", ignoreCase = true) -> "SDKs"
+                    coreWord.equals("REST", ignoreCase = true) -> "REST"
+                    coreWord.equals("MVVM", ignoreCase = true) -> "MVVM"
+                    coreWord.equals("BLoC", ignoreCase = true) || coreWord.equals("Bloc", ignoreCase = true) -> "BLoC"
+                    coreWord.equals("IT", ignoreCase = true) -> "IT"
+                    coreWord.equals("IIT", ignoreCase = true) -> "IIT"
+                    coreWord.equals("NIT", ignoreCase = true) -> "NIT"
+                    coreWord.equals("IIIT", ignoreCase = true) -> "IIIT"
+                    coreWord.equals("ECE", ignoreCase = true) -> "ECE"
+                    coreWord.equals("AWS", ignoreCase = true) -> "AWS"
+                    coreWord.equals("GCP", ignoreCase = true) -> "GCP"
+                    else -> coreWord.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+                "$prefix$transformed$suffix"
             }
     }
 
@@ -735,16 +739,19 @@ class PdfExtractionRepository(private val context: Context) {
         try {
             pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
             renderer = PdfRenderer(pfd)
-            val pageCount = renderer.pageCount
+            // Support multi-page resumes up to 10MB while capping OCR at 10 pages to avoid OOM or unbounded processing
+            val pageCount = minOf(renderer.pageCount, 10)
 
             for (i in 0 until pageCount) {
                 val pageProgress = 0.1f + (0.35f * ((i + 1).toFloat() / pageCount.coerceAtLeast(1)))
                 onProgress("Google ML Kit OCR: Scanning page ${i + 1} of $pageCount...", pageProgress)
 
                 val page = renderer.openPage(i)
-                val width = page.width * 2
-                val height = page.height * 2
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                // Cap max dimension to 2048px to prevent OutOfMemoryError on high-DPI scans while preserving crisp OCR recognition
+                val scale = minOf(2f, 2048f / maxOf(page.width, page.height).coerceAtLeast(1))
+                val renderWidth = (page.width * scale).toInt().coerceAtLeast(1)
+                val renderHeight = (page.height * scale).toInt().coerceAtLeast(1)
+                val bitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888)
                 bitmap.eraseColor(Color.WHITE)
 
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
@@ -1516,7 +1523,22 @@ class PdfExtractionRepository(private val context: Context) {
                     currentBullets.add(line)
                 } else if (currentBullets.isNotEmpty()) {
                     // We already have bullets for the current position.
-                    // Is this line a multi-line wrap continuation of the preceding bullet?
+                    // Check if this line is an accomplishment highlight (e.g. "Release Management: ...", "Key Responsibilities: ...")
+                    val isAccomplishmentLeadIn = line.matches(Regex("^[A-Z][A-Za-z0-9\\s/&-]{2,30}:\\s+.*"))
+                    val actionVerbStart = isBulletStart(line)
+
+                    // A line can only be a NEW job header if it has strong company/role signals:
+                    val headerSegs = parseHeaderSegments(line)
+                    val hasStrongHeaderSignal = headerSegs != null && (
+                        isCompanyIndicator(headerSegs.first) ||
+                        isLikelyRole(headerSegs.second) ||
+                        (line.contains("|") && !isAccomplishmentLeadIn) ||
+                        (line.contains(" at ", ignoreCase = true) && !isAccomplishmentLeadIn)
+                    )
+                    val isNewCompanyHeader = !isAccomplishmentLeadIn && !actionVerbStart && (
+                        hasStrongHeaderSignal || isCompanyIndicator(line)
+                    )
+
                     val startsWithLower = line.firstOrNull()?.isLowerCase() == true
                     val startsWithOperatorOrDigit = line.matches(Regex("^[<>=+~%$0-9].*"))
                     val lastBullet = currentBullets.last()
@@ -1525,22 +1547,42 @@ class PdfExtractionRepository(private val context: Context) {
                     val lastEndsWithPreposition = continuationWords.any { lastBullet.trim().endsWith(" $it", ignoreCase = true) }
                     val startsWithPreposition = continuationWords.any { line.startsWith("$it ", ignoreCase = true) }
 
-                    val isContinuation = startsWithLower ||
+                    val isContinuation = !isNewCompanyHeader && (
+                            startsWithLower ||
                             startsWithOperatorOrDigit ||
                             lastEndsWithPreposition ||
                             lastBullet.endsWith(",") ||
                             lastBullet.endsWith(";") ||
                             (lastEndsWithOpenSentence && (startsWithPreposition || line.length > 25))
+                    )
 
-                    if (isContinuation) {
+                    if (isAccomplishmentLeadIn || actionVerbStart) {
+                        val cleaned = cleanBulletLine(line)
+                        if (cleaned.isNotBlank()) {
+                            currentBullets.add(cleaned)
+                        }
+                    } else if (isContinuation) {
                         val cleaned = cleanBulletLine(line)
                         if (cleaned.isNotBlank()) {
                             currentBullets[currentBullets.lastIndex] = "$lastBullet $cleaned"
                         }
-                    } else {
-                        // This line starts a new job entry (e.g. "Techwink Services")
+                    } else if (isNewCompanyHeader) {
+                        // This line starts a new job entry (e.g. "Techwink Services | Mobile Developer Intern")
                         flushCurrent()
-                        pendingHeaderLines.add(line)
+                        val (c, r) = headerSegs ?: Pair("", "")
+                        if (c.isNotBlank()) currentCompany = c
+                        if (r.isNotBlank()) currentRole = r
+                        if (currentCompany.isBlank() && isCompanyIndicator(line)) currentCompany = line
+                    } else {
+                        // Fallback: If it doesn't match a new company header, treat it as a continuation or bullet rather than corrupting companyName
+                        val cleaned = cleanBulletLine(line)
+                        if (cleaned.isNotBlank()) {
+                            if (lastEndsWithOpenSentence) {
+                                currentBullets[currentBullets.lastIndex] = "$lastBullet $cleaned"
+                            } else {
+                                currentBullets.add(cleaned)
+                            }
+                        }
                     }
                 } else {
                     if (currentCompany.isNotBlank() && currentRole.isNotBlank()) {
@@ -1551,11 +1593,11 @@ class PdfExtractionRepository(private val context: Context) {
                         val pSeg = parseHeaderSegments(line)
                         if (pSeg != null) {
                             val (c, r) = pSeg
-                            if (c.isNotBlank() && currentCompany.isBlank()) currentCompany = c
-                            if (r.isNotBlank() && currentRole.isBlank()) currentRole = r
+                            if (c.isNotBlank()) currentCompany = c
+                            if (r.isNotBlank()) currentRole = r
                         } else if (isLikelyRole(line) && currentRole.isBlank()) {
                             currentRole = line
-                        } else if (isCompanyIndicator(line) && currentCompany.isBlank()) {
+                        } else if (isCompanyIndicator(line)) {
                             currentCompany = line
                         } else if (!isLikelyLocation(line) && currentCompany.isBlank()) {
                             currentCompany = line
@@ -1702,6 +1744,31 @@ class PdfExtractionRepository(private val context: Context) {
         return ParsedProjectHeader(finalTitle, tags)
     }
 
+    private fun splitTechTokens(content: String): List<String> {
+        val tokens = mutableListOf<String>()
+        var current = java.lang.StringBuilder()
+        var parenDepth = 0
+        for (char in content) {
+            when (char) {
+                '(' -> { parenDepth++; current.append(char) }
+                ')' -> { if (parenDepth > 0) parenDepth--; current.append(char) }
+                ',', '|', '•', '·' -> {
+                    if (parenDepth == 0) {
+                        val t = current.toString().trim()
+                        if (t.isNotBlank()) tokens.add(t)
+                        current = java.lang.StringBuilder()
+                    } else {
+                        current.append(char)
+                    }
+                }
+                else -> current.append(char)
+            }
+        }
+        val last = current.toString().trim()
+        if (last.isNotBlank()) tokens.add(last)
+        return tokens
+    }
+
     private fun parseProjects(projText: String, annotationLinks: List<String> = emptyList()): List<ProjectItem> {
         if (projText.isBlank()) return emptyList()
 
@@ -1787,10 +1854,31 @@ class PdfExtractionRepository(private val context: Context) {
             val techStackMatch = Regex("(?i)^(?:Tech(?:nology)?\\s*Stack|Technologies|Environment):\\s*(.*)$").find(line)
             if (techStackMatch != null) {
                 val techContent = techStackMatch.groupValues[1].trim()
-                val tokens = techContent.split(Regex("[,|•·]")).map { it.trim() }.filter { it.isNotBlank() }
+                val tokens = splitTechTokens(techContent)
                 tokens.forEach { token ->
                     if (!currentTags.any { it.equals(token, ignoreCase = true) }) {
                         currentTags.add(token)
+                    }
+                }
+                continue
+            }
+
+            // B2. Platform Support metadata line (e.g. "Platform Support: Android & iOS | Responsive Phone & Tablet Layouts | GitHub")
+            val platformSupportMatch = Regex("(?i)^(?:Platform(?:\\s*Support)?|Supported\\s*Platforms?|Platforms?|Target\\s*Platforms?):\\s*(.*)$").find(line)
+            if (platformSupportMatch != null) {
+                val platformContent = platformSupportMatch.groupValues[1].trim()
+                val platformTokens = platformContent.split(Regex("[|•·,]")).map { it.trim() }.filter { it.isNotBlank() }
+                for (token in platformTokens) {
+                    val pHeader = parseProjectHeader(token)
+                    pHeader.techStackTags.forEach { tag ->
+                        if (!currentTags.any { it.equals(tag, ignoreCase = true) }) {
+                            currentTags.add(tag)
+                        }
+                    }
+                    for (kp in knownPlatformTags) {
+                        if (token.contains(kp, ignoreCase = true) && !currentTags.any { it.equals(kp, ignoreCase = true) }) {
+                            currentTags.add(if (kp.equals("ios", ignoreCase = true)) "iOS" else kp.replaceFirstChar { it.uppercase() })
+                        }
                     }
                 }
                 continue
@@ -1808,7 +1896,8 @@ class PdfExtractionRepository(private val context: Context) {
             }
 
             // D. Project Header Detection
-            val isHeaderLine = !isBulletStart(line) && (
+            val isMetadataPrefix = line.matches(Regex("(?i)^(?:Platform(?:\\s*Support)?|Platforms?|Supported\\s*Platforms?|Target\\s*Platforms?|Tech(?:nology)?\\s*Stack|Technologies|Environment|Client\\s*Applications?|Key\\s*Features|Features|Overview|Architecture|Tools|Libraries|Dependencies):?.*"))
+            val isHeaderLine = !isBulletStart(line) && !isMetadataPrefix && (
                 line.contains("|") ||
                 (line.contains("·") && (knownPlatformTags.any { line.contains(it, ignoreCase = true) } || line.contains("Flutter", ignoreCase = true))) ||
                 (currentTitle.isBlank() && line.length < 80)

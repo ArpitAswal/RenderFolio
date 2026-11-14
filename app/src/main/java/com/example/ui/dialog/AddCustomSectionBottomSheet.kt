@@ -1,5 +1,6 @@
 package com.example.ui.dialog
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -61,9 +62,11 @@ class AddCustomSectionBottomSheet(
         behavior.skipCollapsed = true
 
         val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isTablet) {
             val density = resources.displayMetrics.density
-            val widthPx = (560 * density).toInt()
+            val widthDp = if (isLandscape) 500 else 540
+            val widthPx = (widthDp * density).toInt()
             val params = bottomSheet.layoutParams
             if (params is CoordinatorLayout.LayoutParams) {
                 params.width = widthPx

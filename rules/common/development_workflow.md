@@ -6,8 +6,9 @@
 3. **Incremental Changes**: Build features in verifiable layers (Contracts → Data Layer + Tests → State Logic + Tests → UI).
 4. **Verification Gate**: Run compiler, static analysis, and unit tests before completing any task (`./gradlew compileDebugKotlin lintDebug testDebugUnitTest`).
 
-## 2. Git Hygiene
+## 2. Git Hygiene & Cleanliness
 - Make atomic, single-purpose commits.
 - Follow Conventional Commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`.
 - Never commit build artifacts (`build/`, `.dart_tool/`, `.gradle/`, `node_modules/`).
+- **Dead & Orphaned File Cleanup**: Before committing or pushing, scan for and eliminate orphaned tech-stack files (e.g., unused `*.kt` classes, unreferenced `*.xml` layouts or drawables, dead qualifier folders) so the repository remains lean and clutter-free.
 - Never run destructive commands (`git reset --hard`, `git push --force`) without confirmation.

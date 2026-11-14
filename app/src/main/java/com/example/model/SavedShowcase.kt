@@ -18,8 +18,12 @@ data class SavedShowcase(
     val profile: ResumeProfile,
     val targetCompany: String = "",
     val createdAtMillis: Long = System.currentTimeMillis(),
-    val expireAtMillis: Long = System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000
+    val expireAtMillis: Long = System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000,
+    val isSyncPending: Boolean = false
 ) {
+    val isLocalOnly: Boolean
+        get() = isSyncPending || shareId.startsWith("local")
+
     val displayHeadline: String
         get() = if (targetCompany.isNotBlank()) {
             "$headline ($targetCompany)"
