@@ -1,6 +1,6 @@
 <p align="center">
-  <!-- App Logo: Points to high-res PNG in art/logo.png -->
-  <img src="./art/logo.png" width="128" height="128" alt="RenderFolio App Logo" />
+  <!-- App Logo: Points to high-res PNG in art/logo.png (busted cache) -->
+  <img src="./art/logo.png?v=2" width="164" height="164" alt="RenderFolio App Logo" />
 </p>
 
 <h1 align="center">RenderFolio</h1>
@@ -20,8 +20,29 @@
   <img src="https://img.shields.io/badge/Language-Kotlin_2.4-7F52FF.svg?style=flat&logo=kotlin" alt="Kotlin 2.4" />
   <img src="https://img.shields.io/badge/UI-Mobile_%26_Tablet_Adaptive-4285F4.svg?style=flat&logo=jetpackcompose" alt="Adaptive UI" />
   <img src="https://img.shields.io/badge/Privacy-100%25_On--Device-success.svg?style=flat" alt="Privacy First" />
-  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat" alt="Apache 2.0" />
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat" alt="MIT License" />
 </p>
+
+---
+
+## 🎬 App Walkthrough & Architecture Flow
+
+Explore RenderFolio in action: the interactive mobile app experience alongside the complete architectural data design flow.
+
+<table width="100%">
+  <tr>
+    <th width="50%" align="center">📱 Mobile App Walkthrough &amp; Motion</th>
+    <th width="50%" align="center">🏛️ Architecture &amp; Design Flow</th>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <video src="https://github.com/user-attachments/assets/47445af1-7fa7-4f1a-8c37-830b25004efa" controls width="100%"></video>
+    </td>
+    <td width="50%" align="center">
+      <video src="https://github.com/user-attachments/assets/b0ce463c-badc-42d7-86c7-53ee1df5b8ae" controls width="100%"></video>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -53,7 +74,7 @@ RenderFolio is natively engineered to deliver a responsive, optimized layout acr
 * **🛠️ Drag-and-Drop Structure Verification**: Interactive editor (`StructureVerificationActivity`) allowing candidates to review parsed data, reorder sections using `ItemTouchHelper`, and create dynamic custom categories (Certifications, Publications, Volunteer Work).
 * **🎨 Fluid Staggered Motion Engine**: Presentation layer powered by 6 dedicated physics motion drivers (`HeroSectionMotionDriver`, `ProjectsMotionDriver`, `WorkExperienceMotionDriver`, etc.) providing spring-driven card reveals and glassmorphic styling.
 * **📲 Offline QR Code Sharing (Scoped Storage)**: Generates high-contrast ZXing 2D QR codes saved directly to `Pictures/RenderFolio` via Android 10+ MediaStore Scoped Storage with zero runtime permission requirements.
-* **🌐 Recruiter Web Companion**: Cloud Firestore synchronization with an automated 7-day TTL auto-purge policy, paired with a companion web visualizer (`public/index.html`) hosted at `renderfolio.web.app` for universal web viewing.
+* **🌐 Recruiter Web Companion**: Cloud Firestore synchronization with an automated 7-day TTL auto-purge policy, paired with a companion web visualizer (`public/index.html`) hosted at `renderfolio-cv.web.app` for universal web viewing.
 * **🔒 Privacy-First Architecture**: Resumes are parsed locally on your phone. Personal resume bytes are never uploaded to third-party AI APIs or stored on external servers.
 
 ---
@@ -89,6 +110,8 @@ RenderFolio is engineered with high-performance mobile architectural patterns:
 ## 🏗️ Architecture & Tech Stack
 
 RenderFolio follows official Android Architecture Guidelines: **Clean Architecture** with **MVVM** and **Unidirectional Data Flow (UDF)**.
+
+> 📖 For an in-depth breakdown of module boundaries, lifecycle bridges, and sequence diagrams, refer to the [System Architecture Specification](architecture.md).
 
 | Layer | Technologies Used |
 | :--- | :--- |

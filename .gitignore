@@ -19,9 +19,11 @@ secrets.properties
 google-services.json
 GoogleService-Info.plist
 
-# Firebase CLI cache
+# Firebase CLI cache and local project deployment configuration
 .firebase/
 .firebase
+firebase.json
+firestore.rules
 
 # Keystores and signing certificates
 *.jks
